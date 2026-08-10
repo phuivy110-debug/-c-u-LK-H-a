@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Product } from '../types';
-import { X, Code, FileCode, Copy, Save, HelpCircle, Check, ExternalLink, RefreshCw, FileSpreadsheet } from 'lucide-react';
+import { X, Code, FileCode, Copy, Save, HelpCircle, Check, ExternalLink, RefreshCw, FileSpreadsheet, Image as ImageIcon, Sparkles, Loader2 } from 'lucide-react';
+import { extractShopeeImageFromLink } from '../utils/googleSheetSync';
 
 interface AffiliateGuideModalProps {
   isOpen: boolean;
@@ -31,6 +32,35 @@ export const AffiliateGuideModal: React.FC<AffiliateGuideModalProps> = ({
   const [editingProducts, setEditingProducts] = useState<Product[]>(products);
   const [inputSheetUrl, setInputSheetUrl] = useState<string>(sheetUrl);
   const [copiedTs, setCopiedTs] = useState(false);
+  const [loadingExtractId, setLoadingExtractId] = useState<string | null>(null);
+  const [isBatchExtracting, setIsBatchExtracting] = useState(false);
+
+  const handleExtractSingleImage = async (id: string, url: string) => {
+    if (!url) return;
+    setLoadingExtractId(id);
+    const extracted = await extractShopeeImageFromLink(url);
+    if (extracted) {
+      setEditingProducts((prev) =>
+        prev.map((p) => (p.id === id ? { ...p, image: extracted } : p))
+      );
+    }
+    setLoadingExtractId(null);
+  };
+
+  const handleExtractAllImages = async () => {
+    setIsBatchExtracting(true);
+    for (const p of editingProducts) {
+      if (p.affiliateUrl && (p.affiliateUrl.includes('shopee') || p.affiliateUrl.includes('shope.ee'))) {
+        const extracted = await extractShopeeImageFromLink(p.affiliateUrl);
+        if (extracted) {
+          setEditingProducts((prev) =>
+            prev.map((item) => (item.id === p.id ? { ...item, image: extracted } : item))
+          );
+        }
+      }
+    }
+    setIsBatchExtracting(false);
+  };
 
   if (!isOpen) return null;
 
@@ -233,11 +263,28 @@ export const INITIAL_PRODUCTS: Product[] = ${JSON.stringify(editingProducts, nul
             </div>
           ) : activeTab === 'editor' ? (
             <div className="space-y-4">
-              <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-xs text-amber-900 font-medium flex items-start gap-3">
-                <HelpCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-                <div>
-                  <span className="font-bold">Mẹo:</span> Bạn có thể cập nhật link Affiliate Shopee (dạng <code className="bg-amber-100 px-1 py-0.5 rounded text-amber-900">https://shope.ee/...</code> hoặc <code className="bg-amber-100 px-1 py-0.5 rounded text-amber-900">https://shopee.vn/...</code>) trực tiếp tại khung bên dưới. Nhấn <strong>"Lưu Thay Đổi Ngay"</strong> để xem hiệu lực tức thì trên giao diện!
+              <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-xs text-amber-900 font-medium flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div className="flex items-start gap-2.5">
+                  <HelpCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-bold">Hệ thống hỗ trợ lấy ảnh trực tiếp từ Link Shopee!</span>
+                    <p className="text-[11px] text-amber-800 mt-0.5">
+                      Dán link affiliate Shopee và bấm nút <strong>"Lấy ảnh từ link"</strong> bên dưới để tự động tải hình ảnh sản phẩm thực tế từ Shopee.
+                    </p>
+                  </div>
                 </div>
+                <button
+                  onClick={handleExtractAllImages}
+                  disabled={isBatchExtracting}
+                  className="bg-[#EE4D2D] hover:bg-orange-600 disabled:bg-slate-400 text-white font-extrabold text-xs px-3.5 py-2 rounded-xl shadow-xs transition-all flex items-center gap-1.5 shrink-0 cursor-pointer"
+                >
+                  {isBatchExtracting ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Sparkles className="w-4 h-4" />
+                  )}
+                  <span>{isBatchExtracting ? 'Đang tự lấy ảnh...' : '⚡ Trích xuất ảnh tất cả SP'}</span>
+                </button>
               </div>
 
               {/* Product Table / Cards Editor */}
@@ -248,15 +295,23 @@ export const INITIAL_PRODUCTS: Product[] = ${JSON.stringify(editingProducts, nul
                     className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-3 hover:border-orange-300 transition-colors"
                   >
                     <div className="flex items-center justify-between text-xs font-bold text-slate-500">
-                      <span>Sản phẩm #{index + 1} ({p.id})</span>
-                      <span className="bg-orange-100 text-[#EE4D2D] px-2 py-0.5 rounded">
+                      <div className="flex items-center gap-2">
+                        <img
+                          src={p.image}
+                          alt=""
+                          referrerPolicy="no-referrer"
+                          className="w-7 h-7 rounded-lg object-cover bg-slate-200 border border-slate-300"
+                        />
+                        <span>Sản phẩm #{index + 1} ({p.id})</span>
+                      </div>
+                      <span className="bg-orange-100 text-[#EE4D2D] px-2 py-0.5 rounded text-[11px]">
                         {p.shopName}
                       </span>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
                       {/* Title */}
-                      <div className="md:col-span-5">
+                      <div className="md:col-span-4">
                         <label className="block text-[11px] font-bold text-slate-600 mb-1">
                           Tên Sản Phẩm:
                         </label>
@@ -298,20 +353,54 @@ export const INITIAL_PRODUCTS: Product[] = ${JSON.stringify(editingProducts, nul
                         </div>
                       </div>
 
-                      {/* Affiliate Link Input */}
-                      <div className="md:col-span-4">
-                        <label className="block text-[11px] font-bold text-slate-600 mb-1 flex items-center gap-1">
-                          <ExternalLink className="w-3 h-3 text-[#EE4D2D]" />
-                          Link Affiliate Shopee:
+                      {/* Affiliate Link Input & Extract Button */}
+                      <div className="md:col-span-5">
+                        <label className="block text-[11px] font-bold text-slate-600 mb-1 flex items-center justify-between">
+                          <span className="flex items-center gap-1">
+                            <ExternalLink className="w-3 h-3 text-[#EE4D2D]" />
+                            Link Affiliate Shopee:
+                          </span>
+                          <button
+                            onClick={() => handleExtractSingleImage(p.id, p.affiliateUrl)}
+                            disabled={loadingExtractId === p.id}
+                            className="text-[#EE4D2D] hover:underline text-[10px] font-extrabold flex items-center gap-0.5 cursor-pointer disabled:opacity-50"
+                          >
+                            {loadingExtractId === p.id ? (
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                            ) : (
+                              <Sparkles className="w-3 h-3" />
+                            )}
+                            <span>{loadingExtractId === p.id ? 'Đang tải...' : 'Lấy ảnh từ link'}</span>
+                          </button>
                         </label>
-                        <input
-                          type="text"
-                          value={p.affiliateUrl}
-                          onChange={(e) => handleLinkChange(p.id, e.target.value)}
-                          placeholder="https://shope.ee/..."
-                          className="w-full bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-mono text-slate-800 focus:border-[#EE4D2D] focus:outline-hidden"
-                        />
+                        <div className="flex gap-1.5">
+                          <input
+                            type="text"
+                            value={p.affiliateUrl}
+                            onChange={(e) => handleLinkChange(p.id, e.target.value)}
+                            placeholder="https://shope.ee/..."
+                            className="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-mono text-slate-800 focus:border-[#EE4D2D] focus:outline-hidden"
+                          />
+                        </div>
                       </div>
+                    </div>
+
+                    {/* Image URL row */}
+                    <div className="pt-2 border-t border-slate-200/60 flex items-center gap-2">
+                      <ImageIcon className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                      <span className="text-[11px] font-bold text-slate-500 shrink-0">Link ảnh hiện tại:</span>
+                      <input
+                        type="text"
+                        value={p.image}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setEditingProducts((prev) =>
+                            prev.map((item) => (item.id === p.id ? { ...item, image: val } : item))
+                          );
+                        }}
+                        placeholder="https://down-vn.img.susercontent.com/file/..."
+                        className="flex-1 bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-[11px] font-mono text-slate-700 focus:border-[#EE4D2D] focus:outline-hidden"
+                      />
                     </div>
                   </div>
                 ))}

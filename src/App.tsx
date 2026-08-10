@@ -404,9 +404,11 @@ export default function App() {
       {/* Product Detail Modal */}
       <ProductDetailModal
         product={selectedDetailProduct}
+        allProducts={products}
         onClose={() => setSelectedDetailProduct(null)}
         onCopyLink={handleCopyLink}
         onCopyCoupon={handleCopyCoupon}
+        onSelectProduct={(product) => setSelectedDetailProduct(product)}
       />
 
       {/* Affiliate Link Guide & Admin Editor Modal */}

@@ -26,6 +26,70 @@ async function startServer() {
     });
   };
 
+  // Extract product image directly from Shopee affiliate link
+  app.post('/api/extract-shopee-image', async (req, res) => {
+    try {
+      const { url } = req.body;
+      if (!url || typeof url !== 'string') {
+        return res.status(400).json({ error: 'URL không hợp lệ' });
+      }
+
+      const targetUrl = url.trim();
+
+      // Direct image URL check
+      if (
+        targetUrl.match(/\.(jpeg|jpg|gif|png|webp)($|\?)/i) ||
+        targetUrl.includes('susercontent.com') ||
+        targetUrl.includes('cf.shopee.vn')
+      ) {
+        return res.json({ success: true, imageUrl: targetUrl });
+      }
+
+      // Fetch landing page following redirects with realistic browser User-Agent
+      const response = await fetch(targetUrl, {
+        headers: {
+          'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+          Accept:
+            'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+          'Accept-Language': 'vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7',
+        },
+        redirect: 'follow',
+      });
+
+      const html = await response.text();
+
+      // 1. Check og:image meta tag
+      const ogMatch =
+        html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i) ||
+        html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["']/i);
+      if (ogMatch && ogMatch[1]) {
+        return res.json({ success: true, imageUrl: ogMatch[1] });
+      }
+
+      // 2. Check twitter:image meta tag
+      const twMatch =
+        html.match(/<meta[^>]*name=["']twitter:image["'][^>]*content=["']([^"']+)["']/i) ||
+        html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*name=["']twitter:image["']/i);
+      if (twMatch && twMatch[1]) {
+        return res.json({ success: true, imageUrl: twMatch[1] });
+      }
+
+      // 3. Regex search for Shopee image CDN patterns
+      const cdnMatch = html.match(
+        /https:\/\/(down-vn\.img\.susercontent\.com|down-tx-vn\.img\.susercontent\.com|cf\.shopee\.vn)\/file\/[a-zA-Z0-9_-]+/
+      );
+      if (cdnMatch && cdnMatch[0]) {
+        return res.json({ success: true, imageUrl: cdnMatch[0] });
+      }
+
+      return res.status(404).json({ error: 'Không tìm thấy ảnh sản phẩm từ link Shopee này.' });
+    } catch (error: any) {
+      console.error('Extract Shopee Image Error:', error);
+      return res.status(500).json({ error: error.message || 'Lỗi khi trích xuất ảnh Shopee.' });
+    }
+  });
+
   // Chat API endpoint
   app.post('/api/chat', async (req, res) => {
     try {

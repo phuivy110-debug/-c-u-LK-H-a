@@ -81,6 +81,37 @@ function getRowValue(row: Record<string, string>, candidateSubstrings: string[])
   return '';
 }
 
+export async function extractShopeeImageFromLink(affiliateUrl: string): Promise<string | null> {
+  if (!affiliateUrl || !affiliateUrl.trim()) return null;
+
+  const url = affiliateUrl.trim();
+  // If it's already a direct CDN image URL
+  if (
+    url.match(/\.(jpeg|jpg|gif|png|webp)($|\?)/i) ||
+    url.includes('susercontent.com') ||
+    url.includes('cf.shopee.vn')
+  ) {
+    return url;
+  }
+
+  try {
+    const res = await fetch('/api/extract-shopee-image', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.success && data.imageUrl) {
+        return data.imageUrl;
+      }
+    }
+  } catch (err) {
+    console.warn('Failed to extract image from affiliate URL:', err);
+  }
+  return null;
+}
+
 export async function fetchProductsFromGoogleSheet(sheetUrl: string): Promise<Product[]> {
   const csvUrl = convertSheetUrlToCsvUrl(sheetUrl);
 
@@ -95,30 +126,26 @@ export async function fetchProductsFromGoogleSheet(sheetUrl: string): Promise<Pr
     Papa.parse<Record<string, string>>(csvText, {
       header: true,
       skipEmptyLines: true,
-      complete: (results) => {
+      complete: async (results) => {
         try {
           const parsedProducts: Product[] = [];
 
-          results.data.forEach((row, index) => {
+          for (let index = 0; index < results.data.length; index++) {
+            const row = results.data[index];
             const categoryRaw = getRowValue(row, ['hạngmục', 'category', 'danhmục', 'loại']);
-
             const title = getRowValue(row, ['tênsảnphẩm', 'productname', 'tên', 'sảnphẩm']);
 
-            if (!title) return; // skip empty rows
+            if (!title) continue; // skip empty rows
 
             const affiliateUrl = getRowValue(row, ['linkaffiliate', 'affiliatelink', 'link', 'shopee', 'url']);
-
             const imageRaw = getRowValue(row, ['ảnhsảnphẩm', 'image', 'hìnhảnh', 'ảnh', 'picture', 'photo']);
-
             const origPriceRaw = getRowValue(row, ['giágốc', 'originalprice', 'niêmyết']);
             const dealPriceRaw = getRowValue(row, ['giáưuđãi', 'giábán', 'dealprice', 'giákhuyếnmãi', 'giágảm']);
 
             let origPrice = parsePriceNumber(origPriceRaw);
             let dealPrice = parsePriceNumber(dealPriceRaw);
-
             const categoryId = mapCategoryNameToId(categoryRaw);
 
-            // Handle price logic if missing
             if (origPrice === 0 && dealPrice > 0) {
               origPrice = Math.round(dealPrice * 1.35);
             } else if (dealPrice === 0 && origPrice > 0) {
@@ -139,14 +166,27 @@ export async function fetchProductsFromGoogleSheet(sheetUrl: string): Promise<Pr
                 ? Math.round(((origPrice - dealPrice) / origPrice) * 100)
                 : 25;
 
-            // Image fallback
+            // Image handling: if image is missing or is an affiliate link URL, extract directly from Shopee link
             let image = imageRaw;
+            if (
+              !image ||
+              !image.startsWith('http') ||
+              (image.includes('shopee') && !image.includes('susercontent.com') && !image.includes('cf.shopee.vn'))
+            ) {
+              // Try auto extracting from affiliateUrl if available
+              if (affiliateUrl && (affiliateUrl.includes('shopee') || affiliateUrl.includes('shope.ee'))) {
+                const extracted = await extractShopeeImageFromLink(affiliateUrl);
+                if (extracted) {
+                  image = extracted;
+                }
+              }
+            }
+
             if (!image || !image.startsWith('http')) {
               const fallbacks = FALLBACK_IMAGES[categoryId] || FALLBACK_IMAGES.rods;
               image = fallbacks[index % fallbacks.length];
             }
 
-            // Badges logic
             const badges: BadgeType[] = ['Shopee Mall'];
             if (discountPercent >= 25) {
               badges.unshift('Giảm sâu');
@@ -161,7 +201,6 @@ export async function fetchProductsFromGoogleSheet(sheetUrl: string): Promise<Pr
               badges.push('Bán chạy');
             }
 
-            // Rating & Sold count generator
             const rating = +(4.7 + (index % 3) * 0.1).toFixed(1);
             const soldCount = `${(2.5 + (index % 15) * 1.8).toFixed(1)}k`;
 
@@ -183,7 +222,7 @@ export async function fetchProductsFromGoogleSheet(sheetUrl: string): Promise<Pr
               description: `Sản phẩm đồ câu cá chính hãng LK Hòa trên Shopee Mall. Cam kết chất lượng cao, đúng mô tả, phôi carbon xịn & bảo hành uy tín.`,
               updatedAt: 'Vừa cập nhật từ Google Sheet',
             });
-          });
+          }
 
           resolve(parsedProducts);
         } catch (err) {
