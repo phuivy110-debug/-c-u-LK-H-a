@@ -36,51 +36,190 @@ async function startServer() {
 
       const targetUrl = url.trim();
 
-      // Direct image URL check
+      // Step 1: Direct image check
       if (
         targetUrl.match(/\.(jpeg|jpg|gif|png|webp)($|\?)/i) ||
-        targetUrl.includes('susercontent.com') ||
-        targetUrl.includes('cf.shopee.vn')
+        ((targetUrl.includes('susercontent.com') || targetUrl.includes('cf.shopee.vn')) && targetUrl.includes('/file/'))
       ) {
         return res.json({ success: true, imageUrl: targetUrl });
       }
 
-      // Fetch landing page following redirects with realistic browser User-Agent
-      const response = await fetch(targetUrl, {
-        headers: {
-          'User-Agent':
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-          Accept:
-            'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-          'Accept-Language': 'vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7',
-        },
-        redirect: 'follow',
-      });
+      let currentUrl = targetUrl;
+      let redirectCount = 0;
+      const visitedUrls: string[] = [targetUrl];
+      let htmlContent = '';
 
-      const html = await response.text();
+      // Step 2: Trace redirects manually (up to 8 steps)
+      while (redirectCount < 8) {
+        const response = await fetch(currentUrl, {
+          redirect: 'manual',
+          headers: {
+            'User-Agent':
+              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+            Accept:
+              'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+            'Accept-Language': 'vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7',
+          },
+        });
 
-      // 1. Check og:image meta tag
-      const ogMatch =
-        html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i) ||
-        html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["']/i);
-      if (ogMatch && ogMatch[1]) {
-        return res.json({ success: true, imageUrl: ogMatch[1] });
+        const location = response.headers.get('location');
+        if (response.status >= 300 && response.status < 400 && location) {
+          currentUrl = location.startsWith('http') ? location : new URL(location, currentUrl).href;
+          visitedUrls.push(currentUrl);
+          redirectCount++;
+        } else {
+          htmlContent = await response.text();
+          // Check for client JS redirect in small HTML responses
+          if (htmlContent.length < 5000) {
+            const jsLocMatch =
+              htmlContent.match(/location\.href\s*=\s*["']([^"']+)["']/i) ||
+              htmlContent.match(/window\.location\s*=\s*["']([^"']+)["']/i) ||
+              htmlContent.match(/meta[^>]*http-equiv=["']refresh["'][^>]*content=["'][^"']*url=([^"']+)["']/i);
+            if (jsLocMatch && jsLocMatch[1]) {
+              const nextUrl = jsLocMatch[1].startsWith('http')
+                ? jsLocMatch[1]
+                : new URL(jsLocMatch[1], currentUrl).href;
+              if (!visitedUrls.includes(nextUrl)) {
+                currentUrl = nextUrl;
+                visitedUrls.push(currentUrl);
+                redirectCount++;
+                continue;
+              }
+            }
+          }
+          break;
+        }
       }
 
-      // 2. Check twitter:image meta tag
-      const twMatch =
-        html.match(/<meta[^>]*name=["']twitter:image["'][^>]*content=["']([^"']+)["']/i) ||
-        html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*name=["']twitter:image["']/i);
-      if (twMatch && twMatch[1]) {
-        return res.json({ success: true, imageUrl: twMatch[1] });
+      // Step 3: Extract Item ID & Shop ID from visited URLs
+      let shopid: string | null = null;
+      let itemid: string | null = null;
+
+      for (const u of visitedUrls) {
+        const itemMatch1 = u.match(/i\.(\d+)\.(\d+)/);
+        const itemMatch2 = u.match(/\/product\/(\d+)\/(\d+)/);
+        const itemMatch3 = u.match(/itemid=(\d+)/) && u.match(/shopid=(\d+)/);
+
+        if (itemMatch1) {
+          shopid = itemMatch1[1];
+          itemid = itemMatch1[2];
+          break;
+        } else if (itemMatch2) {
+          shopid = itemMatch2[1];
+          itemid = itemMatch2[2];
+          break;
+        } else if (itemMatch3) {
+          const sm = u.match(/shopid=(\d+)/);
+          const im = u.match(/itemid=(\d+)/);
+          if (sm && im) {
+            shopid = sm[1];
+            itemid = im[1];
+            break;
+          }
+        }
       }
 
-      // 3. Regex search for Shopee image CDN patterns
-      const cdnMatch = html.match(
-        /https:\/\/(down-vn\.img\.susercontent\.com|down-tx-vn\.img\.susercontent\.com|cf\.shopee\.vn)\/file\/[a-zA-Z0-9_-]+/
-      );
-      if (cdnMatch && cdnMatch[0]) {
-        return res.json({ success: true, imageUrl: cdnMatch[0] });
+      // Step 4: Fetch Shopee Product API if itemid & shopid found
+      if (shopid && itemid) {
+        const apiUrls = [
+          `https://shopee.vn/api/v4/item/get?itemid=${itemid}&shopid=${shopid}`,
+          `https://shopee.vn/api/v2/item/get?itemid=${itemid}&shopid=${shopid}`,
+          `https://shopee.vn/api/v4/pdp/get_pc?item_id=${itemid}&shop_id=${shopid}`,
+        ];
+
+        for (const apiUrl of apiUrls) {
+          try {
+            const apiRes = await fetch(apiUrl, {
+              headers: {
+                'User-Agent':
+                  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+                Referer: currentUrl,
+                'X-Requested-With': 'XMLHttpRequest',
+              },
+            });
+            if (apiRes.ok) {
+              const data = await apiRes.json();
+              const imgHash =
+                data?.data?.image ||
+                data?.item?.image ||
+                data?.data?.images?.[0] ||
+                data?.item?.images?.[0] ||
+                data?.data?.item?.image;
+              if (imgHash && typeof imgHash === 'string' && imgHash.length >= 20) {
+                return res.json({
+                  success: true,
+                  imageUrl: `https://down-vn.img.susercontent.com/file/${imgHash}`,
+                });
+              }
+            }
+          } catch (e) {
+            // continue
+          }
+        }
+      }
+
+      // Step 5: Check Shop ID if no item found
+      if (!shopid) {
+        for (const u of visitedUrls) {
+          const shopMatch = u.match(/\/shop\/(\d+)/) || u.match(/shopid=(\d+)/);
+          if (shopMatch) {
+            shopid = shopMatch[1];
+            break;
+          }
+        }
+      }
+
+      if (shopid) {
+        try {
+          const shopApiRes = await fetch(`https://shopee.vn/api/v4/shop/get_shop_detail?shopid=${shopid}`, {
+            headers: {
+              'User-Agent':
+                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+              Referer: currentUrl,
+              'X-Requested-With': 'XMLHttpRequest',
+            },
+          });
+          if (shopApiRes.ok) {
+            const sData = await shopApiRes.json();
+            const cover = sData?.data?.cover || sData?.data?.portrait;
+            if (cover && typeof cover === 'string' && cover.length >= 20) {
+              return res.json({
+                success: true,
+                imageUrl: `https://down-vn.img.susercontent.com/file/${cover}`,
+              });
+            }
+          }
+        } catch (e) {
+          // continue
+        }
+      }
+
+      // Step 6: Parse OpenGraph / Twitter meta tags and HTML Regex
+      if (htmlContent) {
+        const ogMatch =
+          htmlContent.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i) ||
+          htmlContent.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["']/i) ||
+          htmlContent.match(/<meta[^>]*name=["']twitter:image["'][^>]*content=["']([^"']+)["']/i) ||
+          htmlContent.match(/<meta[^>]*content=["']([^"']+)["'][^>]*name=["']twitter:image["']/i);
+
+        if (ogMatch && ogMatch[1] && !ogMatch[1].includes('deo.shopeemobile.com')) {
+          return res.json({ success: true, imageUrl: ogMatch[1] });
+        }
+
+        const cdnMatch = htmlContent.match(
+          /https:\/\/(down-vn\.img\.susercontent\.com|down-tx-vn\.img\.susercontent\.com|cf\.shopee\.vn)\/file\/[a-zA-Z0-9_-]+/
+        );
+        if (cdnMatch && cdnMatch[0]) {
+          return res.json({ success: true, imageUrl: cdnMatch[0] });
+        }
+
+        const hashMatch = htmlContent.match(/"image"\s*:\s*"([a-zA-Z0-9_-]{32})"/);
+        if (hashMatch && hashMatch[1]) {
+          return res.json({
+            success: true,
+            imageUrl: `https://down-vn.img.susercontent.com/file/${hashMatch[1]}`,
+          });
+        }
       }
 
       return res.status(404).json({ error: 'Không tìm thấy ảnh sản phẩm từ link Shopee này.' });
