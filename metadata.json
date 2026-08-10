@@ -1,0 +1,6 @@
+{
+  "name": "Đồ câu LK Hòa - Săn Deal Đồ Câu Shopee Chính Hãng",
+  "description": "Website tổng hợp deal ngon đồ câu cá chính hãng LK Hòa trên Shopee, cập nhật cần câu, máy câu, mồi câu và phụ kiện giá tốt nhất.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
