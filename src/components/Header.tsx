@@ -34,6 +34,13 @@ interface HeaderProps {
   onSelectCategory?: (categoryId: CategoryId) => void;
 }
 
+// Helper TikTok Icon
+const TikTokIcon: React.FC<{ className?: string }> = ({ className = 'w-3.5 h-3.5' }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M19.589 6.686a4.793 4.793 0 0 1-3.77-4.245V2h-3.445v13.672a2.896 2.896 0 0 1-2.901 2.89 2.893 2.893 0 0 1-2.89-2.89 2.893 2.893 0 0 1 2.89-2.89c.28 0 .543.044.793.122v-3.52a6.333 6.333 0 0 0-.793-.05A6.338 6.338 0 0 0 3.125 15.68 6.338 6.338 0 0 0 9.463 22a6.338 6.338 0 0 0 6.338-6.32V9.043a8.163 8.163 0 0 0 4.788 1.536V7.134a4.832 4.832 0 0 1-1.000-.448z" />
+  </svg>
+);
+
 export const Header: React.FC<HeaderProps> = ({
   onOpenAdmin,
   onOpenAnalytics,
@@ -59,12 +66,28 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-100 shadow-xs">
       {/* Top Banner Bar */}
-      <div className="bg-gradient-to-r from-orange-600 via-amber-600 to-orange-500 text-white text-xs font-semibold py-1.5 px-4 text-center flex items-center justify-center gap-2">
+      <div className="bg-gradient-to-r from-orange-600 via-slate-900 to-slate-950 text-white text-xs font-semibold py-1.5 px-4 text-center flex items-center justify-center gap-2 flex-wrap">
         <Flame className="w-4 h-4 text-yellow-300 animate-pulse" />
-        <span>Đồ Câu LK Hòa - Săn Deal Cần Câu & Máy Câu Shopee Chính Hãng</span>
-        <span className="hidden sm:inline-block bg-white/20 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">
-          Mã Giảm Shopee Mall
-        </span>
+        <span>Đồ Câu LK Hòa – Tổng Hợp Link Affiliate Chính Hãng Qua Shopee & TikTok Shop</span>
+        <div className="flex items-center gap-1.5 ml-1">
+          <a
+            href="https://s.shopee.vn/7fYvAFHqaP"
+            target="_blank"
+            rel="noreferrer"
+            className="bg-[#EE4D2D] hover:bg-orange-600 text-white px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider flex items-center gap-1 transition-colors"
+          >
+            <span>Shopee</span>
+          </a>
+          <a
+            href="https://vt.tiktok.com/ZS9hEsGU3kHau-stx7x/"
+            target="_blank"
+            rel="noreferrer"
+            className="bg-black hover:bg-slate-800 text-white px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider flex items-center gap-1 transition-colors border border-slate-700"
+          >
+            <TikTokIcon className="w-2.5 h-2.5 fill-current text-white" />
+            <span>TikTok Shop</span>
+          </a>
+        </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -81,12 +104,33 @@ export const Header: React.FC<HeaderProps> = ({
             <LkHoaLogo size={42} />
           </a>
 
-          {/* Shopee Mall Verified Badge & Analytics Counter */}
-          <div className="hidden lg:flex items-center gap-2.5">
-            <div className="hidden xl:flex items-center gap-2 bg-orange-50/80 border border-orange-200/60 text-[#EE4D2D] px-3.5 py-1.5 rounded-full text-xs font-bold">
-              <ShieldCheck className="w-4 h-4 text-[#EE4D2D]" />
-              <span>Link Sản Phẩm Chính Hãng</span>
-            </div>
+          {/* Shopee & TikTok Side-by-Side Official Badges */}
+          <div className="hidden lg:flex items-center gap-2">
+            {/* Shopee Mall Badge */}
+            <a
+              href="https://s.shopee.vn/7fYvAFHqaP"
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-1.5 bg-orange-50 border border-orange-200 text-[#EE4D2D] hover:bg-orange-100 px-3 py-1.5 rounded-full text-xs font-extrabold transition-all group/shop"
+              title="Ghé Gian Hàng Shopee Mall Chính Hãng LK Hòa"
+            >
+              <div className="w-2 h-2 rounded-full bg-[#EE4D2D] animate-ping" />
+              <span>Shopee Mall LK Hòa</span>
+              <ExternalLink className="w-3 h-3 text-[#EE4D2D] opacity-70 group-hover/shop:opacity-100" />
+            </a>
+
+            {/* TikTok Shop Badge */}
+            <a
+              href="https://vt.tiktok.com/ZS9hEsGU3kHau-stx7x/"
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-1.5 bg-slate-900 border border-slate-800 text-white hover:bg-black px-3 py-1.5 rounded-full text-xs font-extrabold transition-all group/tt"
+              title="Ghé TikTok Shop Chính Hãng LK Hòa"
+            >
+              <TikTokIcon className="w-3.5 h-3.5 fill-current text-white" />
+              <span>TikTok Shop LK Hòa</span>
+              <ExternalLink className="w-3 h-3 text-slate-300 opacity-70 group-hover/tt:opacity-100" />
+            </a>
             
             {/* Live Visitor Analytics Pill */}
             <AnalyticsWidget onOpenModal={onOpenAnalytics || (() => {})} variant="pill" />

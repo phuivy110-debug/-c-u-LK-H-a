@@ -148,6 +148,7 @@ export async function fetchProductsFromGoogleSheet(sheetUrl: string): Promise<Pr
             if (!title) continue; // skip empty rows
 
             const DEFAULT_TIKTOK_URL = 'https://vt.tiktok.com/ZS9hEsGU3kHau-stx7x/';
+            const DEFAULT_SHOPEE_URL = 'https://s.shopee.vn/7fYvAFHqaP';
 
             let affiliateUrl = getRowValue(
               row,
@@ -207,7 +208,7 @@ export async function fetchProductsFromGoogleSheet(sheetUrl: string): Promise<Pr
               formattedShopeeUrl = 'https://' + formattedShopeeUrl;
             }
             if (!formattedShopeeUrl) {
-              formattedShopeeUrl = `https://shopee.vn/search?keyword=${encodeURIComponent('LK Hòa ' + title)}`;
+              formattedShopeeUrl = DEFAULT_SHOPEE_URL;
             }
             const imageRaw = getRowValue(row, ['ảnhsảnphẩm', 'image', 'hìnhảnh', 'ảnh', 'picture', 'photo']);
             const origPriceRaw = getRowValue(row, ['giágốc', 'originalprice', 'niêmyết']);

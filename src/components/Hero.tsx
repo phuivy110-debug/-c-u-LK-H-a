@@ -1,5 +1,12 @@
 import React from 'react';
-import { ShieldCheck, Flame, ArrowRight, CheckCircle2, Search, Check } from 'lucide-react';
+import { ShieldCheck, Flame, ArrowRight, Search, Check, ExternalLink, ShoppingBag } from 'lucide-react';
+
+// TikTok Icon SVG
+const TikTokIcon: React.FC<{ className?: string }> = ({ className = 'w-5 h-5' }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M19.589 6.686a4.793 4.793 0 0 1-3.77-4.245V2h-3.445v13.672a2.896 2.896 0 0 1-2.901 2.89 2.893 2.893 0 0 1-2.89-2.89 2.893 2.893 0 0 1 2.89-2.89c.28 0 .543.044.793.122v-3.52a6.333 6.333 0 0 0-.793-.05A6.338 6.338 0 0 0 3.125 15.68 6.338 6.338 0 0 0 9.463 22a6.338 6.338 0 0 0 6.338-6.32V9.043a8.163 8.163 0 0 0 4.788 1.536V7.134a4.832 4.832 0 0 1-1.000-.448z" />
+  </svg>
+);
 
 interface HeroProps {
   onScrollToCatalog: () => void;
@@ -16,7 +23,7 @@ export const Hero: React.FC<HeroProps> = ({
 }) => {
   return (
     <section id="hero" className="py-6 sm:py-8 bg-[#F6F7FB]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
         
         {/* Bento Grid Header Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -29,12 +36,17 @@ export const Hero: React.FC<HeroProps> = ({
 
             <div className="relative z-10 space-y-4">
               {/* Top Badge */}
-              <div className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-md border border-white/25 px-3.5 py-1.5 rounded-full text-xs font-bold text-white shadow-xs">
+              <div className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-md border border-white/25 px-3.5 py-1.5 rounded-full text-xs font-bold text-white shadow-xs flex-wrap">
                 <ShieldCheck className="w-4 h-4 text-yellow-300" />
                 <span>Shop Đồ Câu LK Hòa Chính Hãng</span>
-                <span className="bg-white text-[#EE4D2D] px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ml-1">
-                  Shopee Mall
-                </span>
+                <div className="flex items-center gap-1">
+                  <span className="bg-white text-[#EE4D2D] px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider">
+                    Shopee
+                  </span>
+                  <span className="bg-black text-white px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border border-white/30">
+                    TikTok Shop
+                  </span>
+                </div>
               </div>
 
               {/* Main Headline */}
@@ -45,7 +57,7 @@ export const Hero: React.FC<HeroProps> = ({
 
               {/* Subtitle */}
               <p className="text-orange-100 text-sm sm:text-base font-medium max-w-xl leading-relaxed">
-                Tổng hợp mã giảm giá Shopee độc quyền & sản phẩm đồ câu cá chính hãng LK Hòa. Chọn lọc kỹ càng, test tải thực tế, không nâng giá ảo.
+                Kênh tổng hợp link Affiliate chính hãng & săn deal độc quyền đồ câu cá LK Hòa trên 2 sàn <strong>Shopee</strong> & <strong>TikTok Shop</strong>. Kiểm duyệt kĩ càng, giá chuẩn 100%.
               </p>
             </div>
 
@@ -112,8 +124,8 @@ export const Hero: React.FC<HeroProps> = ({
                     <Check className="w-4 h-4" />
                   </div>
                   <div>
-                    <div className="text-xs font-extrabold text-slate-900">Không bao giờ tăng giá ảo</div>
-                    <div className="text-[11px] text-slate-500">Giá gốc và giá giảm chuẩn xác 100%</div>
+                    <div className="text-xs font-extrabold text-slate-900">Link Chuẩn 2 Sàn TMĐT</div>
+                    <div className="text-[11px] text-slate-500">Tích hợp Shopee Mall & TikTok Shop chính hãng</div>
                   </div>
                 </div>
 
@@ -122,8 +134,8 @@ export const Hero: React.FC<HeroProps> = ({
                     <Check className="w-4 h-4" />
                   </div>
                   <div>
-                    <div className="text-xs font-extrabold text-slate-900">Link chính hãng Shopee Mall</div>
-                    <div className="text-[11px] text-slate-500">Mở trực tiếp app Shopee an toàn</div>
+                    <div className="text-xs font-extrabold text-slate-900">An Toàn & Chính Hãng</div>
+                    <div className="text-[11px] text-slate-500">Mở trực tiếp ứng dụng Shopee / TikTok an toàn</div>
                   </div>
                 </div>
               </div>
@@ -143,8 +155,101 @@ export const Hero: React.FC<HeroProps> = ({
 
         </div>
 
+        {/* Dedicated Side-by-Side E-Commerce Stores Banner (Cam - Shopee vs Đen - TikTok Shop) */}
+        <div className="bg-white rounded-[2rem] p-6 sm:p-8 border border-slate-200/90 shadow-sm space-y-6">
+          <div className="text-center max-w-2xl mx-auto space-y-2">
+            <div className="inline-flex items-center gap-2 bg-slate-100 text-slate-800 px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider">
+              <ShoppingBag className="w-3.5 h-3.5 text-[#EE4D2D]" />
+              <span>Gian Hàng Chính Hãng LK Hòa</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+              Mua Hàng Trực Tiếp Qua 2 Sàn TMĐT Uy Tín
+            </h2>
+            <p className="text-slate-600 text-xs sm:text-sm font-medium">
+              Lựa chọn nền tảng mua sắm yêu thích của bạn để nhận mã giảm giá và bảo hành chính hãng LK Hòa
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+            {/* Shopee Mall Card - Orange */}
+            <div className="bg-gradient-to-br from-orange-500 to-[#EE4D2D] text-white p-6 rounded-2xl shadow-md hover:shadow-lg transition-all border border-orange-400/40 relative overflow-hidden flex flex-col justify-between group">
+              <div className="absolute top-0 right-0 transform translate-x-4 -translate-y-4 w-32 h-32 bg-white/10 rounded-full blur-xl pointer-events-none group-hover:scale-125 transition-transform" />
+              
+              <div className="space-y-3 relative z-10">
+                <div className="flex items-center justify-between">
+                  <span className="bg-white text-[#EE4D2D] font-black text-xs px-3 py-1 rounded-full uppercase tracking-wider shadow-xs">
+                    SHOPEE MALL
+                  </span>
+                  <span className="text-xs font-bold text-orange-100 flex items-center gap-1">
+                    <ShieldCheck className="w-4 h-4 text-yellow-300" />
+                    Đã Xác Minh
+                  </span>
+                </div>
+
+                <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+                  Gian Hàng Shopee Mall LK Hòa
+                </h3>
+                <p className="text-orange-100 text-xs sm:text-sm font-medium leading-relaxed">
+                  Săn voucher Freeship Extra, mã giảm giá Shopee Mall lên tới 500k và tích điểm Xu đổi quà chính hãng LK Hòa.
+                </p>
+              </div>
+
+              <div className="pt-6 relative z-10">
+                <a
+                  href="https://s.shopee.vn/7fYvAFHqaP"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="w-full bg-white hover:bg-orange-50 text-[#EE4D2D] font-extrabold py-3 px-5 rounded-xl text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-2 group/btn cursor-pointer"
+                >
+                  <span>MUA NGAY TRÊN SHOPEE MALL</span>
+                  <ExternalLink className="w-4 h-4 text-[#EE4D2D] transition-transform group-hover/btn:translate-x-0.5" />
+                </a>
+              </div>
+            </div>
+
+            {/* TikTok Shop Card - Black */}
+            <div className="bg-gradient-to-br from-slate-900 via-slate-950 to-black text-white p-6 rounded-2xl shadow-md hover:shadow-lg transition-all border border-slate-800 relative overflow-hidden flex flex-col justify-between group">
+              <div className="absolute top-0 right-0 transform translate-x-4 -translate-y-4 w-32 h-32 bg-cyan-500/10 rounded-full blur-xl pointer-events-none group-hover:scale-125 transition-transform" />
+              
+              <div className="space-y-3 relative z-10">
+                <div className="flex items-center justify-between">
+                  <span className="bg-white text-black font-black text-xs px-3 py-1 rounded-full uppercase tracking-wider shadow-xs flex items-center gap-1.5">
+                    <TikTokIcon className="w-3.5 h-3.5 fill-current text-black" />
+                    TIKTOK SHOP
+                  </span>
+                  <span className="text-xs font-bold text-slate-300 flex items-center gap-1">
+                    <ShieldCheck className="w-4 h-4 text-cyan-400" />
+                    Kênh Livestream LK Hòa
+                  </span>
+                </div>
+
+                <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+                  Gian Hàng TikTok Shop LK Hòa
+                </h3>
+                <p className="text-slate-300 text-xs sm:text-sm font-medium leading-relaxed">
+                  Xem video review thực tế test tải cần câu, săn deal chớp thời cơ khi livestream và mua hàng trực tiếp cực nhanh.
+                </p>
+              </div>
+
+              <div className="pt-6 relative z-10">
+                <a
+                  href="https://vt.tiktok.com/ZS9hEsGU3kHau-stx7x/"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="w-full bg-white hover:bg-slate-100 text-slate-950 font-extrabold py-3 px-5 rounded-xl text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-2 group/btn cursor-pointer"
+                >
+                  <TikTokIcon className="w-4 h-4 fill-current text-slate-950" />
+                  <span>MUA NGAY TRÊN TIKTOK SHOP</span>
+                  <ExternalLink className="w-4 h-4 text-slate-950 transition-transform group-hover/btn:translate-x-0.5" />
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </section>
   );
 };
+
 
