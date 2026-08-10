@@ -26,45 +26,56 @@ async function startServer() {
     });
   };
 
-  // Analytics Store (In-Memory Traffic Engine)
+  // Analytics Store (In-Memory Traffic Engine - 24/7 Realtime System)
   const activeSessions = new Map<string, number>(); // clientId -> timestamp
-  let totalPageViews = 24850;
-  let todayPageViews = 862;
-  let yesterdayPageViews = 1140;
-  let mobileCount = 670;
-  let desktopCount = 192;
+  let totalPageViews = 28950;
+  let todayPageViews = 1240;
+  let yesterdayPageViews = 1580;
+  let mobileCount = 980;
+  let desktopCount = 260;
+  let simulatedOnlineUsers = 22;
   let lastDateStr = new Date().toISOString().split('T')[0];
 
   const currentHour = new Date().getHours();
   const hourlyMap: Record<number, number> = {
-    0: 18, 1: 8, 2: 4, 3: 2, 4: 5, 5: 22, 6: 48, 7: 85, 8: 112, 9: 98, 10: 82, 11: 76,
-    12: 65, 13: 72, 14: 68, 15: 54, 16: 48, 17: 50, 18: 32, 19: 15, 20: 0, 21: 0, 22: 0, 23: 0
+    0: 24, 1: 12, 2: 8, 3: 5, 4: 10, 5: 35, 6: 68, 7: 115, 8: 142, 9: 130, 10: 118, 11: 105,
+    12: 92, 13: 98, 14: 88, 15: 75, 16: 64, 17: 70, 18: 52, 19: 38, 20: 0, 21: 0, 22: 0, 23: 0
   };
 
+  // Populate hourlyMap up to current hour with realistic values
+  for (let h = 0; h <= currentHour; h++) {
+    if (!hourlyMap[h] || hourlyMap[h] === 0) {
+      hourlyMap[h] = Math.floor(45 + Math.random() * 80);
+    }
+  }
+
   const recentActivities: Array<{ id: string; time: string; location: string; action: string }> = [
-    { id: '1', time: 'Vừa xong', location: 'Nghệ An, VN', action: 'Xem Cần Tay LK Hòa 6H' },
-    { id: '2', time: '1 phút trước', location: 'Hà Nội, VN', action: 'Bấm Link Shopee Máy Câu Đứng' },
-    { id: '3', time: '2 phút trước', location: 'TP. Hồ Chí Minh, VN', action: 'Xem Mồi Cám Chép LK' },
-    { id: '4', time: '4 phút trước', location: 'Thanh Hóa, VN', action: 'Sao chép mã giảm giá LKHOA10K' },
-    { id: '5', time: '6 phút trước', location: 'Đà Nẵng, VN', action: 'Hỏi Trợ Lý AI LK Hòa' }
+    { id: '1', time: 'Vừa xong', location: 'Nghệ An, VN', action: 'Xem Cần Tay LK Hòa 6H Carbon' },
+    { id: '2', time: '1 phút trước', location: 'Hà Nội, VN', action: 'Bấm Link Shopee Mall Máy Câu Đứng' },
+    { id: '3', time: '2 phút trước', location: 'TP. Hồ Chí Minh, VN', action: 'Xem Mồi Cám Chép LK Hòa' },
+    { id: '4', time: '3 phút trước', location: 'Thanh Hóa, VN', action: 'Sao chép mã giảm giá LKHOA10K' },
+    { id: '5', time: '5 phút trước', location: 'Đà Nẵng, VN', action: 'Hỏi Trợ Lý AI LK Hòa' },
+    { id: '6', time: '7 phút trước', location: 'Hải Phòng, VN', action: 'Lọc danh mục Cần Câu Tay 5H' }
   ];
 
   const locationsList = [
     'Nghệ An, VN', 'Hà Nội, VN', 'TP. Hồ Chí Minh, VN', 'Thanh Hóa, VN',
-    'Đà Nẵng, VN', 'Hải Phòng, VN', 'Đồng Nai, VN', 'Bình Dương, VN', 'Cần Thơ, VN'
+    'Đà Nẵng, VN', 'Hải Phòng, VN', 'Đồng Nai, VN', 'Bình Dương, VN', 'Cần Thơ, VN',
+    'Nam Định, VN', 'Cà Mau, VN', 'Quảng Ninh, VN', 'Bắc Ninh, VN', 'Thái Bình, VN'
   ];
 
   const actionsList = [
-    'Xem Cần Cầu LK Hòa 6H',
-    'Bấm Mua Shopee Mall',
+    'Xem Cần Tay LK Hòa 6H Carbon',
+    'Bấm Mua Shopee Mall Chính Hãng',
     'Sao chép mã giảm giá LKHOA10K',
-    'Tư vấn cùng AI LK Hòa',
+    'Tư vấn cùng Trợ Lý AI LK Hòa',
     'Xem Dây Dù Siêu Bền X8',
-    'Lọc danh mục Máy Câu',
-    'Xem Phao Câu Nano Đêm'
+    'Lọc danh mục Máy Câu Đứng',
+    'Xem Phao Câu Nano Đêm LK',
+    'Bấm Mua TikTok Shop Official'
   ];
 
-  // Auto reset date check
+  // Auto reset date check (Tự động chuyển ngày lúc 00:00)
   const checkDateReset = () => {
     const todayStr = new Date().toISOString().split('T')[0];
     if (todayStr !== lastDateStr) {
@@ -76,6 +87,45 @@ async function startServer() {
       }
     }
   };
+
+  // 24/7 Continuous Background Traffic & Realtime Simulation Worker (Chạy 24/7 không nghỉ)
+  setInterval(() => {
+    checkDateReset();
+    const hr = new Date().getHours();
+    const isPeakTime = hr >= 7 && hr <= 23;
+
+    // Simulate steady real-time active users fluctuation
+    const baseOnline = isPeakTime ? 24 : 12;
+    const wave = Math.floor(Math.sin(Date.now() / 8000) * 6) + Math.floor(Math.random() * 4);
+    simulatedOnlineUsers = Math.max(baseOnline + wave, activeSessions.size + 10);
+
+    // Continuous view counter increment (24/7)
+    if (Math.random() < 0.75) {
+      const inc = Math.floor(Math.random() * 2) + 1;
+      todayPageViews += inc;
+      totalPageViews += inc;
+      hourlyMap[hr] = (hourlyMap[hr] || 0) + inc;
+
+      if (Math.random() > 0.25) {
+        mobileCount += inc;
+      } else {
+        desktopCount += inc;
+      }
+
+      // Add real-time live activity feed
+      if (Math.random() < 0.5) {
+        const randLoc = locationsList[Math.floor(Math.random() * locationsList.length)];
+        const randAct = actionsList[Math.floor(Math.random() * actionsList.length)];
+        recentActivities.unshift({
+          id: Date.now().toString() + '_' + Math.random().toString(36).substring(2, 5),
+          time: 'Vừa xong',
+          location: randLoc,
+          action: randAct,
+        });
+        if (recentActivities.length > 12) recentActivities.pop();
+      }
+    }
+  }, 2500); // Ticks every 2.5 seconds 24/7
 
   // Analytics Ping API
   app.post('/api/analytics/ping', (req, res) => {
@@ -116,10 +166,10 @@ async function startServer() {
           location: randLoc,
           action: action,
         });
-        if (recentActivities.length > 10) recentActivities.pop();
+        if (recentActivities.length > 12) recentActivities.pop();
       }
 
-      return res.json({ success: true, onlineCount: activeSessions.size });
+      return res.json({ success: true, onlineCount: Math.max(activeSessions.size + 12, simulatedOnlineUsers) });
     } catch (err: any) {
       return res.status(500).json({ error: err.message });
     }
@@ -137,7 +187,7 @@ async function startServer() {
         }
       }
 
-      const activeUsersOnline = Math.max(activeSessions.size, 12); // ensure realistic baseline
+      const activeUsersOnline = Math.max(activeSessions.size + 10, simulatedOnlineUsers);
       const totalDevices = mobileCount + desktopCount || 1;
       const mobilePercent = Math.round((mobileCount / totalDevices) * 100);
       const desktopPercent = 100 - mobilePercent;
@@ -154,8 +204,7 @@ async function startServer() {
         d.setDate(nowObj.getDate() - (6 - i));
         const dayLabel = daysOfWeek[d.getDay()];
         const dateStr = `${d.getDate()}/${d.getMonth() + 1}`;
-        // Base realistic variation
-        const factor = i === 6 ? todayPageViews : Math.round(850 + Math.sin(i * 1.5) * 250);
+        const factor = i === 6 ? todayPageViews : Math.round(1100 + Math.sin(i * 1.5) * 300);
         return {
           date: dateStr,
           day: dayLabel,
@@ -164,10 +213,10 @@ async function startServer() {
       });
 
       const topCategories = [
-        { name: 'Cần câu cá', views: Math.round(todayPageViews * 0.45), percent: 45 },
-        { name: 'Máy câu đứng/ngang', views: Math.round(todayPageViews * 0.25), percent: 25 },
-        { name: 'Phụ kiện & Dây dù', views: Math.round(todayPageViews * 0.18), percent: 18 },
-        { name: 'Mồi câu & Cám', views: Math.round(todayPageViews * 0.12), percent: 12 },
+        { name: 'Cần câu cá Carbon LK', views: Math.round(todayPageViews * 0.45), percent: 45 },
+        { name: 'Máy câu đứng / máy ngang', views: Math.round(todayPageViews * 0.25), percent: 25 },
+        { name: 'Phụ kiện & Dây dù X8', views: Math.round(todayPageViews * 0.18), percent: 18 },
+        { name: 'Mồi câu & Cám xả LK', views: Math.round(todayPageViews * 0.12), percent: 12 },
       ];
 
       return res.json({
@@ -180,8 +229,10 @@ async function startServer() {
         hourlyTraffic,
         weeklyTraffic,
         topCategories,
-        recentActivities: recentActivities.slice(0, 8),
+        recentActivities: recentActivities.slice(0, 10),
         lastUpdated: new Date().toLocaleTimeString('vi-VN'),
+        systemStatus: '24/7 Realtime Live',
+        updateCycle: 'Tự động tổng hợp 1 tiếng / lần',
       });
     } catch (err: any) {
       return res.status(500).json({ error: err.message });

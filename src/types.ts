@@ -47,4 +47,6 @@ export interface AnalyticsStats {
   topCategories: { name: string; views: number; percent: number }[];
   recentActivities: { id: string; time: string; location: string; action: string }[];
   lastUpdated: string;
+  systemStatus?: string;
+  updateCycle?: string;
 }

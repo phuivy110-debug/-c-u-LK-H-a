@@ -5,6 +5,7 @@ import { CategoryFilter } from './components/CategoryFilter';
 import { ProductCard } from './components/ProductCard';
 import { ProductDetailModal } from './components/ProductDetailModal';
 import { WhyUsSection } from './components/WhyUsSection';
+import { FaqSection } from './components/FaqSection';
 import { AffiliateGuideModal } from './components/AffiliateGuideModal';
 import { Footer } from './components/Footer';
 import { Toast } from './components/Toast';
@@ -399,6 +400,9 @@ export default function App() {
         )}
 
       </main>
+
+      {/* SEO & Customer FAQ Section */}
+      <FaqSection />
 
       {/* Why Us Section */}
       <WhyUsSection />

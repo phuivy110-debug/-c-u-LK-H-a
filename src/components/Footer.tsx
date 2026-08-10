@@ -78,14 +78,28 @@ export const Footer: React.FC<FooterProps> = ({ onOpenAnalytics }) => {
             </div>
           </div>
 
-          {/* Social Links & Disclaimer */}
+          {/* Social Links & Navigation */}
           <div className="md:col-span-3 space-y-3">
             <h4 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
               <Share2 className="w-3.5 h-3.5 text-orange-400" />
-              <span>Mạng Xã Hội LK Hòa</span>
+              <span>Liên Kết & Gian Hàng</span>
             </h4>
             
             <div className="grid grid-cols-2 gap-2 text-xs">
+              <a
+                href="#catalog"
+                className="flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 p-2 rounded-xl transition-colors font-semibold text-slate-300 hover:text-white"
+              >
+                <span>Mã Giảm Giá & Deal</span>
+              </a>
+
+              <a
+                href="#faq"
+                className="flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 p-2 rounded-xl transition-colors font-semibold text-slate-300 hover:text-white"
+              >
+                <span>Hỏi Đáp FAQ</span>
+              </a>
+
               <a
                 href="https://www.tiktok.com/@botoctroiday.lkhoa"
                 target="_blank"
@@ -95,7 +109,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenAnalytics }) => {
                 <svg className="w-3.5 h-3.5 fill-current shrink-0" viewBox="0 0 24 24">
                   <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 3 15.68a6.34 6.34 0 0 0 10.86 4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-3.04-1.15z" />
                 </svg>
-                <span>TikTok</span>
+                <span>TikTok LK Hòa</span>
               </a>
 
               <a

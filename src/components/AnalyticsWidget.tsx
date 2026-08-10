@@ -11,30 +11,26 @@ export const AnalyticsWidget: React.FC<AnalyticsWidgetProps> = ({
   onOpenModal,
   variant = 'pill',
 }) => {
-  const [onlineCount, setOnlineCount] = useState<number>(14);
-  const [todayViews, setTodayViews] = useState<number>(862);
+  const [onlineCount, setOnlineCount] = useState<number>(24);
+  const [todayViews, setTodayViews] = useState<number>(1240);
+
+  const refreshData = async () => {
+    const stats = await fetchAnalyticsStats();
+    if (stats) {
+      setOnlineCount(stats.activeUsersOnline);
+      setTodayViews(stats.todayPageViews);
+    }
+  };
 
   useEffect(() => {
-    const init = async () => {
-      // Send initial page ping
-      const online = await pingAnalytics();
-      if (online) setOnlineCount(online);
+    // Initial ping and data fetch
+    pingAnalytics();
+    refreshData();
 
-      // Fetch current stats
-      const stats = await fetchAnalyticsStats();
-      if (stats) {
-        setOnlineCount(stats.activeUsersOnline);
-        setTodayViews(stats.todayPageViews);
-      }
-    };
-
-    init();
-
-    // Heartbeat every 30 seconds
-    const interval = setInterval(async () => {
-      const online = await pingAnalytics();
-      if (online) setOnlineCount(online);
-    }, 30000);
+    // 24/7 Real-time polling every 3.5 seconds
+    const interval = setInterval(() => {
+      refreshData();
+    }, 3500);
 
     return () => clearInterval(interval);
   }, []);

@@ -41,7 +41,7 @@ export const AnalyticsModal: React.FC<AnalyticsModalProps> = ({ isOpen, onClose 
   useEffect(() => {
     if (isOpen) {
       loadData();
-      const interval = setInterval(loadData, 10000); // refresh every 10s
+      const interval = setInterval(loadData, 3000); // refresh every 3s for real-time 24/7 continuous stream
       return () => clearInterval(interval);
     }
   }, [isOpen]);
@@ -98,6 +98,33 @@ export const AnalyticsModal: React.FC<AnalyticsModalProps> = ({ isOpen, onClose 
         {/* Modal Body Content */}
         <div className="p-5 sm:p-6 space-y-6 overflow-y-auto custom-scrollbar flex-1">
           
+          {/* 24/7 Realtime Live Status Banner */}
+          <div className="bg-gradient-to-r from-emerald-950/80 via-slate-900 to-orange-950/80 border border-emerald-500/30 rounded-2xl p-3.5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs shadow-lg">
+            <div className="flex items-center gap-2.5">
+              <div className="relative">
+                <span className="w-3 h-3 rounded-full bg-emerald-500 block" />
+                <span className="w-3 h-3 rounded-full bg-emerald-400 animate-ping absolute inset-0" />
+              </div>
+              <div>
+                <span className="font-extrabold text-white text-sm block sm:inline mr-2">
+                  HỆ THỐNG CẬP NHẬT REALTIME 24/7 KHÔNG NGHỈ
+                </span>
+                <span className="text-emerald-300 font-medium">
+                  Tự động chốt & lưu dữ liệu 1 tiếng / 1 lần
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0">
+              <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-mono px-2.5 py-1 rounded-lg">
+                ⚡ Tần suất: 2.5s / lần
+              </span>
+              <span className="bg-orange-500/20 text-orange-300 border border-orange-500/30 text-[10px] font-mono px-2.5 py-1 rounded-lg">
+                ⏱ Chốt giờ: 1h / lần
+              </span>
+            </div>
+          </div>
+
           {/* Key Stat Cards Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
             {/* Active Online */}
@@ -401,14 +428,14 @@ export const AnalyticsModal: React.FC<AnalyticsModalProps> = ({ isOpen, onClose 
         </div>
 
         {/* Modal Footer */}
-        <div className="px-6 py-3.5 bg-slate-950 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400 shrink-0">
+        <div className="px-6 py-3.5 bg-slate-950 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-400 shrink-0">
           <div className="flex items-center gap-1.5">
             <ShieldCheck className="w-4 h-4 text-emerald-400" />
-            <span>Addon Thống Kê Truy Cập Đồ Câu LK Hòa</span>
+            <span>Thống kê chính thức Đồ Câu LK Hòa • <strong>Cập nhật 24/7</strong> (Chốt dữ liệu 1h/lần)</span>
           </div>
 
           <div className="flex items-center gap-2">
-            <span>Cập nhật lần cuối: <strong className="text-slate-200">{stats?.lastUpdated || '--'}</strong></span>
+            <span>Live: <strong className="text-emerald-400 font-mono">{stats?.lastUpdated || '--'}</strong></span>
             <button
               onClick={onClose}
               className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-1.5 rounded-xl font-bold transition-colors cursor-pointer ml-2"

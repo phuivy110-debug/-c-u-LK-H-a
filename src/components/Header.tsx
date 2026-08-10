@@ -150,6 +150,9 @@ export const Header: React.FC<HeaderProps> = ({
             <a href="#reasons" className="hover:text-[#EE4D2D] transition-colors">
               Lý Do Chọn
             </a>
+            <a href="#faq" className="hover:text-[#EE4D2D] transition-colors">
+              Hỏi Đáp (FAQ)
+            </a>
             <a href="#contact-mobile" className="hover:text-[#EE4D2D] transition-colors flex items-center gap-1">
               <span>Liên Hệ</span>
             </a>
