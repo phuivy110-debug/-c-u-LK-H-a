@@ -38,10 +38,10 @@ export const Hero: React.FC<HeroProps> = ({
               {/* Top Badge */}
               <div className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-md border border-white/25 px-3.5 py-1.5 rounded-full text-xs font-bold text-white shadow-xs flex-wrap">
                 <ShieldCheck className="w-4 h-4 text-yellow-300" />
-                <span>Shop Đồ Câu LK Hòa Chính Hãng</span>
+                <span>Trang Chủ Chính Thức Đồ Câu LK Hòa</span>
                 <div className="flex items-center gap-1">
                   <span className="bg-white text-[#EE4D2D] px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider">
-                    Shopee
+                    Shopee Mall
                   </span>
                   <span className="bg-black text-white px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border border-white/30">
                     TikTok Shop
@@ -52,12 +52,12 @@ export const Hero: React.FC<HeroProps> = ({
               {/* Main Headline */}
               <h1 className="text-3xl sm:text-5xl font-black tracking-tight leading-[1.15]">
                 Đồ Câu LK Hòa – <br className="hidden sm:inline" />
-                <span className="text-yellow-300">Cần Câu, Máy Câu & Mồi Câu Chính Hãng</span>
+                <span className="text-yellow-300">Tổng Hợp Deal Hot & Mã Giảm Giá Độc Quyền</span>
               </h1>
 
               {/* Subtitle */}
               <p className="text-orange-100 text-sm sm:text-base font-medium max-w-xl leading-relaxed">
-                Kênh tổng hợp link Affiliate chính hãng & săn deal độc quyền đồ câu cá LK Hòa trên 2 sàn <strong>Shopee</strong> & <strong>TikTok Shop</strong>. Kiểm duyệt kĩ càng, giá chuẩn 100%.
+                Lỡ nhịp săn voucher khi xem Livestream? Đừng lo! Đây là Trang Chủ Chính Thức của <strong>Đồ Câu LK Hòa</strong> – Nơi lưu trữ đầy đủ mã giảm giá và link đặt hàng trực tiếp an toàn từ 2 gian hàng chính hãng <strong>Shopee Mall</strong> & <strong>TikTok Shop</strong> với giá hời nhất.
               </p>
             </div>
 
@@ -77,7 +77,7 @@ export const Hero: React.FC<HeroProps> = ({
                   onClick={onScrollToCatalog}
                   className="bg-[#EE4D2D] hover:bg-orange-600 text-white font-bold px-4 sm:px-6 py-2.5 rounded-xl text-xs sm:text-sm flex items-center gap-1.5 shrink-0 transition-transform active:scale-95 cursor-pointer"
                 >
-                  <span>Tìm Deal</span>
+                  <span>Lấy Mã Deal</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </div>
@@ -88,11 +88,11 @@ export const Hero: React.FC<HeroProps> = ({
                   className="bg-white text-[#EE4D2D] hover:bg-orange-50 font-extrabold text-sm px-6 py-3 rounded-xl shadow-md transition-all flex items-center gap-2 cursor-pointer active:scale-95"
                 >
                   <Flame className="w-4 h-4 text-[#EE4D2D] fill-[#EE4D2D] animate-pulse" />
-                  <span>Xem Deal Hot Hôm Nay ({totalDeals})</span>
+                  <span>Săn Deal Giá Hời LK Hòa ({totalDeals})</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
                 <span className="text-xs text-orange-100 font-medium hidden sm:inline">
-                  ⚡ Cập nhật liên tục 24/7
+                  ⚡ Mua trực tiếp từ cửa hàng LK Hòa chính hãng
                 </span>
               </div>
             </div>
@@ -103,7 +103,7 @@ export const Hero: React.FC<HeroProps> = ({
             <div>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-extrabold text-lg text-slate-900 tracking-tight">
-                  Tại sao chọn chúng tôi?
+                  Cam kết từ LK Hòa
                 </h3>
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
               </div>
@@ -114,8 +114,8 @@ export const Hero: React.FC<HeroProps> = ({
                     <Check className="w-4 h-4" />
                   </div>
                   <div>
-                    <div className="text-xs font-extrabold text-slate-900">Chọn lọc deal thật 100%</div>
-                    <div className="text-[11px] text-slate-500">Đã kiểm duyệt shop uy tín & lượt mua cao</div>
+                    <div className="text-xs font-extrabold text-slate-900">Không Lo Bỏ Lỡ Voucher</div>
+                    <div className="text-[11px] text-slate-500">Lấy lại mã giảm giá ngon kể cả khi đã hết Live</div>
                   </div>
                 </div>
 
@@ -124,8 +124,8 @@ export const Hero: React.FC<HeroProps> = ({
                     <Check className="w-4 h-4" />
                   </div>
                   <div>
-                    <div className="text-xs font-extrabold text-slate-900">Link Chuẩn 2 Sàn TMĐT</div>
-                    <div className="text-[11px] text-slate-500">Tích hợp Shopee Mall & TikTok Shop chính hãng</div>
+                    <div className="text-xs font-extrabold text-slate-900">An Toàn Tuyệt Đối 100%</div>
+                    <div className="text-[11px] text-slate-500">Mở trực tiếp Shopee App / TikTok App chính hãng</div>
                   </div>
                 </div>
 
@@ -134,8 +134,8 @@ export const Hero: React.FC<HeroProps> = ({
                     <Check className="w-4 h-4" />
                   </div>
                   <div>
-                    <div className="text-xs font-extrabold text-slate-900">An Toàn & Chính Hãng</div>
-                    <div className="text-[11px] text-slate-500">Mở trực tiếp ứng dụng Shopee / TikTok an toàn</div>
+                    <div className="text-xs font-extrabold text-slate-900">Cửa Hàng Chính Thức LK Hòa</div>
+                    <div className="text-[11px] text-slate-500">Hưởng đầy đủ bảo hành lóng cần & 1 đổi 1</div>
                   </div>
                 </div>
               </div>

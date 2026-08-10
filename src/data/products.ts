@@ -183,26 +183,26 @@ export const INITIAL_PRODUCTS: Product[] = [
 export const WHY_US_ITEMS: ReasonItem[] = [
   {
     id: 'reason-1',
-    title: '100% Đồ Câu Chính Hãng LK Hòa',
-    description: 'Cam kết sản phẩm cần câu, máy câu, mồi câu chuẩn chính hãng shop Đồ Câu LK Hòa uy tín trên Shopee Mall.',
+    title: 'Website Chính Thức Của Đồ Câu LK Hòa',
+    description: 'Nơi tổng hợp thông tin sản phẩm, mã giảm giá và gian hàng chính hãng LK Hòa trực tiếp trên Shopee Mall & TikTok Shop.',
     icon: 'ShieldCheck'
   },
   {
     id: 'reason-2',
-    title: 'Kiểm Định Ngọn Cần & Tải Cá Real',
-    description: 'Thông số độ cứng H, phôi carbon và sức kéo tải cá thực tế được quay test kỹ lưỡng trước khi đăng tải.',
+    title: 'Săn Deal Giá Hời - Không Bỏ Lỡ Voucher',
+    description: 'Lỡ nhịp săn voucher khi xem Livestream hay Video? Bạn luôn có thể vào đây lấy đầy đủ mã giảm giá để mua với giá tốt nhất.',
     icon: 'BadgePercent'
   },
   {
     id: 'reason-3',
-    title: 'Mã Giảm Giá Shopee Độc Quyền',
-    description: 'Tổng hợp đầy đủ các mã voucher giảm giá, miễn phí vận chuyển Extra từ Shopee dành cho cần thủ.',
+    title: 'An Toàn Tuyệt Đối - Mua Trực Tiếp Từ Cửa Hàng',
+    description: 'Nút bấm mở thẳng ứng dụng Shopee / TikTok Shop chính chủ của LK Hòa, đảm bảo an toàn tuyệt đối, không lo trang rác hay lừa đảo.',
     icon: 'CheckCircle2'
   },
   {
     id: 'reason-4',
-    title: 'Hỗ Trợ Đổi Trả & Bảo Hành Nhanh',
-    description: 'Định hướng mua sắm an toàn qua app Shopee chính thức, hỗ trợ bảo hành lóng cần và linh kiện chính hãng.',
+    title: 'Bảo Hành Lóng Cần & Hỗ Trợ 24/7',
+    description: 'Tất cả đơn hàng mua qua hệ thống đều được hưởng đầy đủ quyền lợi bảo hành lóng cần chính hãng và hỗ trợ trực tiếp từ LK Hòa.',
     icon: 'Clock'
   }
 ];

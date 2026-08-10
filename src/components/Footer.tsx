@@ -25,12 +25,12 @@ export const Footer: React.FC<FooterProps> = ({ onOpenAnalytics }) => {
             </div>
 
             <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
-              Website tổng hợp link Affiliate cần câu, máy câu, mồi câu và phụ kiện đồ câu cá LK Hòa chính hãng từ Shopee Mall & TikTok Shop. Cam kết chất lượng, thông số chuẩn xác.
+              Trang chủ chính thức của Đồ Câu LK Hòa – Nơi tổng hợp đầy đủ mã giảm giá, sản phẩm cần câu, máy câu, mồi câu và phụ kiện chính hãng LK Hòa mua trực tiếp từ Shopee Mall & TikTok Shop.
             </p>
 
             <div className="inline-flex items-center gap-2 bg-slate-900 border border-slate-800 text-slate-300 text-xs px-3.5 py-1.5 rounded-full font-semibold">
               <ShieldCheck className="w-4 h-4 text-emerald-400" />
-              <span>Link Đồ Câu LK Hòa Chính Hãng 100%</span>
+              <span>Cửa Hàng Chính Thức Đồ Câu LK Hòa 100%</span>
             </div>
           </div>
 
@@ -99,13 +99,13 @@ export const Footer: React.FC<FooterProps> = ({ onOpenAnalytics }) => {
               </a>
 
               <a
-                href="https://s.shopee.vn/AKZfxdJSku"
+                href="https://s.shopee.vn/7fYvAFHqaP"
                 target="_blank"
                 rel="noreferrer"
                 className="flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 p-2 rounded-xl transition-colors font-semibold text-orange-400"
               >
                 <Store className="w-3.5 h-3.5 shrink-0" />
-                <span>Shopee</span>
+                <span>Shopee Mall</span>
               </a>
 
               <a
@@ -140,10 +140,10 @@ export const Footer: React.FC<FooterProps> = ({ onOpenAnalytics }) => {
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-500 text-center md:text-left">
           <div>
             <p className="font-semibold text-slate-400">
-              Chuyên trang chia sẻ deal ngon đồ câu cá chính hãng LK Hòa.
+              Trang Chủ Chính Thức Thương Hiệu Đồ Câu LK Hòa.
             </p>
             <p className="text-[11px] mt-0.5">
-              © 2026 Đồ Câu LK Hòa. Mọi thông tin sản phẩm và thương hiệu thuộc về nhà bán hàng chính hãng trên Shopee.
+              © 2026 Đồ Câu LK Hòa. Tất cả sản phẩm được bán trực tiếp và bảo hành chính hãng qua Shopee Mall & TikTok Shop.
             </p>
           </div>
 

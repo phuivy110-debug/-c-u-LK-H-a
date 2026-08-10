@@ -111,7 +111,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                 onCopyLink(product);
               }}
               className="p-1.5 bg-white text-slate-800 rounded-lg shadow-xs hover:scale-105 transition-all"
-              title="Sao chép link affiliate"
+              title="Sao chép link sản phẩm chính hãng"
             >
               <Copy className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>

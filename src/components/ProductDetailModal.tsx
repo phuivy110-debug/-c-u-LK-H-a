@@ -72,7 +72,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-[#EE4D2D] animate-pulse" />
             <span className="text-xs font-black uppercase tracking-wider text-slate-800">
-              Chi Tiết Deal Shopee
+              Chi Tiết Sản Phẩm & Ưu Đãi
             </span>
           </div>
           <button
@@ -151,7 +151,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                     </span>
                   </div>
                   <div className="text-[11px] font-bold text-emerald-600 mt-1">
-                    ✓ Tiết kiệm {formatVND(product.originalPrice - product.dealPrice)} khi mua qua link này
+                    ✓ Tiết kiệm {formatVND(product.originalPrice - product.dealPrice)} khi mua trực tiếp hôm nay
                   </div>
                 </div>
 
@@ -191,7 +191,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   className="w-full bg-[#EE4D2D] hover:bg-orange-600 text-white font-extrabold text-xs sm:text-sm py-2.5 sm:py-3 px-3 rounded-xl shadow-md shadow-orange-500/20 flex items-center justify-center gap-1.5 cursor-pointer transition-all active:scale-[0.99] uppercase"
                 >
                   <ShoppingCart className="w-4 h-4 shrink-0" />
-                  <span>MUA TRÊN SHOPEE</span>
+                  <span>MUA TRÊN SHOPEE MALL</span>
                   <ExternalLink className="w-3.5 h-3.5 shrink-0" />
                 </button>
 
@@ -200,7 +200,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   className="w-full bg-slate-900 hover:bg-black text-white font-extrabold text-xs sm:text-sm py-2.5 sm:py-3 px-3 rounded-xl shadow-md shadow-slate-900/20 flex items-center justify-center gap-1.5 cursor-pointer transition-all active:scale-[0.99] uppercase"
                 >
                   <TikTokIcon className="w-4 h-4 shrink-0 fill-current text-white" />
-                  <span>MUA TRÊN TIKTOK</span>
+                  <span>MUA TRÊN TIKTOK SHOP</span>
                   <ExternalLink className="w-3.5 h-3.5 shrink-0" />
                 </button>
               </div>

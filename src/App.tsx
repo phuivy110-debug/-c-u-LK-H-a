@@ -150,7 +150,7 @@ export default function App() {
 
   const handleCopyLink = (p: Product) => {
     navigator.clipboard.writeText(p.affiliateUrl);
-    showToast(`Đã sao chép link Shopee của "${p.title.slice(0, 25)}..."!`);
+    showToast(`Đã sao chép link mua chính hãng "${p.title.slice(0, 25)}..."!`);
   };
 
   const handleCopyCoupon = (code: string) => {
@@ -312,7 +312,7 @@ export default function App() {
           <div>
             <div className="flex items-center gap-2 text-[#EE4D2D] text-xs font-bold uppercase tracking-wider mb-1">
               <Flame className="w-4 h-4 fill-[#EE4D2D]" />
-              <span>Catalog Deal Shopee Hot nhất</span>
+              <span>Sản Phẩm & Deal Hot LK Hòa</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
               Danh Mục Sản Phẩm Đang Giảm Giá

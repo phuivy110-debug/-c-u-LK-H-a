@@ -18,13 +18,13 @@ export const WhyUsSection: React.FC = () => {
         <div className="text-center max-w-2xl mx-auto mb-10">
           <div className="inline-flex items-center gap-1.5 bg-orange-100/80 text-[#EE4D2D] px-3.5 py-1 rounded-full text-xs font-bold mb-2">
             <Sparkles className="w-3.5 h-3.5" />
-            <span>Cam Kết Uy Tín & Min Báo</span>
+            <span>Chính Hãng & Uy Tín 100%</span>
           </div>
           <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-            Lý Do Nên Mua Qua Website Này
+            Lý Do Nên Mua Tại Cửa Hàng LK Hòa
           </h2>
           <p className="mt-2 text-xs sm:text-sm text-slate-500 font-medium">
-            Chúng tôi giúp bạn tiết kiệm thời gian săn deal, mua đúng sản phẩm chính hãng với giá thực sự ưu đãi.
+            Chúng tôi giúp bạn sở hữu cần câu, máy câu LK Hòa chính hãng với mã giảm giá ưu đãi nhất mà không lo mua phải hàng kém chất lượng.
           </p>
         </div>
 
@@ -61,24 +61,24 @@ export const WhyUsSection: React.FC = () => {
           })}
         </div>
 
-        {/* Shopee Guarantee Bento Banner */}
+        {/* Shopee & TikTok Guarantee Bento Banner */}
         <div className="mt-6 bg-[#EE4D2D] p-6 sm:p-8 rounded-[2rem] text-white shadow-lg shadow-orange-500/15 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="space-y-1.5 text-center md:text-left">
             <span className="bg-white/20 text-white text-[11px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">
-              An Tâm Săn Deal
+              An Tâm Mua Sắm 100%
             </span>
             <h3 className="text-lg sm:text-2xl font-black">
-              Chuyển Hướng Trực Tiếp Tới Shopee App & Web
+              Mở Trực Tiếp Trên Ứng Dụng Shopee & TikTok Shop
             </h3>
             <p className="text-xs sm:text-sm text-orange-100 max-w-xl">
-              Không thu thập dữ liệu cá nhân, không đăng nhập. Hưởng đầy đủ xu Shopee, mã giảm giá ship và chính sách bảo hành chính hãng.
+              Nút bấm chuyển hướng thẳng tới Cửa Hàng LK Hòa chính hãng trên ứng dụng Shopee & TikTok Shop. Không cần đăng nhập mật khẩu trên web, tuyệt đối an toàn.
             </p>
           </div>
           <a
             href="#catalog"
             className="bg-white hover:bg-orange-50 text-[#EE4D2D] font-black text-xs sm:text-sm px-6 py-3.5 rounded-2xl shadow-sm transition-transform active:scale-95 whitespace-nowrap cursor-pointer shrink-0"
           >
-            Khám Phá Deal Hot →
+            Săn Deal Mua Ngay →
           </a>
         </div>
 

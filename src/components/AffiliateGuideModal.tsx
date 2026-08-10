@@ -127,8 +127,8 @@ export const INITIAL_PRODUCTS: Product[] = ${JSON.stringify(editingProducts, nul
               <Code className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h2 className="text-lg font-bold">Quản Lý & Chỉnh Sửa Link Affiliate</h2>
-              <p className="text-xs text-slate-400">Thay đổi link Shopee trực tiếp hoặc xuất mã file data</p>
+              <h2 className="text-lg font-bold">Quản Lý Dữ Liệu & Đồng Bộ Google Sheet LK Hòa</h2>
+              <p className="text-xs text-slate-400">Cập nhật sản phẩm, mã giảm giá và link gian hàng chính hãng LK Hòa</p>
             </div>
           </div>
 

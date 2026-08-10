@@ -68,7 +68,7 @@ export const Header: React.FC<HeaderProps> = ({
       {/* Top Banner Bar */}
       <div className="bg-gradient-to-r from-orange-600 via-slate-900 to-slate-950 text-white text-xs font-semibold py-1.5 px-4 text-center flex items-center justify-center gap-2 flex-wrap">
         <Flame className="w-4 h-4 text-yellow-300 animate-pulse" />
-        <span>Đồ Câu LK Hòa – Tổng Hợp Link Affiliate Chính Hãng Qua Shopee & TikTok Shop</span>
+        <span>Trang Chủ Chính Thức Đồ Câu LK Hòa – Mua Hàng Trực Tiếp Trên Shopee Mall & TikTok Shop</span>
         <div className="flex items-center gap-1.5 ml-1">
           <a
             href="https://s.shopee.vn/7fYvAFHqaP"
@@ -76,7 +76,7 @@ export const Header: React.FC<HeaderProps> = ({
             rel="noreferrer"
             className="bg-[#EE4D2D] hover:bg-orange-600 text-white px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider flex items-center gap-1 transition-colors"
           >
-            <span>Shopee</span>
+            <span>Shopee Mall</span>
           </a>
           <a
             href="https://vt.tiktok.com/ZS9hEsGU3kHau-stx7x/"
@@ -142,7 +142,7 @@ export const Header: React.FC<HeaderProps> = ({
               Trang Chủ
             </a>
             <a href="#catalog" className="hover:text-[#EE4D2D] transition-colors flex items-center gap-1">
-              <span>Catalog Deal</span>
+              <span>Sản Phẩm & Deal Hot</span>
               <span className="bg-orange-100 text-[#EE4D2D] text-[10px] px-1.5 py-0.2 rounded-full font-bold">
                 {productCount}
               </span>
