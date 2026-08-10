@@ -1,6 +1,7 @@
 import React from 'react';
 import { Product } from '../types';
 import { ExternalLink, Star, ShieldCheck, Tag, Copy, Eye, Flame, Award, Zap } from 'lucide-react';
+import { trackUserAction } from '../utils/analyticsService';
 
 interface ProductCardProps {
   product: Product;
@@ -19,7 +20,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
   const handleBuyClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+    trackUserAction(`Bấm mua Shopee: ${product.title.substring(0, 25)}...`);
     window.open(product.affiliateUrl, '_blank', 'noopener,noreferrer');
+  };
+
+  const handleCardClick = () => {
+    trackUserAction(`Xem chi tiết: ${product.title.substring(0, 25)}...`);
+    onOpenDetail(product);
   };
 
   const getBadgeStyle = (badge: string) => {
@@ -39,7 +46,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
   return (
     <div
-      onClick={() => onOpenDetail(product)}
+      onClick={handleCardClick}
       className="bg-white p-2.5 sm:p-4 rounded-2xl sm:rounded-3xl shadow-xs border border-slate-200/80 flex flex-col justify-between hover:shadow-md hover:-translate-y-0.5 transition-all group cursor-pointer"
     >
       <div>

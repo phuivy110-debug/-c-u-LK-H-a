@@ -180,14 +180,6 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   <span>MUA NGAY TRÊN SHOPEE</span>
                   <ExternalLink className="w-4 h-4" />
                 </button>
-
-                <button
-                  onClick={() => onCopyLink(product)}
-                  className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs py-2 rounded-xl flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-                >
-                  <Copy className="w-3.5 h-3.5" />
-                  <span>Sao Chép Link Affiliate</span>
-                </button>
               </div>
             </div>
           </div>

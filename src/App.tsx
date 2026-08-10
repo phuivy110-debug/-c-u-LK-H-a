@@ -9,6 +9,8 @@ import { AffiliateGuideModal } from './components/AffiliateGuideModal';
 import { Footer } from './components/Footer';
 import { Toast } from './components/Toast';
 import { ChatBot } from './components/ChatBot';
+import { AnalyticsModal } from './components/AnalyticsModal';
+import { AnalyticsWidget } from './components/AnalyticsWidget';
 import { INITIAL_PRODUCTS } from './data/products';
 import { Product, CategoryId, BadgeType } from './types';
 import { Flame, RefreshCw, Layers, FileSpreadsheet, CheckCircle, AlertCircle } from 'lucide-react';
@@ -54,6 +56,7 @@ export default function App() {
   // Modals & Feedback
   const [selectedDetailProduct, setSelectedDetailProduct] = useState<Product | null>(null);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
+  const [isAnalyticsOpen, setIsAnalyticsOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Hidden Admin Mode state (hidden from customers)
@@ -237,6 +240,7 @@ export default function App() {
       {/* Header */}
       <Header
         onOpenAdmin={() => setIsAdminOpen(true)}
+        onOpenAnalytics={() => setIsAnalyticsOpen(true)}
         productCount={products.length}
         showAdminButton={isAdmin}
         onLogoClickCount={handleLogoClick}
@@ -399,7 +403,19 @@ export default function App() {
       <WhyUsSection />
 
       {/* Footer */}
-      <Footer />
+      <Footer onOpenAnalytics={() => setIsAnalyticsOpen(true)} />
+
+      {/* Floating Traffic Analytics Widget (Bottom Left) */}
+      <AnalyticsWidget
+        onOpenModal={() => setIsAnalyticsOpen(true)}
+        variant="floating"
+      />
+
+      {/* Web Traffic Statistics Addon Modal */}
+      <AnalyticsModal
+        isOpen={isAnalyticsOpen}
+        onClose={() => setIsAnalyticsOpen(false)}
+      />
 
       {/* Product Detail Modal */}
       <ProductDetailModal

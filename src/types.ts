@@ -33,3 +33,17 @@ export interface ReasonItem {
   description: string;
   icon: string;
 }
+
+export interface AnalyticsStats {
+  totalPageViews: number;
+  todayPageViews: number;
+  yesterdayPageViews: number;
+  activeUsersOnline: number;
+  mobilePercent: number;
+  desktopPercent: number;
+  hourlyTraffic: { hour: string; views: number }[];
+  weeklyTraffic: { date: string; day: string; views: number }[];
+  topCategories: { name: string; views: number; percent: number }[];
+  recentActivities: { id: string; time: string; location: string; action: string }[];
+  lastUpdated: string;
+}

@@ -1,8 +1,13 @@
 import React from 'react';
 import { ShieldCheck, ArrowUp, Phone, MessageCircle, MapPin, Store, Share2 } from 'lucide-react';
 import { LkHoaLogo } from './LkHoaLogo';
+import { AnalyticsWidget } from './AnalyticsWidget';
 
-export const Footer: React.FC = () => {
+interface FooterProps {
+  onOpenAnalytics?: () => void;
+}
+
+export const Footer: React.FC<FooterProps> = ({ onOpenAnalytics }) => {
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -131,8 +136,8 @@ export const Footer: React.FC = () => {
 
         </div>
 
-        {/* Disclaimer & Copyright */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 text-center sm:text-left">
+        {/* Disclaimer, Copyright & Traffic Counter */}
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-500 text-center md:text-left">
           <div>
             <p className="font-semibold text-slate-400">
               Chuyên trang chia sẻ deal ngon đồ câu cá chính hãng LK Hòa.
@@ -142,13 +147,18 @@ export const Footer: React.FC = () => {
             </p>
           </div>
 
-          <button
-            onClick={scrollToTop}
-            className="flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white px-3.5 py-2 rounded-xl text-xs font-bold transition-colors cursor-pointer shrink-0"
-          >
-            <span>Về Đầu Trang</span>
-            <ArrowUp className="w-4 h-4" />
-          </button>
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            {/* Traffic Analytics Button Widget */}
+            <AnalyticsWidget onOpenModal={onOpenAnalytics || (() => {})} variant="footer" />
+
+            <button
+              onClick={scrollToTop}
+              className="flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white px-3.5 py-2 rounded-2xl text-xs font-bold transition-colors cursor-pointer shrink-0"
+            >
+              <span>Về Đầu Trang</span>
+              <ArrowUp className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
       </div>

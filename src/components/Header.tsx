@@ -20,11 +20,13 @@ import {
   Share2,
 } from 'lucide-react';
 import { LkHoaLogo } from './LkHoaLogo';
+import { AnalyticsWidget } from './AnalyticsWidget';
 import { CATEGORIES } from '../data/products';
 import { CategoryId } from '../types';
 
 interface HeaderProps {
   onOpenAdmin: () => void;
+  onOpenAnalytics?: () => void;
   onSearchFocus?: () => void;
   productCount: number;
   showAdminButton?: boolean;
@@ -34,6 +36,7 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({
   onOpenAdmin,
+  onOpenAnalytics,
   productCount,
   showAdminButton = false,
   onLogoClickCount,
@@ -78,11 +81,15 @@ export const Header: React.FC<HeaderProps> = ({
             <LkHoaLogo size={42} />
           </a>
 
-          {/* Shopee Mall Verified Badge & Quick Info */}
-          <div className="hidden md:flex items-center gap-2 bg-orange-50/80 border border-orange-200/60 text-[#EE4D2D] px-3.5 py-1.5 rounded-full text-xs font-bold">
-            <ShieldCheck className="w-4 h-4 text-[#EE4D2D]" />
-            <span>Link Sản Phẩm Chính Hãng</span>
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping ml-1" />
+          {/* Shopee Mall Verified Badge & Analytics Counter */}
+          <div className="hidden lg:flex items-center gap-2.5">
+            <div className="hidden xl:flex items-center gap-2 bg-orange-50/80 border border-orange-200/60 text-[#EE4D2D] px-3.5 py-1.5 rounded-full text-xs font-bold">
+              <ShieldCheck className="w-4 h-4 text-[#EE4D2D]" />
+              <span>Link Sản Phẩm Chính Hãng</span>
+            </div>
+            
+            {/* Live Visitor Analytics Pill */}
+            <AnalyticsWidget onOpenModal={onOpenAnalytics || (() => {})} variant="pill" />
           </div>
 
           {/* Desktop Nav Links */}
