@@ -65,15 +65,25 @@ export function mapCategoryNameToId(catName: string): CategoryId {
 }
 
 // Helper to search row object for keys matching candidates (case-insensitive & space-insensitive)
-function getRowValue(row: Record<string, string>, candidateSubstrings: string[]): string {
+function getRowValue(
+  row: Record<string, string>,
+  candidateSubstrings: string[],
+  excludeSubstrings: string[] = []
+): string {
   const rowKeys = Object.keys(row);
   for (const candidate of candidateSubstrings) {
     const normCandidate = candidate.toLowerCase().replace(/\s+/g, '');
     for (const key of rowKeys) {
       const normKey = key.toLowerCase().replace(/\s+/g, '');
+      
+      // Skip if key contains excluded keywords
+      const isExcluded = excludeSubstrings.some((ex) => normKey.includes(ex.toLowerCase()));
+      if (isExcluded) continue;
+
       if (normKey.includes(normCandidate) || normCandidate.includes(normKey)) {
         if (row[key] !== undefined && row[key] !== null) {
-          return String(row[key]).trim();
+          const val = String(row[key]).trim();
+          if (val) return val;
         }
       }
     }
@@ -137,7 +147,68 @@ export async function fetchProductsFromGoogleSheet(sheetUrl: string): Promise<Pr
 
             if (!title) continue; // skip empty rows
 
-            const affiliateUrl = getRowValue(row, ['linkaffiliate', 'affiliatelink', 'link', 'shopee', 'url']);
+            const DEFAULT_TIKTOK_URL = 'https://vt.tiktok.com/ZS9hEsGU3kHau-stx7x/';
+
+            let affiliateUrl = getRowValue(
+              row,
+              ['linkaffshopee', 'linkshopee', 'shopee', 'linkaffiliate', 'affiliatelink', 'linkaff', 'link', 'url'],
+              ['tiktok', 'ttshop', 'vt.tiktok']
+            );
+            let tiktokUrl = getRowValue(
+              row,
+              ['linkafftiktok', 'linktiktok', 'tiktokurl', 'tiktokshop', 'shoptiktok', 'tiktoklink', 'afftiktok', 'tiktok'],
+              ['shopee', 'shp']
+            );
+
+            // Auto-detect and swap if URLs were miscategorized
+            if (affiliateUrl && (affiliateUrl.includes('tiktok.com') || affiliateUrl.includes('vt.tiktok'))) {
+              if (!tiktokUrl || !tiktokUrl.includes('tiktok')) {
+                tiktokUrl = affiliateUrl;
+              }
+              affiliateUrl = '';
+            }
+
+            if (tiktokUrl && (tiktokUrl.includes('shopee') || tiktokUrl.includes('shp.ee'))) {
+              if (!affiliateUrl || (!affiliateUrl.includes('shopee') && !affiliateUrl.includes('shp.ee'))) {
+                affiliateUrl = tiktokUrl;
+              }
+              tiktokUrl = '';
+            }
+
+            // Full row scan fallback if links are still missing
+            if (!tiktokUrl || !tiktokUrl.includes('tiktok')) {
+              for (const cellVal of Object.values(row)) {
+                if (typeof cellVal === 'string' && (cellVal.includes('tiktok.com') || cellVal.includes('vt.tiktok'))) {
+                  tiktokUrl = cellVal.trim();
+                  break;
+                }
+              }
+            }
+
+            if (!affiliateUrl || (!affiliateUrl.includes('shopee') && !affiliateUrl.includes('shp.ee'))) {
+              for (const cellVal of Object.values(row)) {
+                if (typeof cellVal === 'string' && (cellVal.includes('shopee.vn') || cellVal.includes('shp.ee') || cellVal.includes('shopee.com'))) {
+                  affiliateUrl = cellVal.trim();
+                  break;
+                }
+              }
+            }
+
+            let formattedTikTokUrl = tiktokUrl ? tiktokUrl.trim() : undefined;
+            if (formattedTikTokUrl && !formattedTikTokUrl.startsWith('http://') && !formattedTikTokUrl.startsWith('https://')) {
+              formattedTikTokUrl = 'https://' + formattedTikTokUrl;
+            }
+            if (!formattedTikTokUrl) {
+              formattedTikTokUrl = DEFAULT_TIKTOK_URL;
+            }
+
+            let formattedShopeeUrl = affiliateUrl ? affiliateUrl.trim() : undefined;
+            if (formattedShopeeUrl && !formattedShopeeUrl.startsWith('http://') && !formattedShopeeUrl.startsWith('https://')) {
+              formattedShopeeUrl = 'https://' + formattedShopeeUrl;
+            }
+            if (!formattedShopeeUrl) {
+              formattedShopeeUrl = `https://shopee.vn/search?keyword=${encodeURIComponent('LK Hòa ' + title)}`;
+            }
             const imageRaw = getRowValue(row, ['ảnhsảnphẩm', 'image', 'hìnhảnh', 'ảnh', 'picture', 'photo']);
             const origPriceRaw = getRowValue(row, ['giágốc', 'originalprice', 'niêmyết']);
             const dealPriceRaw = getRowValue(row, ['giáưuđãi', 'giábán', 'dealprice', 'giákhuyếnmãi', 'giágảm']);
@@ -213,7 +284,8 @@ export async function fetchProductsFromGoogleSheet(sheetUrl: string): Promise<Pr
               discountPercent,
               image,
               badges,
-              affiliateUrl: affiliateUrl || 'https://shopee.vn/search?keyword=lk%20hoa',
+              affiliateUrl: formattedShopeeUrl,
+              tiktokUrl: formattedTikTokUrl,
               shopName: 'Đồ Câu LK Hòa Official Store',
               rating,
               soldCount,

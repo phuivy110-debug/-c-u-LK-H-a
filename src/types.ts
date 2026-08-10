@@ -25,6 +25,7 @@ export interface Product {
   couponCode?: string;
   description?: string;
   updatedAt?: string;
+  tiktokUrl?: string;
 }
 
 export interface ReasonItem {

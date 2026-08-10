@@ -11,6 +11,7 @@ import { Toast } from './components/Toast';
 import { ChatBot } from './components/ChatBot';
 import { AnalyticsModal } from './components/AnalyticsModal';
 import { AnalyticsWidget } from './components/AnalyticsWidget';
+import { ScrollToTopButton } from './components/ScrollToTopButton';
 import { INITIAL_PRODUCTS } from './data/products';
 import { Product, CategoryId, BadgeType } from './types';
 import { Flame, RefreshCw, Layers, FileSpreadsheet, CheckCircle, AlertCircle } from 'lucide-react';
@@ -443,6 +444,9 @@ export default function App() {
 
       {/* AI Customer Assistant Chatbot */}
       <ChatBot products={products} />
+
+      {/* Scroll To Top Floating Button (Auto appears when scrolled > 500px) */}
+      <ScrollToTopButton />
 
       {/* Toast Feedback */}
       <Toast

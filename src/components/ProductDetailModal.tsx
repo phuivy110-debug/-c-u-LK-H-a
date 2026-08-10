@@ -2,6 +2,13 @@ import React, { useMemo } from 'react';
 import { Product } from '../types';
 import { X, ExternalLink, ShieldCheck, Star, Copy, Tag, ShoppingCart, Flame, ChevronRight } from 'lucide-react';
 
+// Helper TikTok SVG Icon
+const TikTokIcon: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M19.589 6.686a4.793 4.793 0 0 1-3.77-4.245V2h-3.445v13.672a2.896 2.896 0 0 1-2.901 2.89 2.893 2.893 0 0 1-2.89-2.89 2.893 2.893 0 0 1 2.89-2.89c.28 0 .543.044.793.122v-3.52a6.333 6.333 0 0 0-.793-.05A6.338 6.338 0 0 0 3.125 15.68 6.338 6.338 0 0 0 9.463 22a6.338 6.338 0 0 0 6.338-6.32V9.043a8.163 8.163 0 0 0 4.788 1.536V7.134a4.832 4.832 0 0 1-1.000-.448z" />
+  </svg>
+);
+
 interface ProductDetailModalProps {
   product: Product | null;
   allProducts?: Product[];
@@ -27,6 +34,13 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 
   const handleBuy = () => {
     window.open(product.affiliateUrl, '_blank', 'noopener,noreferrer');
+  };
+
+  const DEFAULT_TIKTOK_URL = 'https://vt.tiktok.com/ZS9hEsGU3kHau-stx7x/';
+
+  const handleBuyTikTok = () => {
+    const tiktokTarget = product.tiktokUrl || DEFAULT_TIKTOK_URL;
+    window.open(tiktokTarget, '_blank', 'noopener,noreferrer');
   };
 
   // Compute similar products (same category first, fallback to other top deals)
@@ -170,15 +184,24 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 )}
               </div>
 
-              {/* Action Buttons */}
-              <div className="pt-2 border-t border-slate-100 space-y-2">
+              {/* Action Buttons: Shopee & TikTok */}
+              <div className="pt-2 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <button
                   onClick={handleBuy}
-                  className="w-full bg-[#EE4D2D] hover:bg-orange-600 text-white font-extrabold text-sm sm:text-base py-3 px-4 rounded-xl shadow-lg shadow-orange-500/20 flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-[0.99]"
+                  className="w-full bg-[#EE4D2D] hover:bg-orange-600 text-white font-extrabold text-xs sm:text-sm py-2.5 sm:py-3 px-3 rounded-xl shadow-md shadow-orange-500/20 flex items-center justify-center gap-1.5 cursor-pointer transition-all active:scale-[0.99] uppercase"
                 >
-                  <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5" />
-                  <span>MUA NGAY TRÊN SHOPEE</span>
-                  <ExternalLink className="w-4 h-4" />
+                  <ShoppingCart className="w-4 h-4 shrink-0" />
+                  <span>MUA TRÊN SHOPEE</span>
+                  <ExternalLink className="w-3.5 h-3.5 shrink-0" />
+                </button>
+
+                <button
+                  onClick={handleBuyTikTok}
+                  className="w-full bg-slate-900 hover:bg-black text-white font-extrabold text-xs sm:text-sm py-2.5 sm:py-3 px-3 rounded-xl shadow-md shadow-slate-900/20 flex items-center justify-center gap-1.5 cursor-pointer transition-all active:scale-[0.99] uppercase"
+                >
+                  <TikTokIcon className="w-4 h-4 shrink-0 fill-current text-white" />
+                  <span>MUA TRÊN TIKTOK</span>
+                  <ExternalLink className="w-3.5 h-3.5 shrink-0" />
                 </button>
               </div>
             </div>
