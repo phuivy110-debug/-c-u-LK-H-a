@@ -1,5 +1,6 @@
 import React from 'react';
-import { Fish, ShieldCheck, ArrowUp, Send, Facebook, Youtube } from 'lucide-react';
+import { ShieldCheck, ArrowUp, Phone, MessageCircle, MapPin, Store, Share2 } from 'lucide-react';
+import { LkHoaLogo } from './LkHoaLogo';
 
 export const Footer: React.FC = () => {
   const scrollToTop = () => {
@@ -15,12 +16,7 @@ export const Footer: React.FC = () => {
           {/* Brand Info */}
           <div className="md:col-span-5 space-y-4">
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-[#EE4D2D] flex items-center justify-center text-white font-bold">
-                <Fish className="w-5 h-5" />
-              </div>
-              <span className="text-xl font-black text-white tracking-tight">
-                Đồ Câu <span className="text-[#EE4D2D]">LK Hòa</span>
-              </span>
+              <LkHoaLogo variant="white" size={40} />
             </div>
 
             <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
@@ -33,64 +29,103 @@ export const Footer: React.FC = () => {
             </div>
           </div>
 
-          {/* Quick Links */}
-          <div className="md:col-span-3 space-y-3">
-            <h4 className="text-xs font-bold text-white uppercase tracking-wider">Lối Tắt Nhanh</h4>
-            <ul className="space-y-2 text-xs">
-              <li>
-                <a href="#hero" className="hover:text-white transition-colors">
-                  Trang chủ săn deal đồ câu
-                </a>
-              </li>
-              <li>
-                <a href="#catalog" className="hover:text-white transition-colors">
-                  Cần câu & Máy câu hot
-                </a>
-              </li>
-              <li>
-                <a href="#reasons" className="hover:text-white transition-colors">
-                  Cam kết uy tín LK Hòa
-                </a>
-              </li>
-            </ul>
+          {/* Detailed Contact Info */}
+          <div className="md:col-span-4 space-y-3">
+            <h4 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+              <Phone className="w-3.5 h-3.5 text-[#EE4D2D]" />
+              <span>Thông Tin Liên Hệ</span>
+            </h4>
+            <div className="space-y-2.5 text-xs text-slate-300">
+              <div className="flex items-start gap-2">
+                <Phone className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                <div>
+                  <span className="text-slate-500 block text-[11px]">SĐT / Hotline:</span>
+                  <a href="tel:0933040999" className="font-extrabold text-white hover:text-[#EE4D2D]">
+                    0933 040 999
+                  </a>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-2">
+                <MessageCircle className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
+                <div>
+                  <span className="text-slate-500 block text-[11px]">Zalo Hỗ Trợ:</span>
+                  <a
+                    href="https://zalo.me/0933040999"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="font-extrabold text-blue-400 hover:underline"
+                  >
+                    Shop đồ câu Lê Khánh Hòa (0933040999)
+                  </a>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-2">
+                <MapPin className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+                <div>
+                  <span className="text-slate-500 block text-[11px]">Địa chỉ Cửa Hàng:</span>
+                  <span className="text-slate-300 font-medium leading-relaxed block">
+                    Đường mòn Hồ Chí Minh, Xóm Yên Lâm, Nghĩa Lâm, Nghĩa Đàn, Nghệ An 70000, Việt Nam.
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Social Links & Disclaimer */}
-          <div className="md:col-span-4 space-y-4">
-            <h4 className="text-xs font-bold text-white uppercase tracking-wider">Kết Nối Đồ Câu LK Hòa</h4>
-            <div className="flex items-center gap-3">
+          <div className="md:col-span-3 space-y-3">
+            <h4 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+              <Share2 className="w-3.5 h-3.5 text-orange-400" />
+              <span>Mạng Xã Hội LK Hòa</span>
+            </h4>
+            
+            <div className="grid grid-cols-2 gap-2 text-xs">
               <a
-                href="https://facebook.com"
+                href="https://www.tiktok.com/@botoctroiday.lkhoa"
                 target="_blank"
                 rel="noreferrer"
-                className="w-10 h-10 rounded-xl bg-slate-900 hover:bg-[#EE4D2D] text-slate-300 hover:text-white flex items-center justify-center transition-colors"
-                title="Facebook Đồ Câu LK Hòa"
+                className="flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 p-2 rounded-xl transition-colors font-semibold text-slate-300 hover:text-white"
               >
-                <Facebook className="w-5 h-5" />
+                <svg className="w-3.5 h-3.5 fill-current shrink-0" viewBox="0 0 24 24">
+                  <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 3 15.68a6.34 6.34 0 0 0 10.86 4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-3.04-1.15z" />
+                </svg>
+                <span>TikTok</span>
               </a>
-              <a
-                href="https://t.me"
-                target="_blank"
-                rel="noreferrer"
-                className="w-10 h-10 rounded-xl bg-slate-900 hover:bg-[#EE4D2D] text-slate-300 hover:text-white flex items-center justify-center transition-colors"
-                title="Telegram Mã Giảm Giá Đồ Câu"
-              >
-                <Send className="w-5 h-5" />
-              </a>
-              <a
-                href="https://youtube.com"
-                target="_blank"
-                rel="noreferrer"
-                className="w-10 h-10 rounded-xl bg-slate-900 hover:bg-[#EE4D2D] text-slate-300 hover:text-white flex items-center justify-center transition-colors"
-                title="Kênh YouTube Đồ Câu LK Hòa"
-              >
-                <Youtube className="w-5 h-5" />
-              </a>
-            </div>
 
-            <div className="bg-slate-900/80 border border-slate-800/80 rounded-2xl p-3.5 text-xs text-slate-400">
-              <span className="font-bold text-slate-200 block mb-1">Quyền riêng tư tuyệt đối:</span>
-              Không cần đăng nhập, chuyển hướng an toàn 100% sang ứng dụng Shopee chính thức.
+              <a
+                href="https://s.shopee.vn/AKZfxdJSku"
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 p-2 rounded-xl transition-colors font-semibold text-orange-400"
+              >
+                <Store className="w-3.5 h-3.5 shrink-0" />
+                <span>Shopee</span>
+              </a>
+
+              <a
+                href="https://www.youtube.com/@botoctroidaylk"
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 p-2 rounded-xl transition-colors font-semibold text-red-400"
+              >
+                <svg className="w-3.5 h-3.5 fill-current shrink-0" viewBox="0 0 24 24">
+                  <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+                </svg>
+                <span>YouTube</span>
+              </a>
+
+              <a
+                href="https://www.facebook.com/lkhoa0933040999"
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 p-2 rounded-xl transition-colors font-semibold text-blue-400"
+              >
+                <svg className="w-3.5 h-3.5 fill-current shrink-0" viewBox="0 0 24 24">
+                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                </svg>
+                <span>Facebook</span>
+              </a>
             </div>
           </div>
 
@@ -120,3 +155,4 @@ export const Footer: React.FC = () => {
     </footer>
   );
 };
+

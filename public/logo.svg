@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240" width="200" height="240">
+  <!-- Outer Hexagon frame -->
+  <path d="M100 10 L180 52 L180 148 L100 190 L20 148 L20 52 Z" fill="none" stroke="#1E293B" stroke-width="16" stroke-linejoin="round"/>
+  <!-- Inner Hexagon border -->
+  <path d="M100 24 L168 60 L168 140 L100 176 L32 140 L32 60 Z" fill="none" stroke="#1E293B" stroke-width="6" stroke-linejoin="round"/>
+  <!-- Stylized L -->
+  <path d="M45 42 V142 L115 142 L115 120 L69 120 V42 Z" fill="#1E293B"/>
+  <!-- Stylized K -->
+  <path d="M100 32 V155 H123 V105 L152 148 H178 L138 92 L174 48 H148 L123 80 V32 Z" fill="#1E293B"/>
+  <!-- Text L.k. Hòa -->
+  <text x="100" y="225" font-family="'Times New Roman', Georgia, serif" font-weight="900" font-size="32" text-anchor="middle" fill="#1E293B">L.k. Hòa</text>
+</svg>

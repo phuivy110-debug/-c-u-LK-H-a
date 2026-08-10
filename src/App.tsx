@@ -44,6 +44,12 @@ export default function App() {
   const [selectedBadge, setSelectedBadge] = useState<BadgeType | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('discount');
+  const [visibleCount, setVisibleCount] = useState<number>(16);
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    setVisibleCount(16);
+  }, [selectedCategory, selectedBadge, searchQuery, sortBy]);
 
   // Modals & Feedback
   const [selectedDetailProduct, setSelectedDetailProduct] = useState<Product | null>(null);
@@ -234,6 +240,10 @@ export default function App() {
         productCount={products.length}
         showAdminButton={isAdmin}
         onLogoClickCount={handleLogoClick}
+        onSelectCategory={(catId) => {
+          setSelectedCategory(catId);
+          setVisibleCount(16);
+        }}
       />
 
       {/* Hero Section */}
@@ -305,16 +315,22 @@ export default function App() {
           </div>
 
           <div className="text-xs text-slate-500 font-semibold bg-white px-3.5 py-2 rounded-xl border border-slate-200/80 shadow-2xs">
-            Hiển thị <span className="text-[#EE4D2D] font-extrabold">{filteredProducts.length}</span> / {products.length} deal ngon
+            Hiển thị <span className="text-[#EE4D2D] font-extrabold">{Math.min(visibleCount, filteredProducts.length)}</span> / {filteredProducts.length} deal ngon
           </div>
         </div>
 
         {/* Category & Badge Filter Bar */}
         <CategoryFilter
           selectedCategory={selectedCategory}
-          onSelectCategory={setSelectedCategory}
+          onSelectCategory={(id) => {
+            setSelectedCategory(id);
+            setVisibleCount(16);
+          }}
           selectedBadge={selectedBadge}
-          onSelectBadge={setSelectedBadge}
+          onSelectBadge={(badge) => {
+            setSelectedBadge(badge);
+            setVisibleCount(16);
+          }}
           sortBy={sortBy}
           onSortChange={setSortBy}
           searchQuery={searchQuery}
@@ -322,17 +338,34 @@ export default function App() {
           categoryCounts={categoryCounts}
         />
 
-        {/* Product Cards Grid */}
+        {/* Product Cards Grid - 2 columns on mobile, responsive on larger screens */}
         {filteredProducts.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredProducts.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                onOpenDetail={setSelectedDetailProduct}
-                onCopyLink={handleCopyLink}
-              />
-            ))}
+          <div className="space-y-8">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-6">
+              {filteredProducts.slice(0, visibleCount).map((product) => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  onOpenDetail={setSelectedDetailProduct}
+                  onCopyLink={handleCopyLink}
+                />
+              ))}
+            </div>
+
+            {/* Load More Button (Xem Thêm) */}
+            {filteredProducts.length > visibleCount && (
+              <div className="text-center pt-4">
+                <button
+                  onClick={() => setVisibleCount((prev) => prev + 16)}
+                  className="bg-white hover:bg-orange-50 text-slate-800 hover:text-[#EE4D2D] font-extrabold text-xs sm:text-sm px-8 py-3.5 rounded-2xl border-2 border-slate-200 hover:border-[#EE4D2D] shadow-sm transition-all transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer inline-flex items-center gap-2"
+                >
+                  <RefreshCw className="w-4 h-4 text-[#EE4D2D]" />
+                  <span>
+                    Xem thêm sản phẩm (Còn {filteredProducts.length - visibleCount} deal hot)
+                  </span>
+                </button>
+              </div>
+            )}
           </div>
         ) : (
           /* Empty State */

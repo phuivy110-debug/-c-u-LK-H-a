@@ -103,14 +103,20 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
         </div>
       </div>
 
-      {/* Main Category Tabs (Scrollable on mobile) */}
-      <div>
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-            Danh Mục Sản Phẩm
+      {/* Main Category Tabs (Highlighted & Scrollable) */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-[#EE4D2D]" />
+            <span>Danh Mục Đồ Câu Cần Tìm</span>
+          </span>
+          <span className="text-[11px] text-slate-400 font-medium hidden sm:inline">
+            Chọn để lọc nhanh sản phẩm
           </span>
         </div>
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 pt-1 -mx-1 px-1">
+
+        {/* Scrollable category pills grid */}
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 -mx-1 px-1">
           {CATEGORIES.map((cat) => {
             const isActive = selectedCategory === cat.id;
             const count = categoryCounts[cat.id] || 0;
@@ -119,17 +125,25 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
               <button
                 key={cat.id}
                 onClick={() => onSelectCategory(cat.id)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all duration-200 cursor-pointer shrink-0 ${
+                className={`flex items-center gap-2 px-3.5 sm:px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-extrabold whitespace-nowrap transition-all duration-200 cursor-pointer shrink-0 border ${
                   isActive
-                    ? 'bg-[#EE4D2D] text-white shadow-md shadow-orange-500/25 scale-[1.02]'
-                    : 'bg-slate-100/80 hover:bg-slate-200/80 text-slate-700'
+                    ? 'bg-gradient-to-r from-[#EE4D2D] to-orange-600 text-white border-transparent shadow-md shadow-orange-500/25 scale-[1.02]'
+                    : 'bg-slate-50 hover:bg-orange-50/60 text-slate-700 border-slate-200/80 hover:border-orange-200 hover:text-[#EE4D2D]'
                 }`}
               >
-                {categoryIconMap[cat.iconName]}
+                <div
+                  className={`p-1 rounded-lg ${
+                    isActive ? 'bg-white/20 text-white' : 'bg-orange-100/60 text-[#EE4D2D]'
+                  }`}
+                >
+                  {categoryIconMap[cat.iconName]}
+                </div>
                 <span>{cat.name}</span>
                 <span
-                  className={`text-[10px] px-1.5 py-0.2 rounded-full ${
-                    isActive ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-600'
+                  className={`text-[10px] px-2 py-0.5 rounded-full font-black ${
+                    isActive
+                      ? 'bg-white/20 text-white'
+                      : 'bg-slate-200/80 text-slate-600'
                   }`}
                 >
                   {count}
