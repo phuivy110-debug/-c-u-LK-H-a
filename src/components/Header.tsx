@@ -125,6 +125,9 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Mobile Right Controls */}
           <div className="flex items-center gap-2 md:hidden">
+            {/* Mobile Analytics Quick Pill */}
+            <AnalyticsWidget onOpenModal={onOpenAnalytics || (() => {})} variant="pill" />
+
             {showAdminButton && (
               <button
                 onClick={onOpenAdmin}
