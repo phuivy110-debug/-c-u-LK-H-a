@@ -50,6 +50,35 @@ export default function App() {
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
+  // Hidden Admin Mode state (hidden from customers)
+  const [isAdmin, setIsAdmin] = useState<boolean>(() => {
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('admin') === 'true' || urlParams.get('admin') === '1') {
+        return true;
+      }
+      return localStorage.getItem('dealngon247_is_admin') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  const [logoClicks, setLogoClicks] = useState(0);
+
+  const handleLogoClick = () => {
+    setLogoClicks((prev) => {
+      const next = prev + 1;
+      if (next >= 5) {
+        const newAdminState = !isAdmin;
+        setIsAdmin(newAdminState);
+        localStorage.setItem('dealngon247_is_admin', String(newAdminState));
+        showToast(newAdminState ? '🔓 Đã bật chế độ Quản Lý (Admin)' : '🔒 Đã ẩn chế độ Quản Lý');
+        return 0;
+      }
+      return next;
+    });
+  };
+
   // Save products to local storage
   useEffect(() => {
     try {
@@ -104,9 +133,9 @@ export default function App() {
     [sheetUrl]
   );
 
-  // Auto sync on initial load
+  // Auto sync quietly on initial load for all visitors
   useEffect(() => {
-    handleSyncGoogleSheet(sheetUrl, false);
+    handleSyncGoogleSheet(sheetUrl, true);
   }, []);
 
   const handleCopyLink = (p: Product) => {
@@ -203,6 +232,8 @@ export default function App() {
       <Header
         onOpenAdmin={() => setIsAdminOpen(true)}
         productCount={products.length}
+        showAdminButton={isAdmin}
+        onLogoClickCount={handleLogoClick}
       />
 
       {/* Hero Section */}
@@ -216,48 +247,50 @@ export default function App() {
       {/* Catalog Main Section */}
       <main id="catalog" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16 flex-1 w-full space-y-6">
         
-        {/* Google Sheet Live Auto-Sync Banner */}
-        <div className="bg-gradient-to-r from-emerald-900 via-slate-900 to-slate-900 text-white rounded-2xl p-4 sm:p-5 shadow-lg border border-emerald-800/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
-              <FileSpreadsheet className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2 font-bold text-sm text-emerald-300">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-                <span>Tự Động Đồng Bộ Google Sheet</span>
-                <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] px-2 py-0.5 rounded-full font-extrabold uppercase tracking-wider">
-                  Live
-                </span>
+        {/* Google Sheet Live Auto-Sync Banner (Hidden from customers, visible only in Admin mode) */}
+        {isAdmin && (
+          <div className="bg-gradient-to-r from-emerald-900 via-slate-900 to-slate-900 text-white rounded-2xl p-4 sm:p-5 shadow-lg border border-emerald-800/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
+                <FileSpreadsheet className="w-5 h-5" />
               </div>
-              <p className="text-xs text-slate-300 mt-0.5">
-                {lastSyncTime ? (
-                  <>Lần cập nhật gần nhất lúc <strong className="text-emerald-300">{lastSyncTime}</strong> ({products.length} sản phẩm từ sheet)</>
-                ) : (
-                  <>Đang kết nối file Google Sheet...</>
-                )}
-              </p>
+              <div>
+                <div className="flex items-center gap-2 font-bold text-sm text-emerald-300">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                  <span>Tự Động Đồng Bộ Google Sheet</span>
+                  <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] px-2 py-0.5 rounded-full font-extrabold uppercase tracking-wider">
+                    Admin Live
+                  </span>
+                </div>
+                <p className="text-xs text-slate-300 mt-0.5">
+                  {lastSyncTime ? (
+                    <>Lần cập nhật gần nhất lúc <strong className="text-emerald-300">{lastSyncTime}</strong> ({products.length} sản phẩm từ sheet)</>
+                  ) : (
+                    <>Đang kết nối file Google Sheet...</>
+                  )}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2.5 w-full sm:w-auto">
+              <button
+                onClick={() => handleSyncGoogleSheet(sheetUrl)}
+                disabled={isSyncing}
+                className="flex-1 sm:flex-none bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
+                <span>{isSyncing ? 'Đang cập nhật...' : 'Cập Nhật Tức Thì'}</span>
+              </button>
+
+              <button
+                onClick={() => setIsAdminOpen(true)}
+                className="bg-white/10 hover:bg-white/20 text-slate-200 text-xs font-bold px-3.5 py-2.5 rounded-xl transition-colors cursor-pointer whitespace-nowrap"
+              >
+                Cấu hình Sheet
+              </button>
             </div>
           </div>
-
-          <div className="flex items-center gap-2.5 w-full sm:w-auto">
-            <button
-              onClick={() => handleSyncGoogleSheet(sheetUrl)}
-              disabled={isSyncing}
-              className="flex-1 sm:flex-none bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
-              <span>{isSyncing ? 'Đang cập nhật...' : 'Cập Nhật Tức Thì'}</span>
-            </button>
-
-            <button
-              onClick={() => setIsAdminOpen(true)}
-              className="bg-white/10 hover:bg-white/20 text-slate-200 text-xs font-bold px-3.5 py-2.5 rounded-xl transition-colors cursor-pointer whitespace-nowrap"
-            >
-              Cấu hình Sheet
-            </button>
-          </div>
-        </div>
+        )}
 
         {/* Section Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-2">
