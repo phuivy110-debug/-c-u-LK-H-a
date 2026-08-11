@@ -1,5 +1,6 @@
 import express from 'express';
 import path from 'path';
+import fs from 'fs';
 import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI } from '@google/genai';
 import dotenv from 'dotenv';
@@ -692,6 +693,16 @@ ${productContext}`;
         error: error.message || 'Đã xảy ra lỗi khi kết nối máy chủ tư vấn AI.',
       });
     }
+  });
+
+  // Serve Google Search Console site verification HTML files
+  app.get('/google:id.html', (req, res) => {
+    const filename = `google${req.params.id}.html`;
+    const filePath = path.join(process.cwd(), 'public', filename);
+    if (fs.existsSync(filePath)) {
+      return res.sendFile(filePath);
+    }
+    return res.status(404).send('File Google verification không tồn tại');
   });
 
   // Vite middleware for dev / static for prod
