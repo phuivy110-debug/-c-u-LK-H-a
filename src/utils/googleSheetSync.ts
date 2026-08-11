@@ -31,18 +31,37 @@ const FALLBACK_IMAGES: Record<CategoryId, string[]> = {
 };
 
 export function convertSheetUrlToCsvUrl(url: string): string {
-  let csvUrl = url.trim();
-  if (csvUrl.includes('/pubhtml')) {
-    csvUrl = csvUrl.replace('/pubhtml', '/pub');
-  }
-  if (!csvUrl.includes('output=csv')) {
-    if (csvUrl.includes('?')) {
-      csvUrl += '&output=csv';
-    } else {
-      csvUrl += '?output=csv';
+  if (!url || !url.trim()) return url;
+  let cleanUrl = url.trim();
+
+  // Case 1: Published Google Sheet (/pubhtml or /pub)
+  if (cleanUrl.includes('/pubhtml') || cleanUrl.includes('/pub')) {
+    if (cleanUrl.includes('/pubhtml')) {
+      cleanUrl = cleanUrl.replace('/pubhtml', '/pub');
     }
+    if (!cleanUrl.includes('output=csv')) {
+      cleanUrl += cleanUrl.includes('?') ? '&output=csv' : '?output=csv';
+    }
+    return cleanUrl;
   }
-  return csvUrl;
+
+  // Case 2: Standard Google Sheet edit / view / share link (e.g., /d/1ABC.../edit#gid=0)
+  const docIdMatch = cleanUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
+  if (docIdMatch && docIdMatch[1]) {
+    const docId = docIdMatch[1];
+    let gid = '0';
+    const gidMatch = cleanUrl.match(/[?&]gid=(\d+)/) || cleanUrl.match(/#gid=(\d+)/);
+    if (gidMatch && gidMatch[1]) {
+      gid = gidMatch[1];
+    }
+    return `https://docs.google.com/spreadsheets/d/${docId}/export?format=csv&gid=${gid}`;
+  }
+
+  // Fallback if URL is already CSV or custom
+  if (!cleanUrl.includes('output=csv') && !cleanUrl.includes('export?format=csv')) {
+    cleanUrl += cleanUrl.includes('?') ? '&output=csv' : '?output=csv';
+  }
+  return cleanUrl;
 }
 
 export function parsePriceNumber(raw: any): number {
@@ -105,7 +124,8 @@ export async function extractShopeeImageFromLink(affiliateUrl: string): Promise<
   }
 
   try {
-    const res = await fetch('/api/extract-shopee-image', {
+    const endpoint = typeof window !== 'undefined' ? '/api/extract-shopee-image' : 'http://localhost:3000/api/extract-shopee-image';
+    const res = await fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ url }),
@@ -116,21 +136,44 @@ export async function extractShopeeImageFromLink(affiliateUrl: string): Promise<
         return data.imageUrl;
       }
     }
-  } catch (err) {
-    console.warn('Failed to extract image from affiliate URL:', err);
+  } catch {
+    // Silent fail if image extraction is unavailable
   }
   return null;
 }
 
 export async function fetchProductsFromGoogleSheet(sheetUrl: string): Promise<Product[]> {
   const csvUrl = convertSheetUrlToCsvUrl(sheetUrl);
+  let csvText = '';
 
-  const response = await fetch(csvUrl, { cache: 'no-store' });
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
+  // Strategy 1: Direct fetch from Google Sheets
+  try {
+    const response = await fetch(csvUrl, { cache: 'no-store' });
+    if (response.ok) {
+      csvText = await response.text();
+    }
+  } catch (err) {
+    console.warn('Direct client fetch from Google Sheet failed, trying server proxy fallback:', err);
   }
 
-  const csvText = await response.text();
+  // Strategy 2: Server proxy fallback if direct fetch failed
+  if (!csvText) {
+    try {
+      const proxyEndpoint = typeof window !== 'undefined' 
+        ? `/api/sync-sheet?url=${encodeURIComponent(sheetUrl)}` 
+        : `http://localhost:3000/api/sync-sheet?url=${encodeURIComponent(sheetUrl)}`;
+      const proxyRes = await fetch(proxyEndpoint);
+      if (proxyRes.ok) {
+        csvText = await proxyRes.text();
+      } else {
+        const errJson = await proxyRes.json().catch(() => null);
+        throw new Error(errJson?.error || `Không thể tải dữ liệu Sheet (mã ${proxyRes.status})`);
+      }
+    } catch (proxyErr: any) {
+      console.warn('Server proxy fetch for Google Sheet also failed:', proxyErr);
+      throw new Error(proxyErr.message || 'Không thể kết nối với Google Sheet. Vui lòng kiểm tra lại link đã Chia Sẻ Công Khai chưa.');
+    }
+  }
 
   return new Promise((resolve, reject) => {
     Papa.parse<Record<string, string>>(csvText, {

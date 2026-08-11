@@ -239,6 +239,55 @@ async function startServer() {
     }
   });
 
+  // Google Sheet Proxy Sync API to bypass client CORS / network blocks
+  app.get('/api/sync-sheet', async (req, res) => {
+    try {
+      const rawUrl = (req.query.url as string) || '';
+      if (!rawUrl) {
+        return res.status(400).json({ error: 'Thiếu url Google Sheet' });
+      }
+
+      let csvUrl = rawUrl.trim();
+      if (csvUrl.includes('/pubhtml') || csvUrl.includes('/pub')) {
+        if (csvUrl.includes('/pubhtml')) {
+          csvUrl = csvUrl.replace('/pubhtml', '/pub');
+        }
+        if (!csvUrl.includes('output=csv')) {
+          csvUrl += csvUrl.includes('?') ? '&output=csv' : '?output=csv';
+        }
+      } else {
+        const docIdMatch = csvUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
+        if (docIdMatch && docIdMatch[1]) {
+          const docId = docIdMatch[1];
+          let gid = '0';
+          const gidMatch = csvUrl.match(/[?&]gid=(\d+)/) || csvUrl.match(/#gid=(\d+)/);
+          if (gidMatch && gidMatch[1]) {
+            gid = gidMatch[1];
+          }
+          csvUrl = `https://docs.google.com/spreadsheets/d/${docId}/export?format=csv&gid=${gid}`;
+        }
+      }
+
+      const response = await fetch(csvUrl, {
+        headers: {
+          'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+          Accept: 'text/csv,text/plain,*/*',
+        },
+      });
+
+      if (!response.ok) {
+        return res.status(response.status).json({ error: `Không thể tải Google Sheet (mã ${response.status})` });
+      }
+
+      const csvText = await response.text();
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+      return res.send(csvText);
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message || 'Lỗi kết nối máy chủ đồng bộ Google Sheet' });
+    }
+  });
+
   // Extract product image directly from Shopee affiliate link
   app.post('/api/extract-shopee-image', async (req, res) => {
     try {
@@ -442,36 +491,166 @@ async function startServer() {
     }
   });
 
+  // Helper function to generate smart fishing gear expert responses
+  function generateSmartFishingReply(userQuery: string, productsList: any[] = []): string {
+    const q = (userQuery || '').toLowerCase();
+    const prods = Array.isArray(productsList) ? productsList : [];
+
+    const formatProd = (p: any) =>
+      `• **${p.title}**\n  👉 Giá ưu đãi: **${(p.dealPrice || 0).toLocaleString('vi-VN')}đ** (Gốc: ${(p.originalPrice || 0).toLocaleString('vi-VN')}đ)\n  👉 Mã giảm: **${p.couponCode || 'LKHOA10K'}**\n  👉 Shopee Mall: ${p.affiliateUrl}`;
+
+    const matchProds = (keywords: string[]) =>
+      prods.filter((p) =>
+        keywords.some(
+          (k) =>
+            (p.title || '').toLowerCase().includes(k) || (p.category || '').toLowerCase().includes(k)
+        )
+      );
+
+    if (
+      q.includes('5h') ||
+      q.includes('cần đài') ||
+      q.includes('rô chép') ||
+      q.includes('cần câu tay') ||
+      q.includes('6h') ||
+      q.includes('8h') ||
+      q.includes('cần câu')
+    ) {
+      const matched = matchProds(['5h', '6h', '8h', 'cần', 'carbon', 'đài']);
+      const top3 = matched.length > 0 ? matched.slice(0, 3) : prods.slice(0, 3);
+
+      return `Chào Sếp! 🎣 Về **Cần Câu Đài (5H/6H/Carbon)** đánh rô chép, em LK Hòa xin tư vấn kỹ thuật như sau:
+
+1️⃣ **Chọn Độ Cứng (H):**
+   • **Cần 5H**: Độ nảy dẻo vừa phải, giữ cá êm tay, rất hợp đánh rô chép sông/hồ dịch vụ, đọt 1.1mm - 1.2mm dẻo dai.
+   • **Cần 6H/8H**: Tải tĩnh trâu bò 8-10kg, thích hợp bạo lực bắt cá trắm chép khủng hoặc hồ tự nhiên nước chảy.
+
+2️⃣ **Gợi Ý Cần Câu Đang HOT Tốt Nhất:**
+${top3.map(formatProd).join('\n\n')}
+
+💡 *Mẹo nhỏ*: Sếp nhớ nhập mã **LKHOA10K** ở bước thanh toán Shopee để được giảm thêm 10k nhé!`;
+    }
+
+    if (
+      q.includes('mồi') ||
+      q.includes('cám') ||
+      q.includes('thính') ||
+      q.includes('xả') ||
+      q.includes('chép') ||
+      q.includes('mồi câu')
+    ) {
+      const matched = matchProds(['mồi', 'cám', 'chép', 'thính', 'xả']);
+      const top3 =
+        matched.length > 0
+          ? matched.slice(0, 3)
+          : prods
+              .filter((p) => (p.category || '').includes('Mồi') || (p.title || '').includes('Mồi'))
+              .slice(0, 3);
+
+      return `Chào Sếp! 🐟 Bài **Mồi Cám Chép LK Hòa** dụ ổ nhanh & nhạy cá nhất:
+
+1️⃣ **Công Thức Trộn Chuẩn Bài:**
+   • **Mồi xả**: 2 phần cám xả LK + 1 phần nước hồ. Đảo đều tay 3 phút tạo độ tơi xốp thả ổ.
+   • **Mồi câu**: 1 phần cám chép LK + 0.8 phần nước + 3-5 giọt tinh dầu dụ chép LK. Nhào miết 5 phút cho dẻo quánh.
+
+2️⃣ **Mồi Câu & Phụ Kiện Đang Bán Chạy:**
+${(top3.length > 0 ? top3 : prods.slice(0, 3)).map(formatProd).join('\n\n')}
+
+🔥 Sếp bấm vào đường link Shopee Mall ở trên để xem chi tiết và săn mã ưu đãi nhé!`;
+    }
+
+    if (
+      q.includes('lure') ||
+      q.includes('tiểu') ||
+      q.includes('máy câu') ||
+      q.includes('ngang') ||
+      q.includes('đứng')
+    ) {
+      const matched = matchProds(['lure', 'máy', 'tiểu', 'ngang', 'đứng']);
+      const top3 = matched.length > 0 ? matched.slice(0, 3) : prods.slice(0, 3);
+
+      return `Chào Sếp! ⚡ Dòng **Cần Lure & Máy Câu LK** chuyên trị cá lóc, chẽm, trắm quả:
+
+1️⃣ **Kỹ Thuật Chọn Lure:**
+   • **Cần Lure Đứng**: Dễ sử dụng, ít bị rối dây, thích hợp cho cần thủ mới tập lure.
+   • **Cần Lure Ngang**: Ném chính xác vị trí bụi rậm, cảm giác kéo cá rất sướng tay!
+
+2️⃣ **Sản Phẩm Khuyên Dùng Giá Tốt:**
+${top3.map(formatProd).join('\n\n')}
+
+🎁 Sếp đặt mua ngay trên Shopee Mall chính hãng LK Hòa để nhận quà tặng kèm dây dù X4/X8 nha!`;
+    }
+
+    if (
+      q.includes('mã') ||
+      q.includes('giảm giá') ||
+      q.includes('voucher') ||
+      q.includes('coupon') ||
+      q.includes('khuyến mãi') ||
+      q.includes('shopee')
+    ) {
+      return `Chào Sếp! 🎁 Tổng hợp **Mã Giảm Giá LK Hòa** mới nhất hôm nay:
+
+🔥 **LKHOA10K** — Giảm trực tiếp 10.000đ cho đơn hàng Shopee
+🔥 **NHAI5K** — Giảm 5.000đ cho sản phẩm mồi nhái giả & phụ kiện
+🔥 **FREESHIP** — Áp dụng mã Miễn phí vận chuyển toàn quốc Shopee Extra
+
+👉 **Sản Phẩm Đang Đợt Sale Sâu Nhất:**
+${prods.slice(0, 3).map(formatProd).join('\n\n')}
+
+Sếp chọn sản phẩm yêu thích và áp mã giảm giá ngay nha! 🎣`;
+    }
+
+    const matchedAll = prods.filter(
+      (p) =>
+        (p.title || '').toLowerCase().includes(q) || (p.category || '').toLowerCase().includes(q)
+    );
+    const displayList = matchedAll.length > 0 ? matchedAll.slice(0, 3) : prods.slice(0, 3);
+
+    return `Chào Sếp! 🎣 Em là **Trợ Lý Tư Vấn Đồ Câu LK Hòa**.
+
+Cảm ơn Sếp đã quan tâm! Dưới đây là các sản phẩm đồ câu chất lượng cao đang sẵn hàng tại shop LK Hòa:
+
+${displayList.map(formatProd).join('\n\n')}
+
+💡 Sếp có thể hỏi em chi tiết về:
+• Tư vấn cần câu đài 5H/6H, cần Lure lóc chẽm
+• Công thức trộn mồi cám chép rô LK Hòa
+• Hướng dẫn chọn máy câu đứng/ngang & dây dù X8
+
+Sếp cần em tư vấn thêm gì nữa không ạ? 😊`;
+  }
+
   // Chat API endpoint
   app.post('/api/chat', async (req, res) => {
     try {
       const { messages, products, selectedModel } = req.body;
+      const lastUserMsg =
+        (messages || []).slice().reverse().find((m: any) => m.role === 'user')?.content || '';
 
       const ai = getAiClient();
       if (!ai) {
-        return res.status(500).json({
-          error:
-            'Chưa tìm thấy GEMINI_API_KEY. Vui lòng kiểm tra cài đặt chìa khóa AI trong Settings.',
-        });
+        const smartReply = generateSmartFishingReply(lastUserMsg, products);
+        return res.json({ reply: smartReply });
       }
 
-      const modelName = selectedModel || 'gemini-3.6-flash';
+      try {
+        const modelName = selectedModel || 'gemini-3.6-flash';
 
-      // Build product context summary if products are available
-      let productContext = '';
-      if (Array.isArray(products) && products.length > 0) {
-        productContext =
-          `\n\nDANH SÁCH SẢN PHẨM CÓ SẴN TRÊN WEBSITE (ĐỒ CÂU LK HÒA):\n` +
-          products
-            .slice(0, 50)
-            .map(
-              (p: any, i: number) =>
-                `${i + 1}. [${p.category}] ${p.title} - Giá ưu đãi: ${p.dealPrice?.toLocaleString('vi-VN')}đ (Gốc: ${p.originalPrice?.toLocaleString('vi-VN')}đ) - Mã giảm: ${p.couponCode || 'LKHOA10K'} - Link Shopee: ${p.affiliateUrl}`
-            )
-            .join('\n');
-      }
+        let productContext = '';
+        if (Array.isArray(products) && products.length > 0) {
+          productContext =
+            `\n\nDANH SÁCH SẢN PHẨM CÓ SẴN TRÊN WEBSITE (ĐỒ CÂU LK HÒA):\n` +
+            products
+              .slice(0, 50)
+              .map(
+                (p: any, i: number) =>
+                  `${i + 1}. [${p.category}] ${p.title} - Giá ưu đãi: ${p.dealPrice?.toLocaleString('vi-VN')}đ (Gốc: ${p.originalPrice?.toLocaleString('vi-VN')}đ) - Mã giảm: ${p.couponCode || 'LKHOA10K'} - Link Shopee: ${p.affiliateUrl}`
+              )
+              .join('\n');
+        }
 
-      const systemInstruction = `Bạn là "Trợ Lý Tư Vấn Đồ Câu LK Hòa" - chuyên gia tư vấn câu cá chuyên nghiệp, nhiệt tình, am hiểu sâu sắc về kỹ thuật câu cá (câu đài, câu lure, câu lăng xê, câu đầm, câu sông, hồ dịch vụ...).
+        const systemInstruction = `Bạn là "Trợ Lý Tư Vấn Đồ Câu LK Hòa" - chuyên gia tư vấn câu cá chuyên nghiệp, nhiệt tình, am hiểu sâu sắc về kỹ thuật câu cá (câu đài, câu lure, câu lăng xê, câu đầm, câu sông, hồ dịch vụ...).
 
 Nhiệm vụ chính:
 1. Giải đáp thắc mắc về thiết bị câu cá: độ cứng cần câu (4H, 5H, 6H, 8H, carbon 24T/30T/36T), độ dài (2.7m, 3.6m, 4.5m, 5.4m, 6.3m...), chọn máy câu đứng/ngang (1000, 2500, 3000, 4000), loại dây dù X4/X8, thẻo câu, phao nano, mồi xả, mồi vuốt cám chép/rô...
@@ -482,25 +661,31 @@ Nhiệm vụ chính:
 
 ${productContext}`;
 
-      const formattedContents = (messages || []).map((msg: any) => ({
-        role: msg.role === 'user' ? 'user' : 'model',
-        parts: [{ text: msg.content }],
-      }));
+        const formattedContents = (messages || []).map((msg: any) => ({
+          role: msg.role === 'user' ? 'user' : 'model',
+          parts: [{ text: msg.content }],
+        }));
 
-      const response = await ai.models.generateContent({
-        model: modelName,
-        contents: formattedContents,
-        config: {
-          systemInstruction,
-          temperature: 0.7,
-        },
-      });
+        const response = await ai.models.generateContent({
+          model: modelName,
+          contents: formattedContents,
+          config: {
+            systemInstruction,
+            temperature: 0.7,
+          },
+        });
 
-      const replyText =
-        response.text ||
-        'Xin lỗi Sếp, em chưa thể xử lý câu trả lời lúc này. Sếp vui lòng thử lại câu hỏi nhé!';
+        if (response.text) {
+          return res.json({ reply: response.text });
+        }
 
-      return res.json({ reply: replyText });
+        const fallbackReply = generateSmartFishingReply(lastUserMsg, products);
+        return res.json({ reply: fallbackReply });
+      } catch (geminiErr: any) {
+        console.warn('Gemini API call failed, using smart fishing engine fallback:', geminiErr?.message || geminiErr);
+        const fallbackReply = generateSmartFishingReply(lastUserMsg, products);
+        return res.json({ reply: fallbackReply });
+      }
     } catch (error: any) {
       console.error('Chat API error:', error);
       return res.status(500).json({
