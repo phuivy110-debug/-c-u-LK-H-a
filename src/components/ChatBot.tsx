@@ -1,18 +1,18 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { Product } from '../types';
 import {
   Bot,
   Send,
   X,
   Sparkles,
-  RefreshCw,
   Trash2,
   ExternalLink,
   Fish,
   User,
-  MessageSquare,
-  ChevronDown,
   Info,
+  ShoppingCart,
+  Tag,
+  MessageCircle,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -21,6 +21,7 @@ interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
   timestamp: string;
+  recommendedProducts?: Product[];
 }
 
 interface ChatBotProps {
@@ -42,6 +43,7 @@ const MODEL_OPTIONS = [
 
 export const ChatBot: React.FC<ChatBotProps> = ({ products }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [showWelcomeToast, setShowWelcomeToast] = useState(true);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [selectedModel, setSelectedModel] = useState('gemini-3.6-flash');
@@ -50,7 +52,7 @@ export const ChatBot: React.FC<ChatBotProps> = ({ products }) => {
       id: 'welcome-1',
       role: 'assistant',
       content:
-        'Xin chào Sếp! 🎣 Em là **Trợ Lý Tư Vấn Đồ Câu LK Hòa**.\n\nSếp đang tìm mua cần câu cá (5H/6H/Lure), máy câu, mồi cám chép rô hay phụ kiện gì hôm nay? Đặt câu hỏi cho em nhé!',
+        'Xin chào Sếp! 🎣 Em là **Trợ Lý Tư Vấn Đồ Câu LK Hòa**.\n\nSếp đang tìm mua cần câu cá (5H/6H/Lure), máy câu, mồi cám chép rô hay phụ kiện gì hôm nay? Hãy gõ từ khóa hoặc chọn câu hỏi gợi ý bên dưới nhé!',
       timestamp: new Date().toLocaleTimeString('vi-VN', {
         hour: '2-digit',
         minute: '2-digit',
@@ -60,19 +62,68 @@ export const ChatBot: React.FC<ChatBotProps> = ({ products }) => {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Auto welcome toast timer on initial page load
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowWelcomeToast(true);
+    }, 1200);
+    return () => clearTimeout(timer);
+  }, []);
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   useEffect(() => {
     if (isOpen) {
+      setShowWelcomeToast(false);
       scrollToBottom();
     }
   }, [messages, isOpen]);
 
+  // Proactively filter products based on input keywords
+  const matchedInputProducts = useMemo(() => {
+    if (!inputMessage.trim() || inputMessage.trim().length < 2) return [];
+
+    const query = inputMessage.toLowerCase().trim();
+    const keywords = query
+      .split(/\s+/)
+      .map((k) => k.replace(/[^a-z0-9đàáảãạăằắtẳẵặâầấẩẫậèéẻẽẹêềếểễệìíỉĩịòóỏõọôồốổỗộơờớởỡợùúủũụưừứửữựỳýỷỹỵ]/gi, ''))
+      .filter((k) => k.length >= 2);
+
+    if (keywords.length === 0) return [];
+
+    return products
+      .filter((product) => {
+        const title = (product.title || '').toLowerCase();
+        const category = (product.category || '').toLowerCase();
+        const desc = (product.description || '').toLowerCase();
+
+        return keywords.some(
+          (kw) => title.includes(kw) || category.includes(kw) || desc.includes(kw)
+        );
+      })
+      .slice(0, 4);
+  }, [inputMessage, products]);
+
   const handleSendMessage = async (customText?: string) => {
     const textToSend = customText || inputMessage;
     if (!textToSend.trim() || isLoading) return;
+
+    // Detect matched products for this query to attach to the conversation
+    const queryLower = textToSend.toLowerCase();
+    const matchedProds = products
+      .filter((p) => {
+        const title = (p.title || '').toLowerCase();
+        const category = (p.category || '').toLowerCase();
+        return (
+          queryLower.split(/\s+/).some((kw) => kw.length >= 2 && (title.includes(kw) || category.includes(kw))) ||
+          (queryLower.includes('5h') && title.includes('5h')) ||
+          (queryLower.includes('mồi') && (category.includes('mồi') || title.includes('mồi'))) ||
+          (queryLower.includes('cần') && category.includes('cần'))
+        );
+      })
+      .slice(0, 3);
 
     const userMsg: ChatMessage = {
       id: `user-${Date.now()}`,
@@ -90,7 +141,6 @@ export const ChatBot: React.FC<ChatBotProps> = ({ products }) => {
     setIsLoading(true);
 
     try {
-      // Prepare history payload for API
       const apiPayloadMessages = newMessages.map((m) => ({
         role: m.role,
         content: m.content,
@@ -122,6 +172,7 @@ export const ChatBot: React.FC<ChatBotProps> = ({ products }) => {
           hour: '2-digit',
           minute: '2-digit',
         }),
+        recommendedProducts: matchedProds.length > 0 ? matchedProds : undefined,
       };
 
       setMessages((prev) => [...prev, botMsg]);
@@ -137,6 +188,7 @@ export const ChatBot: React.FC<ChatBotProps> = ({ products }) => {
           hour: '2-digit',
           minute: '2-digit',
         }),
+        recommendedProducts: matchedProds.length > 0 ? matchedProds : undefined,
       };
       setMessages((prev) => [...prev, errorMsg]);
     } finally {
@@ -164,7 +216,6 @@ export const ChatBot: React.FC<ChatBotProps> = ({ products }) => {
     const lines = text.split('\n');
 
     return lines.map((line, lineIdx) => {
-      // Split line by URL pattern
       const urlRegex = /(https?:\/\/[^\s]+)/g;
       const parts = line.split(urlRegex);
 
@@ -178,16 +229,16 @@ export const ChatBot: React.FC<ChatBotProps> = ({ products }) => {
                   key={partIdx}
                   href={part}
                   target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-1 text-[#EE4D2D] hover:underline font-bold bg-orange-50 px-1.5 py-0.5 rounded border border-orange-200 text-xs my-0.5 break-all"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-[#EE4D2D] hover:underline font-bold bg-orange-50 px-2 py-0.5 rounded-lg border border-orange-200 text-xs my-0.5 break-all no-underline"
                 >
-                  <span>Xem trên Shopee</span>
+                  <ShoppingCart className="w-3 h-3 text-[#EE4D2D]" />
+                  <span>Mua trên Shopee</span>
                   <ExternalLink className="w-3 h-3" />
                 </a>
               );
             }
 
-            // Parse bold markdown **text**
             const boldRegex = /\*\*(.*?)\*\*/g;
             const subParts = [];
             let lastIdx = 0;
@@ -218,15 +269,67 @@ export const ChatBot: React.FC<ChatBotProps> = ({ products }) => {
 
   return (
     <>
-      {/* Floating Widget Button */}
-      <div className="fixed bottom-5 right-5 z-40">
+      {/* Floating Welcome Notification Toast & Chat Button */}
+      <div className="fixed bottom-5 right-5 z-40 flex flex-col items-end gap-2">
+        {/* Automatic Welcome Speech Bubble */}
+        <AnimatePresence>
+          {!isOpen && showWelcomeToast && (
+            <motion.div
+              initial={{ opacity: 0, y: 10, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 10, scale: 0.9 }}
+              className="bg-slate-900 text-white rounded-2xl p-3.5 shadow-2xl border border-slate-700/80 max-w-[280px] sm:max-w-[320px] relative text-xs"
+            >
+              <button
+                onClick={() => setShowWelcomeToast(false)}
+                className="absolute top-2 right-2 text-slate-400 hover:text-white p-1 rounded-full cursor-pointer"
+                title="Đóng thông báo"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+
+              <div className="flex items-start gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-[#EE4D2D] flex items-center justify-center text-white font-bold shrink-0 shadow-md">
+                  <Fish className="w-5 h-5 text-yellow-200" />
+                </div>
+                <div>
+                  <div className="font-black text-yellow-300 text-[11px] uppercase tracking-wide flex items-center gap-1">
+                    <Sparkles className="w-3 h-3" /> Trợ lý LK Hòa Chào Sếp!
+                  </div>
+                  <p className="text-slate-200 mt-1 leading-relaxed text-[11px]">
+                    Sếp cần tư vấn chọn <strong className="text-white">cần câu đài (5H/6H)</strong>, mồi cám chép rô hay <strong className="text-orange-400">săn mã Shopee</strong> hời hôm nay?
+                  </p>
+
+                  <button
+                    onClick={() => {
+                      setIsOpen(true);
+                      setShowWelcomeToast(false);
+                    }}
+                    className="mt-2.5 w-full bg-gradient-to-r from-[#EE4D2D] to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-extrabold py-1.5 px-3 rounded-xl flex items-center justify-center gap-1.5 cursor-pointer shadow-md text-[11px] uppercase tracking-wider"
+                  >
+                    <MessageCircle className="w-3.5 h-3.5" />
+                    <span>Hỏi Ngay Với AI</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Triangle Tail */}
+              <div className="absolute -bottom-2 right-6 w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[8px] border-t-slate-900" />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Floating Trigger Button */}
         {!isOpen && (
           <motion.button
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => setIsOpen(true)}
+            onClick={() => {
+              setIsOpen(true);
+              setShowWelcomeToast(false);
+            }}
             className="group bg-gradient-to-r from-[#EE4D2D] to-orange-600 text-white rounded-full p-3.5 sm:px-5 sm:py-3.5 shadow-2xl hover:shadow-orange-500/40 border-2 border-white/80 flex items-center gap-3 cursor-pointer relative"
           >
             <div className="relative flex items-center justify-center">
@@ -260,7 +363,7 @@ export const ChatBot: React.FC<ChatBotProps> = ({ products }) => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="fixed bottom-3 right-3 sm:bottom-6 sm:right-6 w-[calc(100vw-24px)] sm:w-[420px] h-[580px] max-h-[85vh] bg-white rounded-3xl shadow-2xl border border-slate-200/80 z-50 flex flex-col overflow-hidden"
+            className="fixed bottom-3 right-3 sm:bottom-6 sm:right-6 w-[calc(100vw-24px)] sm:w-[420px] h-[600px] max-h-[88vh] bg-white rounded-3xl shadow-2xl border border-slate-200/80 z-50 flex flex-col overflow-hidden"
           >
             {/* Header */}
             <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white px-5 py-3.5 flex items-center justify-between border-b border-slate-700/60 shrink-0">
@@ -315,7 +418,7 @@ export const ChatBot: React.FC<ChatBotProps> = ({ products }) => {
             <div className="bg-amber-50 border-b border-amber-200/60 px-4 py-2 text-[11px] text-amber-900 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-1.5 font-medium truncate">
                 <Info className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-                <span>AI đã đọc dữ liệu từ {products.length} sản phẩm trên web</span>
+                <span>Hỗ trợ tự động kết nối {products.length} sản phẩm đồ câu</span>
               </div>
               <span className="bg-amber-200/80 px-1.5 py-0.2 rounded font-bold text-[10px] text-amber-950 shrink-0">
                 Săn Shopee
@@ -344,13 +447,62 @@ export const ChatBot: React.FC<ChatBotProps> = ({ products }) => {
                     </div>
 
                     <div
-                      className={`max-w-[82%] rounded-2xl p-3.5 text-xs shadow-xs space-y-1 ${
+                      className={`max-w-[85%] rounded-2xl p-3.5 text-xs shadow-xs space-y-2 ${
                         isUser
                           ? 'bg-[#EE4D2D] text-white rounded-tr-xs font-medium'
                           : 'bg-white border border-slate-200 text-slate-800 rounded-tl-xs leading-relaxed'
                       }`}
                     >
                       <div className="whitespace-pre-wrap">{renderFormattedText(msg.content)}</div>
+
+                      {/* Embedded Recommended Product Cards inside Chat Message */}
+                      {msg.recommendedProducts && msg.recommendedProducts.length > 0 && (
+                        <div className="pt-2 border-t border-slate-100 space-y-2 mt-2">
+                          <div className="text-[10px] font-extrabold uppercase text-[#EE4D2D] flex items-center gap-1">
+                            <Sparkles className="w-3 h-3" /> Gợi ý sản phẩm phù hợp:
+                          </div>
+                          <div className="grid grid-cols-1 gap-2">
+                            {msg.recommendedProducts.map((prod) => (
+                              <div
+                                key={prod.id}
+                                className="flex items-center gap-2.5 p-2 bg-slate-50 hover:bg-orange-50/50 border border-slate-200 rounded-xl transition-all"
+                              >
+                                <img
+                                  src={prod.image}
+                                  alt={prod.title}
+                                  className="w-11 h-11 object-cover rounded-lg shrink-0 border border-slate-200"
+                                />
+                                <div className="flex-1 min-w-0">
+                                  <div className="font-bold text-slate-900 text-[11px] truncate">
+                                    {prod.title}
+                                  </div>
+                                  <div className="flex items-center gap-1.5 mt-0.5">
+                                    <span className="text-[#EE4D2D] font-black text-xs">
+                                      {prod.dealPrice?.toLocaleString('vi-VN')}đ
+                                    </span>
+                                    {prod.couponCode && (
+                                      <span className="bg-orange-100 text-[#EE4D2D] text-[9px] font-extrabold px-1 rounded flex items-center gap-0.5">
+                                        <Tag className="w-2.5 h-2.5" />
+                                        {prod.couponCode}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                                <a
+                                  href={prod.affiliateUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="bg-[#EE4D2D] hover:bg-orange-600 text-white font-extrabold text-[10px] px-2.5 py-1.5 rounded-lg shrink-0 flex items-center gap-1 no-underline uppercase"
+                                >
+                                  <span>Mua</span>
+                                  <ExternalLink className="w-2.5 h-2.5" />
+                                </a>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
                       <div
                         className={`text-[9px] text-right font-mono mt-1 ${
                           isUser ? 'text-orange-200' : 'text-slate-400'
@@ -381,6 +533,46 @@ export const ChatBot: React.FC<ChatBotProps> = ({ products }) => {
               <div ref={messagesEndRef} />
             </div>
 
+            {/* Live Proactive Product Suggestions (Triggered when user types keywords) */}
+            <AnimatePresence>
+              {matchedInputProducts.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="bg-orange-50/90 border-t border-orange-200 p-2.5 shrink-0 overflow-hidden"
+                >
+                  <div className="text-[10px] font-extrabold text-orange-900 uppercase tracking-wide flex items-center gap-1 mb-1.5">
+                    <Sparkles className="w-3 h-3 text-[#EE4D2D]" />
+                    <span>Gợi ý theo từ khóa "{inputMessage.trim()}":</span>
+                  </div>
+                  <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-0.5">
+                    {matchedInputProducts.map((p) => (
+                      <div
+                        key={p.id}
+                        onClick={() => handleSendMessage(`Tôi muốn tư vấn về ${p.title}`)}
+                        className="bg-white border border-orange-200 hover:border-[#EE4D2D] p-1.5 rounded-xl flex items-center gap-2 shrink-0 max-w-[200px] cursor-pointer shadow-xs transition-all group"
+                      >
+                        <img
+                          src={p.image}
+                          alt={p.title}
+                          className="w-8 h-8 rounded-lg object-cover shrink-0"
+                        />
+                        <div className="min-w-0 flex-1">
+                          <div className="font-bold text-[10px] text-slate-900 truncate group-hover:text-[#EE4D2D]">
+                            {p.title}
+                          </div>
+                          <div className="text-[#EE4D2D] font-extrabold text-[10px]">
+                            {p.dealPrice?.toLocaleString('vi-VN')}đ
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             {/* Quick Suggestion Pills */}
             <div className="px-3 py-2 bg-white border-t border-slate-100 flex items-center gap-1.5 overflow-x-auto no-scrollbar shrink-0">
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider shrink-0 mr-1">
@@ -409,7 +601,7 @@ export const ChatBot: React.FC<ChatBotProps> = ({ products }) => {
               >
                 <input
                   type="text"
-                  placeholder="Hỏi về cần câu, máy câu, mồi cám chép..."
+                  placeholder="Gõ từ khóa (ví dụ: cần 5H, mồi chép, máy lure...)"
                   value={inputMessage}
                   onChange={(e) => setInputMessage(e.target.value)}
                   disabled={isLoading}
@@ -430,3 +622,4 @@ export const ChatBot: React.FC<ChatBotProps> = ({ products }) => {
     </>
   );
 };
+
