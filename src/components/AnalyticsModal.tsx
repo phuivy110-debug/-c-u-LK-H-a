@@ -17,7 +17,7 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import { AnalyticsStats } from '../types';
-import { fetchAnalyticsStats } from '../utils/analyticsService';
+import { fetchAnalyticsStats, generateFallbackStats } from '../utils/analyticsService';
 
 interface AnalyticsModalProps {
   isOpen: boolean;
@@ -25,12 +25,12 @@ interface AnalyticsModalProps {
 }
 
 export const AnalyticsModal: React.FC<AnalyticsModalProps> = ({ isOpen, onClose }) => {
-  const [stats, setStats] = useState<AnalyticsStats | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState<AnalyticsStats>(() => generateFallbackStats());
+  const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'hourly' | 'weekly' | 'devices'>('hourly');
 
-  const loadData = async () => {
-    setLoading(true);
+  const loadData = async (isManual = false) => {
+    if (isManual) setLoading(true);
     const data = await fetchAnalyticsStats();
     if (data) {
       setStats(data);
@@ -40,8 +40,10 @@ export const AnalyticsModal: React.FC<AnalyticsModalProps> = ({ isOpen, onClose 
 
   useEffect(() => {
     if (isOpen) {
-      loadData();
-      const interval = setInterval(loadData, 3000); // refresh every 3s for real-time 24/7 continuous stream
+      loadData(true);
+      const interval = setInterval(() => {
+        loadData(false);
+      }, 2500); // refresh every 2.5s for real-time 24/7 continuous stream
       return () => clearInterval(interval);
     }
   }, [isOpen]);
@@ -79,7 +81,7 @@ export const AnalyticsModal: React.FC<AnalyticsModalProps> = ({ isOpen, onClose 
 
           <div className="flex items-center gap-2">
             <button
-              onClick={loadData}
+              onClick={() => loadData(true)}
               disabled={loading}
               className="p-2 text-slate-400 hover:text-white bg-slate-800/80 hover:bg-slate-800 rounded-xl transition-all cursor-pointer disabled:opacity-50"
               title="Cập nhật dữ liệu"
