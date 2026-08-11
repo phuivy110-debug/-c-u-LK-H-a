@@ -33,14 +33,13 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   };
 
   const handleBuy = () => {
-    window.open(product.affiliateUrl, '_blank', 'noopener,noreferrer');
+    // Native <a> link navigation handles redirection
   };
 
   const DEFAULT_TIKTOK_URL = 'https://vt.tiktok.com/ZS9hEsGU3kHau-stx7x/';
 
   const handleBuyTikTok = () => {
-    const tiktokTarget = product.tiktokUrl || DEFAULT_TIKTOK_URL;
-    window.open(tiktokTarget, '_blank', 'noopener,noreferrer');
+    // Native <a> link navigation handles redirection
   };
 
   // Compute similar products (same category first, fallback to other top deals)
@@ -186,23 +185,29 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 
               {/* Action Buttons: Shopee & TikTok */}
               <div className="pt-2 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <button
+                <a
+                  href={product.affiliateUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   onClick={handleBuy}
-                  className="w-full bg-[#EE4D2D] hover:bg-orange-600 text-white font-extrabold text-xs sm:text-sm py-2.5 sm:py-3 px-3 rounded-xl shadow-md shadow-orange-500/20 flex items-center justify-center gap-1.5 cursor-pointer transition-all active:scale-[0.99] uppercase"
+                  className="w-full bg-[#EE4D2D] hover:bg-orange-600 text-white font-extrabold text-xs sm:text-sm py-2.5 sm:py-3 px-3 rounded-xl shadow-md shadow-orange-500/20 flex items-center justify-center gap-1.5 cursor-pointer transition-all active:scale-[0.99] uppercase no-underline"
                 >
                   <ShoppingCart className="w-4 h-4 shrink-0" />
                   <span>MUA TRÊN SHOPEE MALL</span>
                   <ExternalLink className="w-3.5 h-3.5 shrink-0" />
-                </button>
+                </a>
 
-                <button
+                <a
+                  href={product.tiktokUrl || DEFAULT_TIKTOK_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   onClick={handleBuyTikTok}
-                  className="w-full bg-slate-900 hover:bg-black text-white font-extrabold text-xs sm:text-sm py-2.5 sm:py-3 px-3 rounded-xl shadow-md shadow-slate-900/20 flex items-center justify-center gap-1.5 cursor-pointer transition-all active:scale-[0.99] uppercase"
+                  className="w-full bg-slate-900 hover:bg-black text-white font-extrabold text-xs sm:text-sm py-2.5 sm:py-3 px-3 rounded-xl shadow-md shadow-slate-900/20 flex items-center justify-center gap-1.5 cursor-pointer transition-all active:scale-[0.99] uppercase no-underline"
                 >
                   <TikTokIcon className="w-4 h-4 shrink-0 fill-current text-white" />
                   <span>MUA TRÊN TIKTOK SHOP</span>
                   <ExternalLink className="w-3.5 h-3.5 shrink-0" />
-                </button>
+                </a>
               </div>
             </div>
           </div>

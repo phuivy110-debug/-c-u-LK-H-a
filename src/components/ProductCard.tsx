@@ -28,16 +28,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   const handleBuyClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     trackUserAction(`Bấm mua Shopee: ${product.title.substring(0, 25)}...`);
-    window.open(product.affiliateUrl, '_blank', 'noopener,noreferrer');
   };
 
   const DEFAULT_TIKTOK_URL = 'https://vt.tiktok.com/ZS9hEsGU3kHau-stx7x/';
 
   const handleBuyTikTokClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const tiktokTarget = product.tiktokUrl || DEFAULT_TIKTOK_URL;
     trackUserAction(`Bấm mua TikTok: ${product.title.substring(0, 25)}...`);
-    window.open(tiktokTarget, '_blank', 'noopener,noreferrer');
   };
 
   const handleCardClick = () => {
@@ -168,24 +165,30 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
         {/* Dual CTA Buttons (Shopee & TikTok) */}
         <div className="grid grid-cols-2 gap-1.5 pt-0.5">
-          <button
+          <a
+            href={product.affiliateUrl}
+            target="_blank"
+            rel="noopener noreferrer"
             onClick={handleBuyClick}
-            className="w-full bg-[#EE4D2D] hover:bg-[#d73a1c] text-white py-2 px-1 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-extrabold transition-all flex items-center justify-center gap-1 cursor-pointer shadow-xs uppercase truncate group/btn"
+            className="w-full bg-[#EE4D2D] hover:bg-[#d73a1c] text-white py-2 px-1 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-extrabold transition-all flex items-center justify-center gap-1 cursor-pointer shadow-xs uppercase truncate group/btn no-underline"
             title="Mua ngay trên Shopee"
           >
             <span className="truncate">Shopee</span>
             <ExternalLink className="w-2.5 h-2.5 sm:w-3 sm:h-3 shrink-0" />
-          </button>
+          </a>
 
-          <button
+          <a
+            href={product.tiktokUrl || DEFAULT_TIKTOK_URL}
+            target="_blank"
+            rel="noopener noreferrer"
             onClick={handleBuyTikTokClick}
-            className="w-full bg-slate-900 hover:bg-black text-white py-2 px-1 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-extrabold transition-all flex items-center justify-center gap-1 cursor-pointer shadow-xs uppercase truncate group/btn"
+            className="w-full bg-slate-900 hover:bg-black text-white py-2 px-1 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-extrabold transition-all flex items-center justify-center gap-1 cursor-pointer shadow-xs uppercase truncate group/btn no-underline"
             title="Mua ngay trên TikTok Shop"
           >
             <TikTokIcon className="w-2.5 h-2.5 sm:w-3 sm:h-3 shrink-0 fill-current text-white" />
             <span className="truncate">TikTok</span>
             <ExternalLink className="w-2.5 h-2.5 sm:w-3 sm:h-3 shrink-0" />
-          </button>
+          </a>
         </div>
       </div>
     </div>
