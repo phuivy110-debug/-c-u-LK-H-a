@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" rx="110" fill="#EE4D2D"/>
+  <!-- Outer Hexagon frame -->
+  <path d="M256 50 L420 136 L420 376 L256 462 L92 376 L92 136 Z" fill="none" stroke="#FFFFFF" stroke-width="28" stroke-linejoin="round"/>
+  <!-- Inner Hexagon border line -->
+  <path d="M256 78 L396 151 L396 361 L256 434 L116 361 L116 151 Z" fill="none" stroke="#FFFFFF" stroke-width="12" stroke-linejoin="round"/>
+  <!-- Stylized L -->
+  <path d="M140 120 V340 L290 340 L290 292 L192 292 V120 Z" fill="#FFFFFF"/>
+  <!-- Stylized K -->
+  <path d="M256 100 V370 H304 V260 L366 352 H420 L336 230 L412 136 H356 L304 204 V100 Z" fill="#FFFFFF"/>
+</svg>
