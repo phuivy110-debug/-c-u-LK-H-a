@@ -38,7 +38,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           .slice(0, 50)
           .map(
             (p: any, i: number) =>
-              `${i + 1}. [${p.category}] ${p.title} - Giá ưu đãi: ${p.dealPrice?.toLocaleString('vi-VN')}đ (Gốc: ${p.originalPrice?.toLocaleString('vi-VN')}đ) - Mã giảm: ${p.couponCode || 'LKHOA10K'} - Link Shopee: ${p.affiliateUrl}`
+              `${i + 1}. [${p.category || 'Khác'}] ${p.name || ''} - Giá: ${p.price ? `${p.price.toLocaleString('vi-VN')}đ` : 'Liên hệ'} (Gốc: ${p.original_price ? `${p.original_price.toLocaleString('vi-VN')}đ` : 'Không'}) - Link Shopee: ${p.shopee_url || 'Không'} - Link TikTok: ${p.tiktok_url || 'Không'}`
           )
           .join('\n');
     }
@@ -48,7 +48,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 Nhiệm vụ chính:
 1. Giải đáp thắc mắc về thiết bị câu cá: độ cứng cần câu (4H, 5H, 6H, 8H, carbon 24T/30T/36T), độ dài (2.7m, 3.6m, 4.5m, 5.4m, 6.3m...), chọn máy câu đứng/ngang (1000, 2500, 3000, 4000), loại dây dù X4/X8, thẻo câu, phao nano, mồi xả, mồi vuốt cám chép/rô...
 2. Tư vấn sản phẩm phù hợp nhu cầu & ngân sách cụ thể của cần thủ dựa trên danh sách sản phẩm cửa hàng LK Hòa dưới đây.
-3. Khi giới thiệu sản phẩm, hãy trích dẫn tên chính xác, giá bán ưu đãi và kèm theo đường link Shopee Mall để cần thủ dễ bấm chọn mua.
+3. Khi giới thiệu sản phẩm, hãy trích dẫn tên chính xác, giá bán và kèm theo đường link Shopee/TikTok được cung cấp để cần thủ dễ bấm chọn mua.
 4. Thái độ: Thân thiện, chu đáo, xưng "Em" hoặc "LK Hòa Bot", gọi người dùng là "Sếp", "Cần thủ" hoặc "Anh/Chị". Dùng câu từ gần gũi, dùng một số emoji sinh động 🎣🐟🔥.
 5. Luôn trả lời bằng Tiếng Việt rõ ràng, trình bày có gạch đầu dòng dễ nhìn.
 

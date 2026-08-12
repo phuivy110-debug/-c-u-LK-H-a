@@ -41,7 +41,7 @@ export const Hero: React.FC<HeroProps> = ({
                 <span>Trang Chủ Chính Thức Đồ Câu LK Hòa</span>
                 <div className="flex items-center gap-1">
                   <span className="bg-white text-[#EE4D2D] px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider">
-                    Shopee Mall
+                    Shopee
                   </span>
                   <span className="bg-black text-white px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border border-white/30">
                     TikTok Shop
@@ -171,26 +171,26 @@ export const Hero: React.FC<HeroProps> = ({
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-            {/* Shopee Mall Card - Orange */}
+            {/* Shopee Card - Orange */}
             <div className="bg-gradient-to-br from-orange-500 to-[#EE4D2D] text-white p-6 rounded-2xl shadow-md hover:shadow-lg transition-all border border-orange-400/40 relative overflow-hidden flex flex-col justify-between group">
               <div className="absolute top-0 right-0 transform translate-x-4 -translate-y-4 w-32 h-32 bg-white/10 rounded-full blur-xl pointer-events-none group-hover:scale-125 transition-transform" />
               
               <div className="space-y-3 relative z-10">
                 <div className="flex items-center justify-between">
                   <span className="bg-white text-[#EE4D2D] font-black text-xs px-3 py-1 rounded-full uppercase tracking-wider shadow-xs">
-                    SHOPEE MALL
+                    SHOPEE
                   </span>
                   <span className="text-xs font-bold text-orange-100 flex items-center gap-1">
                     <ShieldCheck className="w-4 h-4 text-yellow-300" />
-                    Đã Xác Minh
+                    Cửa Hàng LK Hòa
                   </span>
                 </div>
 
                 <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-                  Gian Hàng Shopee Mall LK Hòa
+                  Gian Hàng Shopee LK Hòa
                 </h3>
                 <p className="text-orange-100 text-xs sm:text-sm font-medium leading-relaxed">
-                  Săn voucher Freeship Extra, mã giảm giá Shopee Mall lên tới 500k và tích điểm Xu đổi quà chính hãng LK Hòa.
+                  Săn voucher Freeship Extra, mã giảm giá Shopee hấp dẫn và mua sắm chính hãng LK Hòa.
                 </p>
               </div>
 
@@ -198,10 +198,10 @@ export const Hero: React.FC<HeroProps> = ({
                 <a
                   href="https://s.shopee.vn/7fYvAFHqaP"
                   target="_blank"
-                  rel="noreferrer"
+                  rel="sponsored nofollow noopener noreferrer"
                   className="w-full bg-white hover:bg-orange-50 text-[#EE4D2D] font-extrabold py-3 px-5 rounded-xl text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-2 group/btn cursor-pointer"
                 >
-                  <span>MUA NGAY TRÊN SHOPEE MALL</span>
+                  <span>MUA NGAY TRÊN SHOPEE</span>
                   <ExternalLink className="w-4 h-4 text-[#EE4D2D] transition-transform group-hover/btn:translate-x-0.5" />
                 </a>
               </div>
@@ -235,7 +235,7 @@ export const Hero: React.FC<HeroProps> = ({
                 <a
                   href="https://vt.tiktok.com/ZS9hEsGU3kHau-stx7x/"
                   target="_blank"
-                  rel="noreferrer"
+                  rel="sponsored nofollow noopener noreferrer"
                   className="w-full bg-white hover:bg-slate-100 text-slate-950 font-extrabold py-3 px-5 rounded-xl text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-2 group/btn cursor-pointer"
                 >
                   <TikTokIcon className="w-4 h-4 fill-current text-slate-950" />

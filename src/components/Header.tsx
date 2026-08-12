@@ -21,8 +21,6 @@ import {
 } from 'lucide-react';
 import { LkHoaLogo } from './LkHoaLogo';
 import { AnalyticsWidget } from './AnalyticsWidget';
-import { CATEGORIES } from '../data/products';
-import { CategoryId } from '../types';
 
 interface HeaderProps {
   onOpenAdmin: () => void;
@@ -31,7 +29,8 @@ interface HeaderProps {
   productCount: number;
   showAdminButton?: boolean;
   onLogoClickCount?: () => void;
-  onSelectCategory?: (categoryId: CategoryId) => void;
+  categories?: string[];
+  onSelectCategory?: (category: string) => void;
 }
 
 // Helper TikTok Icon
@@ -47,14 +46,15 @@ export const Header: React.FC<HeaderProps> = ({
   productCount,
   showAdminButton = false,
   onLogoClickCount,
+  categories = ['Tất cả'],
   onSelectCategory,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [categoriesOpen, setCategoriesOpen] = useState(true);
 
-  const handleCategoryClick = (id: CategoryId) => {
+  const handleCategoryClick = (categoryName: string) => {
     if (onSelectCategory) {
-      onSelectCategory(id);
+      onSelectCategory(categoryName);
     }
     setMobileMenuOpen(false);
     const catalogEl = document.getElementById('catalog');
@@ -68,20 +68,20 @@ export const Header: React.FC<HeaderProps> = ({
       {/* Top Banner Bar */}
       <div className="bg-gradient-to-r from-orange-600 via-slate-900 to-slate-950 text-white text-xs font-semibold py-1.5 px-4 text-center flex items-center justify-center gap-2 flex-wrap">
         <Flame className="w-4 h-4 text-yellow-300 animate-pulse" />
-        <span>Trang Chủ Chính Thức Đồ Câu LK Hòa – Mua Hàng Trực Tiếp Trên Shopee Mall & TikTok Shop</span>
+        <span>Trang Chủ Chính Thức Đồ Câu LK Hòa – Mua Hàng Trực Tiếp Trên Shopee & TikTok Shop</span>
         <div className="flex items-center gap-1.5 ml-1">
           <a
             href="https://s.shopee.vn/7fYvAFHqaP"
             target="_blank"
-            rel="noreferrer"
+            rel="sponsored nofollow noopener noreferrer"
             className="bg-[#EE4D2D] hover:bg-orange-600 text-white px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider flex items-center gap-1 transition-colors"
           >
-            <span>Shopee Mall</span>
+            <span>Gian Hàng Shopee</span>
           </a>
           <a
             href="https://vt.tiktok.com/ZS9hEsGU3kHau-stx7x/"
             target="_blank"
-            rel="noreferrer"
+            rel="sponsored nofollow noopener noreferrer"
             className="bg-black hover:bg-slate-800 text-white px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider flex items-center gap-1 transition-colors border border-slate-700"
           >
             <TikTokIcon className="w-2.5 h-2.5 fill-current text-white" />
@@ -106,16 +106,16 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Shopee & TikTok Side-by-Side Official Badges */}
           <div className="hidden lg:flex items-center gap-2">
-            {/* Shopee Mall Badge */}
+            {/* Shopee Badge */}
             <a
               href="https://s.shopee.vn/7fYvAFHqaP"
               target="_blank"
-              rel="noreferrer"
+              rel="sponsored nofollow noopener noreferrer"
               className="flex items-center gap-1.5 bg-orange-50 border border-orange-200 text-[#EE4D2D] hover:bg-orange-100 px-3 py-1.5 rounded-full text-xs font-extrabold transition-all group/shop"
-              title="Ghé Gian Hàng Shopee Mall Chính Hãng LK Hòa"
+              title="Ghé Gian Hàng Shopee Chính Hãng LK Hòa"
             >
               <div className="w-2 h-2 rounded-full bg-[#EE4D2D] animate-ping" />
-              <span>Shopee Mall LK Hòa</span>
+              <span>Gian Hàng Shopee LK Hòa</span>
               <ExternalLink className="w-3 h-3 text-[#EE4D2D] opacity-70 group-hover/shop:opacity-100" />
             </a>
 
@@ -233,13 +233,13 @@ export const Header: React.FC<HeaderProps> = ({
 
               {categoriesOpen && (
                 <div className="px-2 pb-2.5 space-y-1 pt-1 border-t border-slate-200/60 bg-white">
-                  {CATEGORIES.map((cat) => (
+                  {categories.map((catName) => (
                     <button
-                      key={cat.id}
-                      onClick={() => handleCategoryClick(cat.id)}
+                      key={catName}
+                      onClick={() => handleCategoryClick(catName)}
                       className="w-full text-left flex items-center justify-between py-2 px-3 text-xs font-bold text-slate-700 hover:text-[#EE4D2D] hover:bg-orange-50 rounded-xl transition-all"
                     >
-                      <span>{cat.name}</span>
+                      <span>{catName}</span>
                       <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
                     </button>
                   ))}

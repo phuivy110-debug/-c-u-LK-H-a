@@ -25,7 +25,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenAnalytics }) => {
             </div>
 
             <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
-              Trang chủ chính thức của Đồ Câu LK Hòa – Nơi tổng hợp đầy đủ mã giảm giá, sản phẩm cần câu, máy câu, mồi câu và phụ kiện chính hãng LK Hòa mua trực tiếp từ Shopee Mall & TikTok Shop.
+              Trang chủ chính thức của Đồ Câu LK Hòa – Nơi tổng hợp đầy đủ mã giảm giá, sản phẩm cần câu, máy câu, mồi câu và phụ kiện chính hãng LK Hòa mua trực tiếp từ Shopee & TikTok Shop.
             </p>
 
             <div className="inline-flex items-center gap-2 bg-slate-900 border border-slate-800 text-slate-300 text-xs px-3.5 py-1.5 rounded-full font-semibold">

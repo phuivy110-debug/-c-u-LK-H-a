@@ -38,14 +38,13 @@ async function startServer() {
   ];
 
   const actionsList = [
-    'Xem Cần Tay LK Hòa 6H Carbon',
-    'Bấm Mua Shopee Mall Chính Hãng',
-    'Sao chép mã giảm giá LKHOA10K',
+    'Xem Cần Tay LK Hòa Carbon',
+    'Bấm Mua Sản Phẩm Trên Shopee',
     'Tư vấn cùng Trợ Lý AI LK Hòa',
     'Xem Dây Dù Siêu Bền X8',
-    'Lọc danh mục Máy Câu Đứng',
+    'Lọc danh mục Cần Câu',
     'Xem Phao Câu Nano Đêm LK',
-    'Bấm Mua TikTok Shop Official'
+    'Bấm Mua Sản Phẩm Trên TikTok Shop'
   ];
 
   interface AnalyticsData {
@@ -76,38 +75,19 @@ async function startServer() {
     }
 
     const todayStr = getTodayStr();
-    const initialHourly: Record<number, number> = {
-      0: 24, 1: 12, 2: 8, 3: 5, 4: 10, 5: 35, 6: 68, 7: 115, 8: 142, 9: 130, 10: 118, 11: 105,
-      12: 92, 13: 98, 14: 88, 15: 75, 16: 64, 17: 70, 18: 52, 19: 38, 20: 28, 21: 20, 22: 15, 23: 10
-    };
-
-    const initialWeekly: Record<string, number> = {};
-    const now = new Date();
-    for (let i = 1; i <= 14; i++) {
-      const d = new Date(now);
-      d.setDate(now.getDate() - i);
-      const k = d.toISOString().split('T')[0];
-      const base = 1200 + ((d.getDate() * 47) % 500);
-      initialWeekly[k] = base;
-    }
+    const initialHourly: Record<number, number> = {};
+    for (let i = 0; i < 24; i++) initialHourly[i] = 0;
 
     return {
-      totalPageViews: 28950,
-      todayPageViews: 1240,
-      yesterdayPageViews: 1580,
-      mobileCount: 980,
-      desktopCount: 260,
+      totalPageViews: 0,
+      todayPageViews: 0,
+      yesterdayPageViews: 0,
+      mobileCount: 0,
+      desktopCount: 0,
       lastDateStr: todayStr,
       hourlyMap: initialHourly,
-      weeklyTrafficMap: initialWeekly,
-      recentActivities: [
-        { id: '1', time: 'Vừa xong', location: 'Nghệ An, VN', action: 'Xem Cần Tay LK Hòa 6H Carbon' },
-        { id: '2', time: '1 phút trước', location: 'Hà Nội, VN', action: 'Bấm Link Shopee Mall Máy Câu Đứng' },
-        { id: '3', time: '2 phút trước', location: 'TP. Hồ Chí Minh, VN', action: 'Xem Mồi Cám Chép LK Hòa' },
-        { id: '4', time: '3 phút trước', location: 'Thanh Hóa, VN', action: 'Sao chép mã giảm giá LKHOA10K' },
-        { id: '5', time: '5 phút trước', location: 'Đà Nẵng, VN', action: 'Hỏi Trợ Lý AI LK Hòa' },
-        { id: '6', time: '7 phút trước', location: 'Hải Phòng, VN', action: 'Lọc danh mục Cần Câu Tay 5H' }
-      ]
+      weeklyTrafficMap: {},
+      recentActivities: []
     };
   };
 
@@ -193,9 +173,7 @@ async function startServer() {
         saveAnalyticsData();
       }
 
-      const hr = new Date().getHours();
-      const baseOnline = (hr >= 7 && hr <= 23) ? 22 : 12;
-      const onlineCount = Math.max(activeSessions.size + 15, baseOnline);
+      const onlineCount = activeSessions.size;
 
       return res.json({ success: true, onlineCount });
     } catch (err: any) {
@@ -209,9 +187,7 @@ async function startServer() {
       checkDateReset();
       cleanStaleSessions();
 
-      const hr = new Date().getHours();
-      const baseOnline = (hr >= 7 && hr <= 23) ? 22 : 12;
-      const activeUsersOnline = Math.max(activeSessions.size + 15, baseOnline);
+      const activeUsersOnline = activeSessions.size;
 
       const totalDevices = analyticsData.mobileCount + analyticsData.desktopCount || 1;
       const mobilePercent = Math.round((analyticsData.mobileCount / totalDevices) * 100);

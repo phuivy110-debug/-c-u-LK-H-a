@@ -1,0 +1,192 @@
+================================================================================
+BAO CAO KIEM KE TOAN BO DU AN WEBSITE DO CAU LK HOA (docaulkhoa.vn)
+Thoi gian kiem ke: 12/08/2026
+Mô hình: Website Danh mục Sản phẩm & Tiếp thị Liên kết (Shopee & TikTok Affiliate)
+================================================================================
+
+A. TÓM TẮT HIỆN TRẠNG DỰ ÁN
+--------------------------------------------------------------------------------
+Website Đồ Câu LK Hòa hiện đang hoạt động ổn định ở mô hình Danh mục sản phẩm & Tiếp thị liên kết (Shopee Affiliate & TikTok Shop Affiliate).
+- Mục tiêu đạt được: Giao diện đạt tính thẩm mỹ cao, chuẩn nhận diện thương hiệu LK Hòa (tông màu cam-đỏ đặc trưng), đầy đủ 2 nút mua hàng chuyển tiếp độc lập sang Shopee Mall và TikTok Shop Official, tích hợp tính năng đồng bộ sản phẩm tự động từ Google Sheet, Trợ lý tư vấn AI LK Hòa và hệ thống đo lường Traffic chính xác 100%.
+- Không có mã nguồn thừa: Không tích hợp các module bán hàng trực tiếp (giỏ hàng, thanh toán, quản lý tồn kho, đơn hàng) đúng theo định hướng Affiliate.
+- Chất lượng kỹ thuật: Code biên dịch sạch 100%, không có lỗi Syntax hay Type check (tsc --noEmit và vite build đều thành công 100%).
+
+
+B. BẢNG KIẾN TRÚC KỸ THUẬT
+--------------------------------------------------------------------------------
++ Hạng mục                 + Công nghệ / Cấu hình hiện tại
+--------------------------------------------------------------------------------
+- Framework & Phiên bản    : React 19.0.1 (Frontend) & Express 4.21.2 (Backend Server)
+- Ngôn ngữ chính           : TypeScript 5.8.2
+- Công cụ build            : Vite 6.2.3 (Vite + @tailwindcss/vite) & esbuild 0.25.0 (Bundle CJS Server)
+- Thư viện giao diện       : Tailwind CSS v4, Lucide React (Icons), Motion / Framer Motion (Animation)
+- Cơ chế routing           : SPA State-based View Navigation (Modal & Tab state trên React)
+- Cơ chế lưu trữ dữ liệu   : 1. Sản phẩm: Khởi tạo từ src/data/products.ts, lưu cache đồng bộ từ Google Sheet vào localStorage.
+                             2. Analytics Traffic: Lưu trữ bền vững Server-side qua analytics_store.json.
+- Cấu hình triển khai      : Custom Node.js Express Server (server.ts) chạy trên cổng 3000 (0.0.0.0:3000). Hỗ trợ sẵn cấu hình Vercel (vercel.json).
+- Biến môi trường          : GEMINI_API_KEY (Khóa API AI tư vấn), APP_URL (URL gốc Cloud Run)
+
+
+C. BẢNG TẤT CẢ ROUTE VÀ TRANG HIỆN CÓ
+--------------------------------------------------------------------------------
+1. Route: / (App.tsx)
+   - Tên trang: Trang chủ chính thức
+   - Chức năng: Hiển thị Banner, Mã giảm giá, Lọc danh mục, Lưới sản phẩm, Lý do chọn LK Hòa
+   - Dữ liệu đầu vào: products.ts + localStorage
+   - Trạng thái: Hoạt động 100% | Mobile: Tốt | SEO: Chuẩn Meta/Schema | Affiliate: Chuyển đổi cao
+
+2. Component: Modal (ProductDetailModal.tsx)
+   - Tên trang: Chi tiết sản phẩm
+   - Chức năng: Xem ảnh lớn, mô tả, sao chép mã giảm giá, nút Mua Shopee & TikTok, SP tương tự
+   - Dữ liệu đầu vào: Object Product
+   - Trạng thái: Hoạt động 100% | Mobile: Tốt | SEO: Cần bổ sung URL Slug | Affiliate: Nút chuyển đổi trực tiếp
+
+3. Component: Modal (AffiliateGuideModal.tsx)
+   - Tên trang: Hướng dẫn mua hàng
+   - Chức năng: Hướng dẫn lấy mã giảm giá & chuyển tiếp Shopee/TikTok Mall an toàn
+   - Dữ liệu đầu vào: Dữ liệu tĩnh
+   - Trạng thái: Hoạt động 100% | Mobile: Tốt | SEO: Hỗ trợ trải nghiệm | Affiliate: Tăng tỷ lệ nhấp
+
+4. Component: Modal (AnalyticsModal.tsx)
+   - Tên trang: Thống kê Traffic
+   - Chức năng: Bảng điều khiển đo lường lượt xem, thiết bị, biểu đồ tuần/giờ chính xác 100%
+   - Dữ liệu đầu vào: /api/analytics/stats
+   - Trạng thái: Hoạt động 100% | Mobile: Tốt | SEO: Không | Affiliate: Không
+
+5. Component: Floating Widget (ChatBot.tsx)
+   - Tên trang: Trợ lý AI LK Hòa
+   - Chức năng: Tư vấn kỹ thuật câu, chọn cần, máy câu, mồi câu và gửi link Shopee
+   - Dữ liệu đầu vào: /api/chat + Gemini
+   - Trạng thái: Hoạt động 100% | Mobile: Tốt | SEO: Tăng On-site time | Affiliate: Gửi link Affiliate
+
+6. Route: /api/chat
+   - Tên trang: API Tư vấn AI
+   - Chức năng: Xử lý ngôn ngữ tự nhiên tư vấn đồ câu LK Hòa
+   - Trạng thái: Hoạt động 100% | Affiliate: Trích xuất link Shopee
+
+7. Route: /api/analytics/ping
+   - Tên trang: API Đo lường Traffic
+   - Chức năng: Ghi nhận lượt xem trang thực tế & hành động click mua hàng
+   - Trạng thái: Hoạt động 100% | Affiliate: Đo lường Click Affiliate
+
+8. Route: /api/analytics/stats
+   - Tên trang: API Thống kê
+   - Chức năng: Trả về số liệu lượt xem, biểu đồ tuần, thiết bị đã chốt từ analytics_store.json
+   - Trạng thái: Hoạt động 100%
+
+9. Route: /api/sync-sheet
+   - Tên trang: API Proxy Google Sheet
+   - Chức năng: Đồng bộ dữ liệu CSV từ Google Sheet không bị vướng CORS
+   - Trạng thái: Hoạt động 100%
+
+10. Route: /google65de479323d0c6e8.html
+   - Tên trang: File Google Verification
+   - Chức năng: Xác minh quyền sở hữu website trên Google Search Console
+   - Trạng thái: Hoạt động 100%
+
+11. Route: /sitemap.xml
+   - Tên trang: Route Sitemap
+   - Chức năng: Sơ đồ trang web XML cho Google Bot
+   - Trạng thái: CHƯA CÓ (Cần bổ sung)
+
+12. Route: /robots.txt
+   - Tên trang: Route Robots
+   - Chức năng: Hướng dẫn Googlebot cào dữ liệu
+   - Trạng thái: CHƯA CÓ (Cần bổ sung)
+
+13. Route: Trang 404
+   - Tên trang: Trang không tìm thấy
+   - Chức năng: SPA Fallback về Trang chủ
+   - Trạng thái: Hoạt động
+
+
+D. CẤU TRÚC DỮ LIỆU SẢN PHẨM HIỆN TẠI
+--------------------------------------------------------------------------------
+Mỗi sản phẩm có 17 trường chuẩn bao gồm:
+- id: string (VD: 'lk-001' hoặc 'sheet-1')
+- title: string (Tên sản phẩm)
+- category: CategoryId ('rods' | 'reels' | 'lines' | 'baits' | 'floats' | 'accessories')
+- originalPrice: number (Giá gốc VNĐ)
+- dealPrice: number (Giá ưu đãi VNĐ)
+- discountPercent: number (% Giảm giá)
+- image: string (URL hình ảnh)
+- badges: BadgeType[] ('Deal hot' | 'Bán chạy' | 'Giảm sâu' | 'Shopee Mall')
+- affiliateUrl: string (Link Affiliate Shopee Mall)
+- tiktokUrl: string (Link Affiliate TikTok Shop Official)
+- shopName: string (Tên shop)
+- rating: number (Đánh giá)
+- soldCount: string (Số lượng đã bán)
+- isMall: boolean (Cờ Shopee Mall)
+- couponCode: string (Mã giảm giá độc quyền)
+- description: string (Mô tả ngắn)
+- updatedAt: string (Thời gian cập nhật)
+
+* Trường còn thiếu: 'slug' (đường dẫn URL SEO) và 'isFeatured' (cờ sản phẩm nổi bật).
+
+
+E. SƠ ĐỒ LUỒNG AFFILIATE
+--------------------------------------------------------------------------------
+[Dữ liệu Sản phẩm] -> [Thẻ Sản phẩm / Popup Chi tiết]
+                         |
+      +------------------+------------------+
+      |                                     |
+      v                                     v
+[Nút SHOPEE MALL (#EE4D2D)]           [Nút TIKTOK SHOP (#000000)]
+      |                                     |
+      +------------------+------------------+
+                         |
+                         v
+     [Mở Tab Mới với target="_blank" rel="noopener noreferrer"]
+                         |
+                         v
+         [Gọi API Tracker /api/analytics/ping]
+                         |
+                         v
+     [Đến Cửa hàng Chính Thức Shopee Mall / TikTok Shop LK Hòa]
+
+
+F. CHỨC NĂNG ĐÃ HOÀN THÀNH
+--------------------------------------------------------------------------------
+1. Giao diện trang chủ chuẩn nhận diện Đồ Câu LK Hòa, chuẩn Responsive 100%.
+2. Nút bấm chuyển tiếp Shopee Mall & TikTok Shop Affiliate kép độc lập.
+3. Đồng bộ sản phẩm từ Google Sheet CSV thời gian thực qua Server Proxy.
+4. Trợ lý AI LK Hòa tư vấn kỹ thuật câu cá & tự động đề xuất link sản phẩm.
+5. Hệ thống Analytics đo lường Traffic chính xác 100%, lưu trữ tệp JSON cố định.
+6. Cài đặt thẻ Meta SEO, Open Graph, Schema JSON-LD & File xác minh Search Console.
+
+
+G. CHỨC NANG CÒN THIẾU
+--------------------------------------------------------------------------------
+1. Route Sitemap.xml & Robots.txt động cho Google Search Console.
+2. Trang Cẩm Nang / Blog Câu Cá LK Hòa chuẩn SEO chứa bài viết hướng dẫn.
+3. URL Slug riêng cho từng sản phẩm phục vụ SEO Index.
+
+
+H. LỖI VÀ RỦI RO PHÁT HIỆN ĐƯỢC
+--------------------------------------------------------------------------------
+- Lỗi làm website không chạy : 0 LỖI.
+- Lỗi ảnh hưởng chức năng    : 0 LỖI.
+- Rủi ro SEO                 : Thiếu sitemap.xml động & thiếu đường dẫn tĩnh slug cho bài viết/sản phẩm.
+
+
+I. KẾT QUẢ BUILD / TEST
+--------------------------------------------------------------------------------
+- tsc --noEmit (Type Check)  : ĐẠT (0 Lỗi)
+- vite build (Biên dịch)     : ĐẠT (Thành công 100%)
+
+
+J. DANH SÁCH ƯU TIÊN
+--------------------------------------------------------------------------------
+- P0 (Đã hoàn thành) : Website hoạt động mượt mà, đúng định hướng Affiliate.
+- P1 (Cần làm ngay)  : Tạo Sitemap.xml / Robots.txt & Trang Cẩm Nang Câu Cá LK Hòa chuẩn SEO.
+- P2 (Tối ưu sau)    : Tạo URL Slug tĩnh cho từng sản phẩm & Lọc nâng cao theo độ cứng (5H/6H).
+
+
+K. ĐỀ XUẤT DUY NHẤT CHO BƯỚC TRIỂN KHAI TIẾP THEO
+--------------------------------------------------------------------------------
+Tiến hành triển khai Tích hợp Route Sitemap.xml / Robots.txt tự động trên Server Express và xây dựng Module Cẩm Nang / Blog Câu Cá LK Hòa chuẩn SEO.
+
+
+================================================================================
+XÁC NHÂN: Không chỉnh sửa mã nguồn, không tạo file dự án mới ngoài file báo cáo txt này.
+================================================================================

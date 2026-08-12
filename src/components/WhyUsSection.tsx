@@ -54,7 +54,7 @@ export const WhyUsSection: React.FC = () => {
 
                 <div className="mt-6 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400 font-medium">
                   <span className="text-[#EE4D2D] font-bold">✓ Cam kết 100%</span>
-                  <span>Shopee Mall</span>
+                  <span>Gian Hàng Chính Hãng</span>
                 </div>
               </div>
             );

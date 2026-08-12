@@ -1,40 +1,15 @@
 import Papa from 'papaparse';
-import { Product, CategoryId, BadgeType } from '../types';
+import { Product } from '../types';
+import { generateSlug } from '../data/products';
+import { validateAffiliateUrl } from '../components/AffiliateButtons';
 
 export const DEFAULT_SHEET_URL =
   'https://docs.google.com/spreadsheets/d/e/2PACX-1vRoGVq7tIOSj8pAr-80FuQxNYY_JHVtyZdk6SJd59baBkVlMllh-hDwvm0Zen4FHAcmjtpYQPai9S_w/pubhtml?gid=0&single=true';
-
-const FALLBACK_IMAGES: Record<CategoryId, string[]> = {
-  rods: [
-    'https://images.unsplash.com/photo-1544551763-46a013bb70d5?q=80&w=800&auto=format&fit=crop',
-    'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=800&auto=format&fit=crop',
-  ],
-  reels: [
-    'https://images.unsplash.com/photo-1516724562728-afc824a36e84?q=80&w=800&auto=format&fit=crop',
-    'https://images.unsplash.com/photo-1534043464124-3be32fe000c9?q=80&w=800&auto=format&fit=crop',
-  ],
-  baits: [
-    'https://images.unsplash.com/photo-1498654896293-37aacf113fd9?q=80&w=800&auto=format&fit=crop',
-  ],
-  lines: [
-    'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=800&auto=format&fit=crop',
-  ],
-  floats: [
-    'https://images.unsplash.com/photo-1516724562728-afc824a36e84?q=80&w=800&auto=format&fit=crop',
-  ],
-  accessories: [
-    'https://images.unsplash.com/photo-1585515320310-259814833e62?q=80&w=800&auto=format&fit=crop',
-  ],
-  all: [
-    'https://images.unsplash.com/photo-1544551763-46a013bb70d5?q=80&w=800&auto=format&fit=crop',
-  ],
-};
 
 export function convertSheetUrlToCsvUrl(url: string): string {
   if (!url || !url.trim()) return url;
   let cleanUrl = url.trim();
 
-  // Case 1: Published Google Sheet (/pubhtml or /pub)
   if (cleanUrl.includes('/pubhtml') || cleanUrl.includes('/pub')) {
     if (cleanUrl.includes('/pubhtml')) {
       cleanUrl = cleanUrl.replace('/pubhtml', '/pub');
@@ -45,7 +20,6 @@ export function convertSheetUrlToCsvUrl(url: string): string {
     return cleanUrl;
   }
 
-  // Case 2: Standard Google Sheet edit / view / share link (e.g., /d/1ABC.../edit#gid=0)
   const docIdMatch = cleanUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
   if (docIdMatch && docIdMatch[1]) {
     const docId = docIdMatch[1];
@@ -57,7 +31,6 @@ export function convertSheetUrlToCsvUrl(url: string): string {
     return `https://docs.google.com/spreadsheets/d/${docId}/export?format=csv&gid=${gid}`;
   }
 
-  // Fallback if URL is already CSV or custom
   if (!cleanUrl.includes('output=csv') && !cleanUrl.includes('export?format=csv')) {
     cleanUrl += cleanUrl.includes('?') ? '&output=csv' : '?output=csv';
   }
@@ -65,25 +38,18 @@ export function convertSheetUrlToCsvUrl(url: string): string {
 }
 
 export function parsePriceNumber(raw: any): number {
-  if (!raw) return 0;
+  if (raw === undefined || raw === null || raw === '') return 0;
   const str = String(raw).replace(/[^\d]/g, '');
+  if (!str) return 0;
   const parsed = parseInt(str, 10);
-  return isNaN(parsed) ? 0 : parsed;
+  return isNaN(parsed) || parsed < 0 ? 0 : parsed;
 }
 
-export function mapCategoryNameToId(catName: string): CategoryId {
-  if (!catName) return 'rods';
-  const norm = catName.toLowerCase().trim();
-  if (norm.includes('cần')) return 'rods';
-  if (norm.includes('máy')) return 'reels';
-  if (norm.includes('mồi') || norm.includes('thính')) return 'baits';
-  if (norm.includes('dây') || norm.includes('thẻo')) return 'lines';
-  if (norm.includes('phao') || norm.includes('lưỡi')) return 'floats';
-  if (norm.includes('thùng') || norm.includes('phụ kiện')) return 'accessories';
-  return 'rods';
+export function mapCategoryName(catName: string): string {
+  if (!catName || !catName.trim()) return 'Chưa phân loại';
+  return catName.trim();
 }
 
-// Helper to search row object for keys matching candidates (case-insensitive & space-insensitive)
 function getRowValue(
   row: Record<string, string>,
   candidateSubstrings: string[],
@@ -94,8 +60,7 @@ function getRowValue(
     const normCandidate = candidate.toLowerCase().replace(/\s+/g, '');
     for (const key of rowKeys) {
       const normKey = key.toLowerCase().replace(/\s+/g, '');
-      
-      // Skip if key contains excluded keywords
+
       const isExcluded = excludeSubstrings.some((ex) => normKey.includes(ex.toLowerCase()));
       if (isExcluded) continue;
 
@@ -114,7 +79,6 @@ export async function extractShopeeImageFromLink(affiliateUrl: string): Promise<
   if (!affiliateUrl || !affiliateUrl.trim()) return null;
 
   const url = affiliateUrl.trim();
-  // If it's already a direct CDN image URL
   if (
     url.match(/\.(jpeg|jpg|gif|png|webp)($|\?)/i) ||
     url.includes('susercontent.com') ||
@@ -146,7 +110,6 @@ export async function fetchProductsFromGoogleSheet(sheetUrl: string): Promise<Pr
   const csvUrl = convertSheetUrlToCsvUrl(sheetUrl);
   let csvText = '';
 
-  // Strategy 1: Direct fetch from Google Sheets
   try {
     const response = await fetch(csvUrl, { cache: 'no-store' });
     if (response.ok) {
@@ -156,7 +119,6 @@ export async function fetchProductsFromGoogleSheet(sheetUrl: string): Promise<Pr
     console.warn('Direct client fetch from Google Sheet failed, trying server proxy fallback:', err);
   }
 
-  // Strategy 2: Server proxy fallback if direct fetch failed
   if (!csvText) {
     try {
       const proxyEndpoint = typeof window !== 'undefined' 
@@ -182,161 +144,82 @@ export async function fetchProductsFromGoogleSheet(sheetUrl: string): Promise<Pr
       complete: async (results) => {
         try {
           const parsedProducts: Product[] = [];
+          const slugCounts = new Map<string, number>();
 
           for (let index = 0; index < results.data.length; index++) {
             const row = results.data[index];
-            const categoryRaw = getRowValue(row, ['hạngmục', 'category', 'danhmục', 'loại']);
-            const title = getRowValue(row, ['tênsảnphẩm', 'productname', 'tên', 'sảnphẩm']);
+            const name = getRowValue(row, ['tênsảnphẩm', 'productname', 'tên', 'sảnphẩm', 'name']);
 
-            if (!title) continue; // skip empty rows
+            if (!name) continue; // Skip rows without name
 
-            const DEFAULT_TIKTOK_URL = 'https://vt.tiktok.com/ZS9hEsGU3kHau-stx7x/';
-            const DEFAULT_SHOPEE_URL = 'https://s.shopee.vn/7fYvAFHqaP';
+            const baseSlug = generateSlug(name) || 'san-pham';
+            let slug = baseSlug;
 
-            let affiliateUrl = getRowValue(
+            if (slugCounts.has(baseSlug)) {
+              const count = slugCounts.get(baseSlug)! + 1;
+              slugCounts.set(baseSlug, count);
+              slug = `${baseSlug}-${count}`;
+            } else {
+              slugCounts.set(baseSlug, 1);
+            }
+
+            const rawId = getRowValue(row, ['id', 'mãsp', 'mãsảnphẩm', 'mã']);
+            const id = rawId ? rawId.trim() : `prod-${slug}`;
+
+            const categoryRaw = getRowValue(row, ['hạngmục', 'category', 'danhmục', 'loại', 'nhóm']);
+            const category = mapCategoryName(categoryRaw);
+
+            // Affiliate URLs
+            let rawShopee = getRowValue(
               row,
-              ['linkaffshopee', 'linkshopee', 'shopee', 'linkaffiliate', 'affiliatelink', 'linkaff', 'link', 'url'],
+              ['linkaffiliateshopee', 'linkshopee', 'shopee', 'linkaffshopee', 'shopeeurl', 'linkaff', 'link', 'url'],
               ['tiktok', 'ttshop', 'vt.tiktok']
             );
-            let tiktokUrl = getRowValue(
+            let rawTikTok = getRowValue(
               row,
-              ['linkafftiktok', 'linktiktok', 'tiktokurl', 'tiktokshop', 'shoptiktok', 'tiktoklink', 'afftiktok', 'tiktok'],
+              ['linkaffiliatetiktok', 'linktiktok', 'tiktokshop', 'tiktokurl', 'linkafftiktok', 'tiktok'],
               ['shopee', 'shp']
             );
 
-            // Auto-detect and swap if URLs were miscategorized
-            if (affiliateUrl && (affiliateUrl.includes('tiktok.com') || affiliateUrl.includes('vt.tiktok'))) {
-              if (!tiktokUrl || !tiktokUrl.includes('tiktok')) {
-                tiktokUrl = affiliateUrl;
-              }
-              affiliateUrl = '';
+            // Auto-detect and swap if misplaced
+            if (rawShopee && (rawShopee.includes('tiktok.com') || rawShopee.includes('vt.tiktok'))) {
+              if (!rawTikTok) rawTikTok = rawShopee;
+              rawShopee = '';
+            }
+            if (rawTikTok && (rawTikTok.includes('shopee') || rawTikTok.includes('shp.ee'))) {
+              if (!rawShopee) rawShopee = rawTikTok;
+              rawTikTok = '';
             }
 
-            if (tiktokUrl && (tiktokUrl.includes('shopee') || tiktokUrl.includes('shp.ee'))) {
-              if (!affiliateUrl || (!affiliateUrl.includes('shopee') && !affiliateUrl.includes('shp.ee'))) {
-                affiliateUrl = tiktokUrl;
-              }
-              tiktokUrl = '';
+            const validShopee = validateAffiliateUrl(rawShopee, 'shopee');
+            const validTikTok = validateAffiliateUrl(rawTikTok, 'tiktok');
+
+            // Image handling
+            let imageRaw = getRowValue(row, ['linkảnh', 'ảnhsảnphẩm', 'imageurl', 'image', 'hìnhảnh', 'ảnh', 'picture', 'photo']);
+            let imageUrl = imageRaw && imageRaw.startsWith('http') ? imageRaw : '';
+
+            if (!imageUrl && validShopee) {
+              const extracted = await extractShopeeImageFromLink(validShopee);
+              if (extracted) imageUrl = extracted;
             }
 
-            // Full row scan fallback if links are still missing
-            if (!tiktokUrl || !tiktokUrl.includes('tiktok')) {
-              for (const cellVal of Object.values(row)) {
-                if (typeof cellVal === 'string' && (cellVal.includes('tiktok.com') || cellVal.includes('vt.tiktok'))) {
-                  tiktokUrl = cellVal.trim();
-                  break;
-                }
-              }
-            }
-
-            if (!affiliateUrl || (!affiliateUrl.includes('shopee') && !affiliateUrl.includes('shp.ee'))) {
-              for (const cellVal of Object.values(row)) {
-                if (typeof cellVal === 'string' && (cellVal.includes('shopee.vn') || cellVal.includes('shp.ee') || cellVal.includes('shopee.com'))) {
-                  affiliateUrl = cellVal.trim();
-                  break;
-                }
-              }
-            }
-
-            let formattedTikTokUrl = tiktokUrl ? tiktokUrl.trim() : undefined;
-            if (formattedTikTokUrl && !formattedTikTokUrl.startsWith('http://') && !formattedTikTokUrl.startsWith('https://')) {
-              formattedTikTokUrl = 'https://' + formattedTikTokUrl;
-            }
-            if (!formattedTikTokUrl) {
-              formattedTikTokUrl = DEFAULT_TIKTOK_URL;
-            }
-
-            let formattedShopeeUrl = affiliateUrl ? affiliateUrl.trim() : undefined;
-            if (formattedShopeeUrl && !formattedShopeeUrl.startsWith('http://') && !formattedShopeeUrl.startsWith('https://')) {
-              formattedShopeeUrl = 'https://' + formattedShopeeUrl;
-            }
-            if (!formattedShopeeUrl) {
-              formattedShopeeUrl = DEFAULT_SHOPEE_URL;
-            }
-            const imageRaw = getRowValue(row, ['ảnhsảnphẩm', 'image', 'hìnhảnh', 'ảnh', 'picture', 'photo']);
+            // Prices
             const origPriceRaw = getRowValue(row, ['giágốc', 'originalprice', 'niêmyết']);
-            const dealPriceRaw = getRowValue(row, ['giáưuđãi', 'giábán', 'dealprice', 'giákhuyếnmãi', 'giágảm']);
+            const dealPriceRaw = getRowValue(row, ['giá', 'giáthamkhảo', 'giábán', 'dealprice', 'giáưuđãi', 'giákhuyếnmãi']);
 
-            let origPrice = parsePriceNumber(origPriceRaw);
-            let dealPrice = parsePriceNumber(dealPriceRaw);
-            const categoryId = mapCategoryNameToId(categoryRaw);
-
-            if (origPrice === 0 && dealPrice > 0) {
-              origPrice = Math.round(dealPrice * 1.35);
-            } else if (dealPrice === 0 && origPrice > 0) {
-              dealPrice = Math.round(origPrice * 0.75);
-            } else if (origPrice === 0 && dealPrice === 0) {
-              origPrice = 500000;
-              dealPrice = 380000;
-            }
-
-            if (dealPrice > origPrice) {
-              const temp = origPrice;
-              origPrice = dealPrice;
-              dealPrice = temp;
-            }
-
-            const discountPercent =
-              origPrice > 0
-                ? Math.round(((origPrice - dealPrice) / origPrice) * 100)
-                : 25;
-
-            // Image handling: if image is missing or is an affiliate link URL, extract directly from Shopee link
-            let image = imageRaw;
-            if (
-              !image ||
-              !image.startsWith('http') ||
-              (image.includes('shopee') && !image.includes('susercontent.com') && !image.includes('cf.shopee.vn'))
-            ) {
-              // Try auto extracting from affiliateUrl if available
-              if (affiliateUrl && (affiliateUrl.includes('shopee') || affiliateUrl.includes('shope.ee'))) {
-                const extracted = await extractShopeeImageFromLink(affiliateUrl);
-                if (extracted) {
-                  image = extracted;
-                }
-              }
-            }
-
-            if (!image || !image.startsWith('http')) {
-              const fallbacks = FALLBACK_IMAGES[categoryId] || FALLBACK_IMAGES.rods;
-              image = fallbacks[index % fallbacks.length];
-            }
-
-            const badges: BadgeType[] = ['Shopee Mall'];
-            if (discountPercent >= 25) {
-              badges.unshift('Giảm sâu');
-            } else {
-              badges.unshift('Deal hot');
-            }
-            if (
-              title.toUpperCase().includes('MUA') ||
-              title.toUpperCase().includes('COMBO') ||
-              title.toUpperCase().includes('TẶNG')
-            ) {
-              badges.push('Bán chạy');
-            }
-
-            const rating = +(4.7 + (index % 3) * 0.1).toFixed(1);
-            const soldCount = `${(2.5 + (index % 15) * 1.8).toFixed(1)}k`;
+            const origPrice = parsePriceNumber(origPriceRaw);
+            const dealPrice = parsePriceNumber(dealPriceRaw);
 
             parsedProducts.push({
-              id: `sheet-${index + 1}`,
-              title,
-              category: categoryId,
+              id,
+              slug,
+              name,
+              category,
+              price: dealPrice,
               originalPrice: origPrice,
-              dealPrice: dealPrice,
-              discountPercent,
-              image,
-              badges,
-              affiliateUrl: formattedShopeeUrl,
-              tiktokUrl: formattedTikTokUrl,
-              shopName: 'Đồ Câu LK Hòa Official Store',
-              rating,
-              soldCount,
-              isMall: true,
-              couponCode: discountPercent >= 30 ? 'LKHOAMM30' : 'LKHOA10K',
-              description: `Sản phẩm đồ câu cá chính hãng LK Hòa trên Shopee Mall. Cam kết chất lượng cao, đúng mô tả, phôi carbon xịn & bảo hành uy tín.`,
-              updatedAt: 'Vừa cập nhật từ Google Sheet',
+              imageUrl,
+              shopeeUrl: validShopee,
+              tiktokUrl: validTikTok,
             });
           }
 

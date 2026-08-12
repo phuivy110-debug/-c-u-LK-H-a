@@ -1,5 +1,17 @@
 import { Category, Product, ReasonItem } from '../types';
 
+export function generateSlug(text: string): string {
+  if (!text) return '';
+  return text
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-');
+}
+
 export const CATEGORIES: Category[] = [
   { id: 'all', name: 'Tất Cả Đồ Câu', iconName: 'Sparkles' },
   { id: 'rods', name: 'Cần Câu Cá', iconName: 'Fish' },
@@ -10,200 +22,31 @@ export const CATEGORIES: Category[] = [
   { id: 'accessories', name: 'Thùng & Phụ Kiện', iconName: 'ShieldCheck' },
 ];
 
-export const INITIAL_PRODUCTS: Product[] = [
-  {
-    id: 'lk-001',
-    title: 'Cần Câu Tay LK Hòa Hố Đấu 6H Carbon 8 Lớp Siêu Nhẹ Tải Cá Lớn',
-    category: 'rods',
-    originalPrice: 950000,
-    dealPrice: 680000,
-    discountPercent: 28,
-    image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?q=80&w=800&auto=format&fit=crop',
-    badges: ['Deal hot', 'Bán chạy', 'Shopee Mall'],
-    affiliateUrl: 'https://shopee.vn/search?keyword=can%20cau%20lk%20hoa%206h',
-    tiktokUrl: 'https://vt.tiktok.com/ZS9hEsGU3kHau-stx7x/',
-    shopName: 'Đồ Câu LK Hòa Official Store',
-    rating: 4.9,
-    soldCount: '8.4k',
-    isMall: true,
-    couponCode: 'LKHOA50K',
-    description: 'Cần đài LK Hòa 6H chất liệu Carbon Toray Nhật Bản độ nảy cao. Chuyên săn hàng trắm đen, chép củ, tĩnh tải 4.5kg, bảo hành ngọn 1 năm.',
-    updatedAt: 'Hôm nay'
-  },
-  {
-    id: 'lk-002',
-    title: 'Cần Câu Lure LK Hòa Monster Carbon 2 Khúc Máy Đứng / Máy Ngang',
-    category: 'rods',
-    originalPrice: 780000,
-    dealPrice: 520000,
-    discountPercent: 33,
-    image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=800&auto=format&fit=crop',
-    badges: ['Deal hot', 'Giảm sâu', 'Shopee Mall'],
-    affiliateUrl: 'https://shopee.vn/search?keyword=can%20lure%20lk%20hoa%20monster',
-    tiktokUrl: 'https://vt.tiktok.com/ZS9hEsGU3kHau-stx7x/',
-    shopName: 'Đồ Câu LK Hòa Official Store',
-    rating: 4.9,
-    soldCount: '6.2k',
-    isMall: true,
-    couponCode: 'LKLURE30K',
-    description: 'Dòng cần Lure chuyên săn lóc, chẽm, măng. Khoen Fuji chính hãng thoát dây mượt mà, phôi Carbon X xoắn toàn thân chịu lực ấn tượng.',
-    updatedAt: 'Hôm nay'
-  },
-  {
-    id: 'lk-003',
-    title: 'Máy Câu Cá Shimano Sienna FG Cối Kim Loại - Vòng Quay Siêu Mượt',
-    category: 'reels',
-    originalPrice: 650000,
-    dealPrice: 490000,
-    discountPercent: 25,
-    image: 'https://images.unsplash.com/photo-1516724562728-afc824a36e84?q=80&w=800&auto=format&fit=crop',
-    badges: ['Bán chạy', 'Shopee Mall'],
-    affiliateUrl: 'https://shopee.vn/search?keyword=may%20cau%20shimano%20sienna',
-    tiktokUrl: 'https://vt.tiktok.com/ZS9hEsGU3kHau-stx7x/',
-    shopName: 'Đồ Câu LK Hòa Official Store',
-    rating: 4.8,
-    soldCount: '12.5k',
-    isMall: true,
-    couponCode: 'SHIMANO20K',
-    description: 'Máy câu đứng Shimano Sienna phiên bản mới cối nhôm CNC đúc nguyên khối, phanh Drag 8.5kg mạnh mẽ, chạy êm ái chống gỉ nước mặn.',
-    updatedAt: 'Hôm nay'
-  },
-  {
-    id: 'lk-004',
-    title: 'Máy Câu Ngang LK Hòa Black Shark 10 Nấc Từ Chống Nổ Dây Siêu Nhạy',
-    category: 'reels',
-    originalPrice: 550000,
-    dealPrice: 389000,
-    discountPercent: 29,
-    image: 'https://images.unsplash.com/photo-1534043464124-3be32fe000c9?q=80&w=800&auto=format&fit=crop',
-    badges: ['Deal hot', 'Bán chạy'],
-    affiliateUrl: 'https://shopee.vn/search?keyword=may%20cau%20ngang%20lk%20hoa',
-    tiktokUrl: 'https://vt.tiktok.com/ZS9hEsGU3kHau-stx7x/',
-    shopName: 'Đồ Câu LK Hòa Official Store',
-    rating: 4.9,
-    soldCount: '9.8k',
-    isMall: true,
-    couponCode: 'LKMAY20K',
-    description: 'Hệ thống phanh từ tính 10 cấp độ ném mồi xa chuẩn xác, tốc độ vòng tua 7.2:1 thu mồi cực nhanh, tay quay kim loại đệm EVA êm ái.',
-    updatedAt: 'Hôm nay'
-  },
-  {
-    id: 'lk-005',
-    title: 'Mồi Câu Cá Trắm Cỏ, Chép, Trôi LK Hòa - Bộ Đôi Mồi Vua Thính 500g',
-    category: 'baits',
-    originalPrice: 120000,
-    dealPrice: 850000,
-    discountPercent: 29,
-    image: 'https://images.unsplash.com/photo-1498654896293-37aacf113fd9?q=80&w=800&auto=format&fit=crop',
-    badges: ['Bán chạy', 'Deal hot', 'Shopee Mall'],
-    affiliateUrl: 'https://shopee.vn/search?keyword=moi%20cau%20lk%20hoa',
-    tiktokUrl: 'https://vt.tiktok.com/ZS9hEsGU3kHau-stx7x/',
-    shopName: 'Đồ Câu LK Hòa Official Store',
-    rating: 4.9,
-    soldCount: '45.1k',
-    isMall: true,
-    couponCode: 'MOILK10K',
-    description: 'Công thức mồi nhử độc quyền của cần thủ LK Hòa. Mùi thơm tự nhiên dẫn dụ cá nhanh, lưu đáy lâu, phù hợp đánh hồ dịch vụ & sông tự nhiên.',
-    updatedAt: 'Hôm nay'
-  },
-  {
-    id: 'lk-006',
-    title: 'Mồi Nhái Giả LK Hòa Săn Quả, Chẽm - Cao Su Thái Lan Lưỡi BKK Siêu Mềm',
-    category: 'baits',
-    originalPrice: 95000,
-    dealPrice: 65000,
-    discountPercent: 31,
-    image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?q=80&w=800&auto=format&fit=crop',
-    badges: ['Deal hot', 'Giảm sâu'],
-    affiliateUrl: 'https://shopee.vn/search?keyword=nhai%20gia%20lk%20hoa',
-    shopName: 'Đồ Câu LK Hòa Official Store',
-    rating: 4.8,
-    soldCount: '15.3k',
-    isMall: true,
-    couponCode: 'NHAI5K',
-    description: 'Nhái hơi cao su đúc 3 lớp chống vướng tuyệt đối, tích hợp thìa xoay tạo sóng nước thu hút cá lóc háu ăn, ôm lưỡi BKK bén ngót.',
-    updatedAt: 'Hôm nay'
-  },
-  {
-    id: 'lk-007',
-    title: 'Dây Câu PE LK Hòa 9 Lõi Siêu Mượt Chịu Tải Cá Lớn Cuộn 150m',
-    category: 'lines',
-    originalPrice: 220000,
-    dealPrice: 145000,
-    discountPercent: 34,
-    image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=800&auto=format&fit=crop',
-    badges: ['Bán chạy', 'Giảm sâu', 'Shopee Mall'],
-    affiliateUrl: 'https://shopee.vn/search?keyword=day%20pe%20lk%20hoa',
-    shopName: 'Đồ Câu LK Hòa Official Store',
-    rating: 4.9,
-    soldCount: '21.5k',
-    isMall: true,
-    couponCode: 'DAYPE15K',
-    description: 'Dây dù bện 9 sợi công nghệ phủ Nano chống sờn mịn bóng, cắt nước siêu nhanh, đường kính nhỏ nhưng lực kéo tải tệp cực kỳ ấn tượng.',
-    updatedAt: 'Hôm nay'
-  },
-  {
-    id: 'lk-008',
-    title: 'Phao Câu Đài Hố Đấu LK Hòa Đêm Tích Hợp Đổi Màu Khi Cá Cắn Rỉa',
-    category: 'floats',
-    originalPrice: 170000,
-    dealPrice: 115000,
-    discountPercent: 32,
-    image: 'https://images.unsplash.com/photo-1516724562728-afc824a36e84?q=80&w=800&auto=format&fit=crop',
-    badges: ['Deal hot', 'Shopee Mall'],
-    affiliateUrl: 'https://shopee.vn/search?keyword=phao%20dai%20lk%20hoa',
-    shopName: 'Đồ Câu LK Hòa Official Store',
-    rating: 4.9,
-    soldCount: '11.8k',
-    isMall: true,
-    couponCode: 'PHAO10K',
-    description: 'Phao Nano cao cấp bầu phao đồng tâm chính xác. Đèn LED cảm ứng đổi từ xanh sang đỏ báo cá cắn tín hiệu rõ ràng khi câu đêm.',
-    updatedAt: 'Hôm nay'
-  },
-  {
-    id: 'lk-009',
-    title: 'Thùng Câu Đài LK Hòa 29L Đa Năng Có Chân Địa Hình & Khay Mồi Hợp Kim',
-    category: 'accessories',
-    originalPrice: 1150000,
-    dealPrice: 790000,
-    discountPercent: 31,
-    image: 'https://images.unsplash.com/photo-1585515320310-259814833e62?q=80&w=800&auto=format&fit=crop',
-    badges: ['Shopee Mall', 'Giảm sâu'],
-    affiliateUrl: 'https://shopee.vn/search?keyword=thung%20cau%20lk%20hoa',
-    shopName: 'Đồ Câu LK Hòa Official Store',
-    rating: 4.9,
-    soldCount: '4.6k',
-    isMall: true,
-    couponCode: 'THUNG50K',
-    description: 'Thùng nhựa ABS nguyên sinh chịu lực ngồi thoải mái 150kg. Đầy đủ phụ kiện pát giữ cần, pát rế mồi, rổ nắp nhôm & chân địa hình 4 góc.',
-    updatedAt: 'Hôm nay'
-  }
-];
+export const INITIAL_PRODUCTS: Product[] = [];
 
 export const WHY_US_ITEMS: ReasonItem[] = [
   {
     id: 'reason-1',
-    title: 'Website Chính Thức Của Đồ Câu LK Hòa',
-    description: 'Nơi tổng hợp thông tin sản phẩm, mã giảm giá và gian hàng chính hãng LK Hòa trực tiếp trên Shopee Mall & TikTok Shop.',
+    title: 'Website Danh Mục & Affiliate Chính Thức LK Hòa',
+    description: 'Nơi tổng hợp thông tin sản phẩm và liên kết trực tiếp tới gian hàng chính hãng LK Hòa trên Shopee Mall & TikTok Shop.',
     icon: 'ShieldCheck'
   },
   {
     id: 'reason-2',
-    title: 'Săn Deal Giá Hời - Không Bỏ Lỡ Voucher',
-    description: 'Lỡ nhịp săn voucher khi xem Livestream hay Video? Bạn luôn có thể vào đây lấy đầy đủ mã giảm giá để mua với giá tốt nhất.',
+    title: 'Cập Nhật Link Nhanh - Mua Sắm Dễ Dàng',
+    description: 'Dễ dàng tra cứu thông tin sản phẩm và mở trực tiếp ứng dụng Shopee hoặc TikTok Shop để hoàn tất mua hàng.',
     icon: 'BadgePercent'
   },
   {
     id: 'reason-3',
-    title: 'An Toàn Tuyệt Đối - Mua Trực Tiếp Từ Cửa Hàng',
-    description: 'Nút bấm mở thẳng ứng dụng Shopee / TikTok Shop chính chủ của LK Hòa, đảm bảo an toàn tuyệt đối, không lo trang rác hay lừa đảo.',
+    title: 'Chính Hãng & An Toàn',
+    description: 'Mọi liên kết mua hàng đều mở ứng dụng hoặc website chính thức của sàn thương mại điện tử.',
     icon: 'CheckCircle2'
   },
   {
     id: 'reason-4',
-    title: 'Bảo Hành Lóng Cần & Hỗ Trợ 24/7',
-    description: 'Tất cả đơn hàng mua qua hệ thống đều được hưởng đầy đủ quyền lợi bảo hành lóng cần chính hãng và hỗ trợ trực tiếp từ LK Hòa.',
+    title: 'Hỗ Trợ Thông Tin 24/7',
+    description: 'Trợ lý tư vấn AI hỗ trợ tra cứu sản phẩm, thông số kỹ thuật và chọn loại đồ câu phù hợp.',
     icon: 'Clock'
   }
 ];
-

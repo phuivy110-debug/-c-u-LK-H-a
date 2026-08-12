@@ -14,7 +14,7 @@ import { AnalyticsModal } from './components/AnalyticsModal';
 import { AnalyticsWidget } from './components/AnalyticsWidget';
 import { ScrollToTopButton } from './components/ScrollToTopButton';
 import { INITIAL_PRODUCTS } from './data/products';
-import { Product, CategoryId, BadgeType } from './types';
+import { Product } from './types';
 import { Flame, RefreshCw, Layers, FileSpreadsheet, CheckCircle, AlertCircle } from 'lucide-react';
 import { fetchProductsFromGoogleSheet, DEFAULT_SHEET_URL } from './utils/googleSheetSync';
 
@@ -44,16 +44,15 @@ export default function App() {
   const [syncError, setSyncError] = useState<string | null>(null);
 
   // Filtering & Sorting State
-  const [selectedCategory, setSelectedCategory] = useState<CategoryId>('all');
-  const [selectedBadge, setSelectedBadge] = useState<BadgeType | 'all'>('all');
+  const [selectedCategory, setSelectedCategory] = useState<string>('Tất cả');
   const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState('discount');
+  const [sortBy, setSortBy] = useState('default');
   const [visibleCount, setVisibleCount] = useState<number>(16);
 
   // Reset pagination when filters change
   useEffect(() => {
     setVisibleCount(16);
-  }, [selectedCategory, selectedBadge, searchQuery, sortBy]);
+  }, [selectedCategory, searchQuery, sortBy]);
 
   // Modals & Feedback
   const [selectedDetailProduct, setSelectedDetailProduct] = useState<Product | null>(null);
@@ -150,8 +149,13 @@ export default function App() {
   }, []);
 
   const handleCopyLink = (p: Product) => {
-    navigator.clipboard.writeText(p.affiliateUrl);
-    showToast(`Đã sao chép link mua chính hãng "${p.title.slice(0, 25)}..."!`);
+    const linkToCopy = p.shopeeUrl || p.tiktokUrl || '';
+    if (linkToCopy) {
+      navigator.clipboard.writeText(linkToCopy);
+      showToast(`Đã sao chép link mua chính hãng "${p.name.slice(0, 25)}..."!`);
+    } else {
+      showToast('Sản phẩm hiện chưa có link mua hàng.');
+    }
   };
 
   const handleCopyCoupon = (code: string) => {
@@ -173,21 +177,23 @@ export default function App() {
     }
   };
 
+  // Dynamic categories list
+  const categories = useMemo(() => {
+    const catSet = new Set<string>();
+    products.forEach((p) => {
+      if (p.category) catSet.add(p.category);
+    });
+    return ['Tất cả', ...Array.from(catSet)];
+  }, [products]);
+
   // Compute category counts
   const categoryCounts = useMemo(() => {
-    const counts: Record<CategoryId, number> = {
-      all: products.length,
-      rods: 0,
-      reels: 0,
-      lines: 0,
-      baits: 0,
-      floats: 0,
-      accessories: 0,
+    const counts: Record<string, number> = {
+      'Tất cả': products.length,
     };
     products.forEach((p) => {
-      if (counts[p.category] !== undefined) {
-        counts[p.category]++;
-      }
+      const cat = p.category || 'Chưa phân loại';
+      counts[cat] = (counts[cat] || 0) + 1;
     });
     return counts;
   }, [products]);
@@ -197,22 +203,17 @@ export default function App() {
     return products
       .filter((p) => {
         // Category filter
-        if (selectedCategory !== 'all' && p.category !== selectedCategory) {
-          return false;
-        }
-
-        // Badge filter
-        if (selectedBadge !== 'all' && !p.badges.includes(selectedBadge as BadgeType)) {
+        if (selectedCategory !== 'Tất cả' && p.category !== selectedCategory) {
           return false;
         }
 
         // Search query
         if (searchQuery.trim() !== '') {
           const q = searchQuery.toLowerCase().trim();
-          const matchTitle = p.title.toLowerCase().includes(q);
-          const matchShop = p.shopName.toLowerCase().includes(q);
-          const matchCoupon = p.couponCode?.toLowerCase().includes(q);
-          if (!matchTitle && !matchShop && !matchCoupon) {
+          const pName = (p.name || '').toLowerCase();
+          const matchTitle = pName.includes(q);
+          const matchCategory = (p.category || '').toLowerCase().includes(q);
+          if (!matchTitle && !matchCategory) {
             return false;
           }
         }
@@ -220,21 +221,22 @@ export default function App() {
         return true;
       })
       .sort((a, b) => {
+        const priceA = a.price || 0;
+        const priceB = b.price || 0;
         if (sortBy === 'discount') {
-          return b.discountPercent - a.discountPercent;
+          const discountA = a.originalPrice > a.price && a.price > 0 ? (a.originalPrice - a.price) / a.originalPrice : 0;
+          const discountB = b.originalPrice > b.price && b.price > 0 ? (b.originalPrice - b.price) / b.originalPrice : 0;
+          return discountB - discountA;
         }
         if (sortBy === 'price-asc') {
-          return a.dealPrice - b.dealPrice;
+          return priceA - priceB;
         }
         if (sortBy === 'price-desc') {
-          return b.dealPrice - a.dealPrice;
-        }
-        if (sortBy === 'rating') {
-          return b.rating - a.rating;
+          return priceB - priceA;
         }
         return 0; // default order
       });
-  }, [products, selectedCategory, selectedBadge, searchQuery, sortBy]);
+  }, [products, selectedCategory, searchQuery, sortBy]);
 
   return (
     <div className="min-h-screen bg-[#F6F7FB] flex flex-col text-slate-800">
@@ -246,8 +248,9 @@ export default function App() {
         productCount={products.length}
         showAdminButton={isAdmin}
         onLogoClickCount={handleLogoClick}
-        onSelectCategory={(catId) => {
-          setSelectedCategory(catId);
+        categories={categories}
+        onSelectCategory={(catName) => {
+          setSelectedCategory(catName);
           setVisibleCount(16);
         }}
       />
@@ -325,16 +328,12 @@ export default function App() {
           </div>
         </div>
 
-        {/* Category & Badge Filter Bar */}
+        {/* Category Filter Bar */}
         <CategoryFilter
+          categories={categories}
           selectedCategory={selectedCategory}
-          onSelectCategory={(id) => {
-            setSelectedCategory(id);
-            setVisibleCount(16);
-          }}
-          selectedBadge={selectedBadge}
-          onSelectBadge={(badge) => {
-            setSelectedBadge(badge);
+          onSelectCategory={(cat) => {
+            setSelectedCategory(cat);
             setVisibleCount(16);
           }}
           sortBy={sortBy}
@@ -388,8 +387,7 @@ export default function App() {
             <button
               onClick={() => {
                 setSearchQuery('');
-                setSelectedCategory('all');
-                setSelectedBadge('all');
+                setSelectedCategory('Tất cả');
               }}
               className="inline-flex items-center gap-2 bg-[#EE4D2D] text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-md hover:bg-orange-600 transition-colors cursor-pointer"
             >

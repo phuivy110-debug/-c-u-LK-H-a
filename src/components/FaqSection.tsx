@@ -9,11 +9,11 @@ interface FaqItem {
 const FAQS: FaqItem[] = [
   {
     question: 'Làm thế nào để lấy mã giảm giá Đồ Câu LK Hòa giá hời nhất?',
-    answer: 'Bạn chỉ cần chọn sản phẩm cần mua trên trang chủ Đồ Câu LK Hòa. Hệ thống sẽ tự động cập nhật các mã giảm giá, mã miễn phí vận chuyển Extra từ Shopee Mall & TikTok Shop. Bấm nút "Shopee" hoặc "TikTok" để mở trực tiếp ứng dụng mua hàng với giá ưu đãi đã áp mã.'
+    answer: 'Bạn chỉ cần chọn sản phẩm cần mua trên trang chủ Đồ Câu LK Hòa. Hệ thống sẽ tự động cập nhật các mã giảm giá, mã miễn phí vận chuyển Extra từ Shopee & TikTok Shop. Bấm nút "Shopee" hoặc "TikTok" để mở trực tiếp ứng dụng mua hàng với giá ưu đãi đã áp mã.'
   },
   {
     question: 'Sản phẩm tại Đồ Câu LK Hòa có đảm bảo chính hãng 100% không?',
-    answer: 'Cam kết 100% tất cả sản phẩm cần câu, máy câu, mồi câu, phao đài và phụ kiện đều dẫn trực tiếp đến Cửa Hàng Chính Thức (Shopee Mall & TikTok Shop Official) của LK Hòa. Hàng nguyên tem mác, đầy đủ giấy tờ bảo hành chính hãng.'
+    answer: 'Cam kết 100% tất cả sản phẩm cần câu, máy câu, mồi câu, phao đài và phụ kiện đều dẫn trực tiếp đến Cửa Hàng Chính Thức (Shopee & TikTok Shop Official) của LK Hòa. Hàng nguyên tem mác, đầy đủ giấy tờ bảo hành chính hãng.'
   },
   {
     question: 'Chính sách bảo hành lóng cần và đổi trả tại LK Hòa như thế nào?',
@@ -107,7 +107,7 @@ export const FaqSection: React.FC = () => {
           <a
             href="https://s.shopee.vn/7fYvAFHqaP"
             target="_blank"
-            rel="noreferrer"
+            rel="sponsored nofollow noopener noreferrer"
             className="bg-[#EE4D2D] hover:bg-orange-600 text-white font-extrabold text-xs px-4 py-2.5 rounded-xl shadow-xs transition-all flex items-center gap-1.5 shrink-0"
           >
             <ShoppingBag className="w-3.5 h-3.5" />

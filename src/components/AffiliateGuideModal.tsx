@@ -41,7 +41,7 @@ export const AffiliateGuideModal: React.FC<AffiliateGuideModalProps> = ({
     const extracted = await extractShopeeImageFromLink(url);
     if (extracted) {
       setEditingProducts((prev) =>
-        prev.map((p) => (p.id === id ? { ...p, image: extracted } : p))
+        prev.map((p) => (p.id === id ? { ...p, image_url: extracted } : p))
       );
     }
     setLoadingExtractId(null);
@@ -50,11 +50,11 @@ export const AffiliateGuideModal: React.FC<AffiliateGuideModalProps> = ({
   const handleExtractAllImages = async () => {
     setIsBatchExtracting(true);
     for (const p of editingProducts) {
-      if (p.affiliateUrl && (p.affiliateUrl.includes('shopee') || p.affiliateUrl.includes('shope.ee'))) {
-        const extracted = await extractShopeeImageFromLink(p.affiliateUrl);
+      if (p.shopee_url && (p.shopee_url.includes('shopee') || p.shopee_url.includes('shope.ee'))) {
+        const extracted = await extractShopeeImageFromLink(p.shopee_url);
         if (extracted) {
           setEditingProducts((prev) =>
-            prev.map((item) => (item.id === p.id ? { ...item, image: extracted } : item))
+            prev.map((item) => (item.id === p.id ? { ...item, image_url: extracted } : item))
           );
         }
       }
@@ -66,21 +66,21 @@ export const AffiliateGuideModal: React.FC<AffiliateGuideModalProps> = ({
 
   const handleLinkChange = (id: string, newUrl: string) => {
     const updated = editingProducts.map((p) =>
-      p.id === id ? { ...p, affiliateUrl: newUrl } : p
+      p.id === id ? { ...p, shopee_url: newUrl } : p
     );
     setEditingProducts(updated);
   };
 
-  const handlePriceChange = (id: string, field: 'originalPrice' | 'dealPrice', val: number) => {
+  const handlePriceChange = (id: string, field: 'original_price' | 'price', val: number) => {
     const updated = editingProducts.map((p) => {
       if (p.id === id) {
-        const orig = field === 'originalPrice' ? val : p.originalPrice;
-        const deal = field === 'dealPrice' ? val : p.dealPrice;
+        const orig = field === 'original_price' ? val : p.original_price;
+        const deal = field === 'price' ? val : p.price;
         const percent = orig > 0 ? Math.round(((orig - deal) / orig) * 100) : 0;
         return {
           ...p,
           [field]: val,
-          discountPercent: Math.max(0, percent),
+          discount: Math.max(0, percent),
         };
       }
       return p;
@@ -88,9 +88,9 @@ export const AffiliateGuideModal: React.FC<AffiliateGuideModalProps> = ({
     setEditingProducts(updated);
   };
 
-  const handleTitleChange = (id: string, val: string) => {
+  const handleNameChange = (id: string, val: string) => {
     const updated = editingProducts.map((p) =>
-      p.id === id ? { ...p, title: val } : p
+      p.id === id ? { ...p, name: val } : p
     );
     setEditingProducts(updated);
   };
@@ -240,14 +240,14 @@ export const INITIAL_PRODUCTS: Product[] = ${JSON.stringify(editingProducts, nul
                     <div key={p.id} className="p-3 flex items-center justify-between gap-3 hover:bg-slate-50">
                       <div className="flex items-center gap-3 min-w-0">
                         <span className="font-bold text-slate-400 w-5 text-right">{idx + 1}.</span>
-                        <img src={p.image} alt="" className="w-8 h-8 rounded-lg object-cover bg-slate-100 shrink-0" />
+                        {p.image_url && <img src={p.image_url} alt="" className="w-8 h-8 rounded-lg object-cover bg-slate-100 shrink-0" />}
                         <div className="min-w-0">
-                          <div className="font-bold text-slate-800 truncate">{p.title}</div>
-                          <div className="text-[11px] text-slate-400 font-mono truncate">{p.affiliateUrl}</div>
+                          <div className="font-bold text-slate-800 truncate">{p.name}</div>
+                          <div className="text-[11px] text-slate-400 font-mono truncate">{p.shopee_url || p.tiktok_url}</div>
                         </div>
                       </div>
                       <div className="text-right shrink-0">
-                        <div className="font-extrabold text-[#EE4D2D]">{p.dealPrice.toLocaleString('vi-VN')}đ</div>
+                        <div className="font-extrabold text-[#EE4D2D]">{p.price ? `${p.price.toLocaleString('vi-VN')}đ` : 'Chưa có giá'}</div>
                         <div className="text-[10px] text-slate-400 bg-orange-50 px-1.5 py-0.2 rounded inline-block">{p.category}</div>
                       </div>
                     </div>
@@ -296,16 +296,18 @@ export const INITIAL_PRODUCTS: Product[] = ${JSON.stringify(editingProducts, nul
                   >
                     <div className="flex items-center justify-between text-xs font-bold text-slate-500">
                       <div className="flex items-center gap-2">
-                        <img
-                          src={p.image}
-                          alt=""
-                          referrerPolicy="no-referrer"
-                          className="w-7 h-7 rounded-lg object-cover bg-slate-200 border border-slate-300"
-                        />
+                        {p.image_url && (
+                          <img
+                            src={p.image_url}
+                            alt=""
+                            referrerPolicy="no-referrer"
+                            className="w-7 h-7 rounded-lg object-cover bg-slate-200 border border-slate-300"
+                          />
+                        )}
                         <span>Sản phẩm #{index + 1} ({p.id})</span>
                       </div>
                       <span className="bg-orange-100 text-[#EE4D2D] px-2 py-0.5 rounded text-[11px]">
-                        {p.shopName}
+                        {p.category}
                       </span>
                     </div>
 
@@ -317,8 +319,8 @@ export const INITIAL_PRODUCTS: Product[] = ${JSON.stringify(editingProducts, nul
                         </label>
                         <input
                           type="text"
-                          value={p.title}
-                          onChange={(e) => handleTitleChange(p.id, e.target.value)}
+                          value={p.name}
+                          onChange={(e) => handleNameChange(p.id, e.target.value)}
                           className="w-full bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-semibold focus:border-[#EE4D2D] focus:outline-hidden"
                         />
                       </div>
@@ -331,22 +333,22 @@ export const INITIAL_PRODUCTS: Product[] = ${JSON.stringify(editingProducts, nul
                           </label>
                           <input
                             type="number"
-                            value={p.originalPrice}
+                            value={p.original_price || 0}
                             onChange={(e) =>
-                              handlePriceChange(p.id, 'originalPrice', Number(e.target.value))
+                              handlePriceChange(p.id, 'original_price', Number(e.target.value))
                             }
                             className="w-full bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-semibold focus:border-[#EE4D2D] focus:outline-hidden"
                           />
                         </div>
                         <div>
                           <label className="block text-[11px] font-bold text-slate-600 mb-1">
-                            Giá ưu đãi (đ):
+                            Giá bán (đ):
                           </label>
                           <input
                             type="number"
-                            value={p.dealPrice}
+                            value={p.price || 0}
                             onChange={(e) =>
-                              handlePriceChange(p.id, 'dealPrice', Number(e.target.value))
+                              handlePriceChange(p.id, 'price', Number(e.target.value))
                             }
                             className="w-full bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-bold text-[#EE4D2D] focus:border-[#EE4D2D] focus:outline-hidden"
                           />
@@ -361,7 +363,7 @@ export const INITIAL_PRODUCTS: Product[] = ${JSON.stringify(editingProducts, nul
                             Link Affiliate Shopee:
                           </span>
                           <button
-                            onClick={() => handleExtractSingleImage(p.id, p.affiliateUrl)}
+                            onClick={() => handleExtractSingleImage(p.id, p.shopee_url || '')}
                             disabled={loadingExtractId === p.id}
                             className="text-[#EE4D2D] hover:underline text-[10px] font-extrabold flex items-center gap-0.5 cursor-pointer disabled:opacity-50"
                           >
@@ -376,7 +378,7 @@ export const INITIAL_PRODUCTS: Product[] = ${JSON.stringify(editingProducts, nul
                         <div className="flex gap-1.5">
                           <input
                             type="text"
-                            value={p.affiliateUrl}
+                            value={p.shopee_url || ''}
                             onChange={(e) => handleLinkChange(p.id, e.target.value)}
                             placeholder="https://shope.ee/..."
                             className="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-mono text-slate-800 focus:border-[#EE4D2D] focus:outline-hidden"
@@ -391,11 +393,11 @@ export const INITIAL_PRODUCTS: Product[] = ${JSON.stringify(editingProducts, nul
                       <span className="text-[11px] font-bold text-slate-500 shrink-0">Link ảnh hiện tại:</span>
                       <input
                         type="text"
-                        value={p.image}
+                        value={p.image_url || ''}
                         onChange={(e) => {
                           const val = e.target.value;
                           setEditingProducts((prev) =>
-                            prev.map((item) => (item.id === p.id ? { ...item, image: val } : item))
+                            prev.map((item) => (item.id === p.id ? { ...item, image_url: val } : item))
                           );
                         }}
                         placeholder="https://down-vn.img.susercontent.com/file/..."

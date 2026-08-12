@@ -1,6 +1,4 @@
-export type BadgeType = 'Deal hot' | 'Bán chạy' | 'Giảm sâu' | 'Shopee Mall';
-
-export type CategoryId = 'all' | 'rods' | 'reels' | 'lines' | 'baits' | 'floats' | 'accessories';
+export type CategoryId = string;
 
 export interface Category {
   id: CategoryId;
@@ -10,22 +8,14 @@ export interface Category {
 
 export interface Product {
   id: string;
-  title: string;
-  category: CategoryId;
+  slug: string;
+  name: string;
+  category: string;
+  price: number;
   originalPrice: number;
-  dealPrice: number;
-  image: string;
-  badges: BadgeType[];
-  affiliateUrl: string;
-  shopName: string;
-  rating: number;
-  soldCount: string;
-  discountPercent: number;
-  isMall?: boolean;
-  couponCode?: string;
-  description?: string;
-  updatedAt?: string;
-  tiktokUrl?: string;
+  imageUrl: string;
+  shopeeUrl: string;
+  tiktokUrl: string;
 }
 
 export interface ReasonItem {

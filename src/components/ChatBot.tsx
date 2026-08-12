@@ -95,12 +95,12 @@ export const ChatBot: React.FC<ChatBotProps> = ({ products }) => {
 
     return products
       .filter((product) => {
-        const title = (product.title || '').toLowerCase();
+        const name = (product.name || '').toLowerCase();
         const category = (product.category || '').toLowerCase();
         const desc = (product.description || '').toLowerCase();
 
         return keywords.some(
-          (kw) => title.includes(kw) || category.includes(kw) || desc.includes(kw)
+          (kw) => name.includes(kw) || category.includes(kw) || desc.includes(kw)
         );
       })
       .slice(0, 4);
@@ -114,12 +114,12 @@ export const ChatBot: React.FC<ChatBotProps> = ({ products }) => {
     const queryLower = textToSend.toLowerCase();
     const matchedProds = products
       .filter((p) => {
-        const title = (p.title || '').toLowerCase();
+        const name = (p.name || '').toLowerCase();
         const category = (p.category || '').toLowerCase();
         return (
-          queryLower.split(/\s+/).some((kw) => kw.length >= 2 && (title.includes(kw) || category.includes(kw))) ||
-          (queryLower.includes('5h') && title.includes('5h')) ||
-          (queryLower.includes('mồi') && (category.includes('mồi') || title.includes('mồi'))) ||
+          queryLower.split(/\s+/).some((kw) => kw.length >= 2 && (name.includes(kw) || category.includes(kw))) ||
+          (queryLower.includes('5h') && name.includes('5h')) ||
+          (queryLower.includes('mồi') && (category.includes('mồi') || name.includes('mồi'))) ||
           (queryLower.includes('cần') && category.includes('cần'))
         );
       })
@@ -467,31 +467,27 @@ export const ChatBot: React.FC<ChatBotProps> = ({ products }) => {
                                 key={prod.id}
                                 className="flex items-center gap-2.5 p-2 bg-slate-50 hover:bg-orange-50/50 border border-slate-200 rounded-xl transition-all"
                               >
-                                <img
-                                  src={prod.image}
-                                  alt={prod.title}
-                                  className="w-11 h-11 object-cover rounded-lg shrink-0 border border-slate-200"
-                                />
+                                {prod.image_url && (
+                                  <img
+                                    src={prod.image_url}
+                                    alt={prod.name}
+                                    className="w-11 h-11 object-cover rounded-lg shrink-0 border border-slate-200"
+                                  />
+                                )}
                                 <div className="flex-1 min-w-0">
                                   <div className="font-bold text-slate-900 text-[11px] truncate">
-                                    {prod.title}
+                                    {prod.name}
                                   </div>
                                   <div className="flex items-center gap-1.5 mt-0.5">
                                     <span className="text-[#EE4D2D] font-black text-xs">
-                                      {prod.dealPrice?.toLocaleString('vi-VN')}đ
+                                      {prod.price ? `${prod.price.toLocaleString('vi-VN')}đ` : 'Liên hệ'}
                                     </span>
-                                    {prod.couponCode && (
-                                      <span className="bg-orange-100 text-[#EE4D2D] text-[9px] font-extrabold px-1 rounded flex items-center gap-0.5">
-                                        <Tag className="w-2.5 h-2.5" />
-                                        {prod.couponCode}
-                                      </span>
-                                    )}
                                   </div>
                                 </div>
                                 <a
-                                  href={prod.affiliateUrl}
+                                  href={prod.shopee_url || prod.tiktok_url || '#'}
                                   target="_blank"
-                                  rel="noopener noreferrer"
+                                  rel="sponsored nofollow noopener noreferrer"
                                   className="bg-[#EE4D2D] hover:bg-orange-600 text-white font-extrabold text-[10px] px-2.5 py-1.5 rounded-lg shrink-0 flex items-center gap-1 no-underline uppercase"
                                 >
                                   <span>Mua</span>
@@ -550,20 +546,22 @@ export const ChatBot: React.FC<ChatBotProps> = ({ products }) => {
                     {matchedInputProducts.map((p) => (
                       <div
                         key={p.id}
-                        onClick={() => handleSendMessage(`Tôi muốn tư vấn về ${p.title}`)}
+                        onClick={() => handleSendMessage(`Tôi muốn tư vấn về ${p.name}`)}
                         className="bg-white border border-orange-200 hover:border-[#EE4D2D] p-1.5 rounded-xl flex items-center gap-2 shrink-0 max-w-[200px] cursor-pointer shadow-xs transition-all group"
                       >
-                        <img
-                          src={p.image}
-                          alt={p.title}
-                          className="w-8 h-8 rounded-lg object-cover shrink-0"
-                        />
+                        {p.image_url && (
+                          <img
+                            src={p.image_url}
+                            alt={p.name}
+                            className="w-8 h-8 rounded-lg object-cover shrink-0"
+                          />
+                        )}
                         <div className="min-w-0 flex-1">
                           <div className="font-bold text-[10px] text-slate-900 truncate group-hover:text-[#EE4D2D]">
-                            {p.title}
+                            {p.name}
                           </div>
                           <div className="text-[#EE4D2D] font-extrabold text-[10px]">
-                            {p.dealPrice?.toLocaleString('vi-VN')}đ
+                            {p.price ? `${p.price.toLocaleString('vi-VN')}đ` : 'Liên hệ'}
                           </div>
                         </div>
                       </div>

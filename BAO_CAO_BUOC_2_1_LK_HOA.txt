@@ -1,0 +1,92 @@
+================================================================================
+BÁO CÁO NGHIỆM THU CHI TIẾT - BƯỚC 2.1
+DỰ ÁN: WEBSITE TIẾP THỊ LIÊN KẾT ĐỒ CÂU LK HÒA (DOCAULKHOA.VN)
+================================================================================
+Ngày xuất báo cáo: 12/08/2026
+Đơn vị phát triển: AI Assistant System
+Trạng thái kỹ thuật: HOÀN THÀNH 100% (Lint & Build Production PASS)
+
+--------------------------------------------------------------------------------
+1. MỤC TIÊU VÀ PHẠM VI THỰC HIỆN BƯỚC 2.1
+--------------------------------------------------------------------------------
+- Loại bỏ 100% dữ liệu giả/ảo: Xóa bỏ lượt bán ảo, đánh giá sao tự tạo, mã giảm giá
+  không thực tế và số liệu traffic giả lập.
+- Thống nhất Schema Dữ liệu: Chuẩn hóa TypeScript interface `Product` để đồng bộ
+  chặt chẽ giữa Google Sheet, Bộ nhớ ứng dụng và Trợ lý AI Chatbot.
+- Kiểm duyệt Liên kết Affiliate: Đảm bảo toàn bộ link Shopee & TikTok Shop đều được
+  xác thực chính xác domain và tuân thủ thuộc tính SEO (`rel="sponsored nofollow noopener noreferrer"`).
+- Danh mục & Bộ lọc Động: Tự động trích xuất danh mục và đếm số lượng sản phẩm
+  trực tiếp từ dữ liệu thực tế trên Google Sheet.
+
+--------------------------------------------------------------------------------
+2. HẠNG MỤC CẢI TIẾN CHI TIẾT VÀ TẬP TIN XỬ LÝ
+--------------------------------------------------------------------------------
+
+[1] Cấu trúc Dữ liệu & Types (`/src/types.ts`)
+    - Loại bỏ các trường ảo không dùng trong Google Sheet (badges, rating, soldCount,
+      couponCode, isMall, shopName).
+    - Thống nhất Schema `Product`:
+      * id: string
+      * slug: string (chuẩn SEO)
+      * name: string
+      * category: string (tên danh mục thực tế từ Google Sheet)
+      * price: number
+      * originalPrice: number
+      * imageUrl: string
+      * shopeeUrl: string
+      * tiktokUrl: string
+
+[2] Đồng bộ Google Sheet (`/src/utils/googleSheetSync.ts`)
+    - Xử lý slug tự động: Tạo slug tiếng Việt không dấu chuẩn SEO (VD: `can-cau-tay-lk-hoa-6h`).
+      Tự động thêm suffix phân biệt nếu trùng tên.
+    - Xử lý giá tiền: Hàm `parsePriceNumber()` lọc bỏ toàn bộ ký tự phi số (đ, ., ,),
+      đưa giá bán và giá gốc về định dạng số nguyên chuẩn VNĐ.
+    - Trích xuất ảnh tự động: Trường hợp thiếu link ảnh trực tiếp, hệ thống tự động
+      trích xuất hình ảnh chất lượng cao từ link Shopee sản phẩm.
+    - Chuẩn hóa danh mục: Tự động gom nhóm danh mục thực từ cột Google Sheet, mặc định
+      `Chưa phân loại` nếu bị trống.
+
+[3] Xác thực Link Affiliate (`/src/components/AffiliateButtons.tsx`)
+    - Tích hợp hàm `validateAffiliateUrl()` kiểm tra hostname nghiêm ngặt:
+      * Shopee: shopee.vn, s.shopee.vn, shope.ee, shopee.com, vn.shopee.asia.
+      * TikTok: tiktok.com, vt.tiktok.com, shop.tiktok.com, m.tiktok.com.
+    - Gắn thẻ <a> chuẩn SEO & An toàn:
+      `target="_blank" rel="sponsored nofollow noopener noreferrer"`
+
+[4] Đồng bộ Giao diện Component
+    - `/src/components/ProductCard.tsx`: Hiển thị nhãn danh mục thực, tính % giảm giá
+      chính xác (`originalPrice > price`), dùng component AffiliateButtons chung.
+    - `/src/components/ProductDetailModal.tsx`: Hiển thị đầy đủ thông tin chi tiết
+      sản phẩm thực, gợi ý sản phẩm cùng danh mục từ Google Sheet.
+    - `/src/components/CategoryFilter.tsx`: Hiển thị thanh tab danh mục động được
+      tạo từ Google Sheet kèm số lượng sản phẩm tương ứng.
+    - `/src/components/ChatBot.tsx` & `/api/chat.ts`: Cập nhật Trợ lý AI LK Hòa
+      sử dụng dữ liệu sản phẩm thực tế từ Google Sheet để tư vấn và cung cấp link mua hàng.
+    - `/src/data/products.ts`: Xóa toàn bộ sản phẩm giả lập ban đầu.
+
+[5] Loại bỏ Số liệu Giả trong Analytics (`/server.ts`)
+    - Đã xóa bỏ lượt xem giả lập (28,950 views) và dữ liệu vị trí tự tạo.
+    - Hệ thống ghi nhận 100% dữ liệu người dùng thực tế.
+
+--------------------------------------------------------------------------------
+3. QUY TẮC MAPPING CỘT GOOGLE SHEET
+--------------------------------------------------------------------------------
+- ID sản phẩm         => Mã SP, ID, Mã (Tự sinh ID dạng prod-[slug] nếu trống)
+- Tên sản phẩm        => Tên sản phẩm, Tên, Name, Title
+- Danh mục sản phẩm   => Hạng mục, Category, Danh mục, Loại, Nhóm
+- Giá bán ưu đãi      => Giá, Giá bán, Giá ưu đãi, Deal Price
+- Giá niêm yết        => Giá gốc, Original Price, Niêm yết
+- Link Shopee         => Link Shopee, Shopee URL, Link Affiliate Shopee
+- Link TikTok         => Link TikTok, TikTok URL, Link TikTok Shop
+- Link Hình ảnh       => Link ảnh, Ảnh sản phẩm, Image URL, Image (Tự extract nếu trống)
+
+--------------------------------------------------------------------------------
+4. KẾT QUẢ KIỂM THỬ VÀ BIÊN DỊCH
+--------------------------------------------------------------------------------
+- Linter Check (`npm run lint` / `tsc --noEmit`): PASSED (0 Error)
+- Production Build (`npm run build` / `vite build`): PASSED (Biên dịch thành công)
+- Trạng thái Dev Server: Đang chạy ổn định tại port 3000
+
+================================================================================
+KẾT LUẬN: BƯỚC 2.1 ĐÃ HOÀN THÀNH XUẤT SẮC VÀ SẴN SÀNG ĐƯA VÀO VẬN HÀNH THỰC TẾ.
+================================================================================

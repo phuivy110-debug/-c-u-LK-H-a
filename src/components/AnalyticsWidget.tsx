@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Activity, Users, Eye, TrendingUp, BarChart3 } from 'lucide-react';
+import { Activity, Eye, BarChart3 } from 'lucide-react';
 import { fetchAnalyticsStats, pingAnalytics } from '../utils/analyticsService';
+import { AnalyticsStats } from '../types';
 
 interface AnalyticsWidgetProps {
   onOpenModal: () => void;
@@ -11,29 +12,43 @@ export const AnalyticsWidget: React.FC<AnalyticsWidgetProps> = ({
   onOpenModal,
   variant = 'pill',
 }) => {
-  const [onlineCount, setOnlineCount] = useState<number>(24);
-  const [todayViews, setTodayViews] = useState<number>(1240);
+  const [stats, setStats] = useState<AnalyticsStats | null>(null);
 
   const refreshData = async () => {
-    const stats = await fetchAnalyticsStats();
-    if (stats) {
-      setOnlineCount(stats.activeUsersOnline);
-      setTodayViews(stats.todayPageViews);
+    const res = await fetchAnalyticsStats();
+    if (res) {
+      setStats(res);
     }
   };
 
   useEffect(() => {
-    // Initial ping and data fetch
     pingAnalytics();
     refreshData();
 
-    // Accurate data sync polling
     const interval = setInterval(() => {
       refreshData();
     }, 10000);
 
     return () => clearInterval(interval);
   }, []);
+
+  if (!stats) {
+    if (variant === 'floating') {
+      return (
+        <button
+          onClick={onOpenModal}
+          className="fixed bottom-20 left-4 z-30 bg-slate-900/90 text-white border border-slate-700/80 shadow-xl px-3 py-1.5 rounded-2xl flex items-center gap-2 text-xs font-semibold"
+        >
+          <Activity className="w-3.5 h-3.5 text-slate-400" />
+          <span>Chưa có dữ liệu</span>
+        </button>
+      );
+    }
+    return null; // Don't show fake pill/footer when data is missing
+  }
+
+  const onlineCount = stats.activeUsersOnline;
+  const todayViews = stats.todayPageViews;
 
   if (variant === 'floating') {
     return (
@@ -81,7 +96,6 @@ export const AnalyticsWidget: React.FC<AnalyticsWidgetProps> = ({
     );
   }
 
-  // Default 'pill' for Header
   return (
     <button
       onClick={onOpenModal}
