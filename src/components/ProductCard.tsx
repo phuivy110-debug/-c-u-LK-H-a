@@ -58,11 +58,16 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           )}
 
           {/* Discount Tag Overlay */}
-          {discountPercent > 0 && (
+          {discountPercent > 20 ? (
+            <div className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 bg-gradient-to-r from-[#EE4D2D] via-red-600 to-amber-500 text-white text-[10px] sm:text-xs font-black px-2 py-0.5 rounded-md sm:rounded-lg shadow-md z-10 flex items-center gap-1 animate-pulse border border-white/30">
+              <span>🔥</span>
+              <span>Giảm {discountPercent}%</span>
+            </div>
+          ) : discountPercent > 0 ? (
             <div className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 bg-[#EE4D2D] text-white text-[10px] sm:text-xs font-black px-1.5 sm:px-2 py-0.5 rounded-md sm:rounded-lg shadow-xs z-10">
               -{discountPercent}%
             </div>
-          )}
+          ) : null}
 
           {/* Quick Actions */}
           <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-900/60 to-transparent p-2 flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
