@@ -27,10 +27,10 @@ export const AnalyticsWidget: React.FC<AnalyticsWidgetProps> = ({
     pingAnalytics();
     refreshData();
 
-    // 24/7 Real-time polling every 3.5 seconds
+    // Accurate data sync polling
     const interval = setInterval(() => {
       refreshData();
-    }, 3500);
+    }, 10000);
 
     return () => clearInterval(interval);
   }, []);

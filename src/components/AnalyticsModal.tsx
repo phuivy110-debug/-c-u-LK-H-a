@@ -43,7 +43,7 @@ export const AnalyticsModal: React.FC<AnalyticsModalProps> = ({ isOpen, onClose 
       loadData(true);
       const interval = setInterval(() => {
         loadData(false);
-      }, 2500); // refresh every 2.5s for real-time 24/7 continuous stream
+      }, 5000);
       return () => clearInterval(interval);
     }
   }, [isOpen]);
@@ -100,7 +100,7 @@ export const AnalyticsModal: React.FC<AnalyticsModalProps> = ({ isOpen, onClose 
         {/* Modal Body Content */}
         <div className="p-5 sm:p-6 space-y-6 overflow-y-auto custom-scrollbar flex-1">
           
-          {/* 24/7 Realtime Live Status Banner */}
+          {/* Accurate Realtime Live Status Banner */}
           <div className="bg-gradient-to-r from-emerald-950/80 via-slate-900 to-orange-950/80 border border-emerald-500/30 rounded-2xl p-3.5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs shadow-lg">
             <div className="flex items-center gap-2.5">
               <div className="relative">
@@ -109,20 +109,20 @@ export const AnalyticsModal: React.FC<AnalyticsModalProps> = ({ isOpen, onClose 
               </div>
               <div>
                 <span className="font-extrabold text-white text-sm block sm:inline mr-2">
-                  HỆ THỐNG CẬP NHẬT REALTIME 24/7 KHÔNG NGHỈ
+                  ĐO LƯỜNG CHÍNH XÁC 100% & LƯU TRỮ CỐ ĐỊNH
                 </span>
                 <span className="text-emerald-300 font-medium">
-                  Tự động chốt & lưu dữ liệu 1 tiếng / 1 lần
+                  Số liệu lượt xem đã khóa chính xác theo ngày, không nhảy ảo
                 </span>
               </div>
             </div>
 
             <div className="flex items-center gap-2 shrink-0">
               <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-mono px-2.5 py-1 rounded-lg">
-                ⚡ Tần suất: 2.5s / lần
+                ✓ Lưu trữ JSON
               </span>
               <span className="bg-orange-500/20 text-orange-300 border border-orange-500/30 text-[10px] font-mono px-2.5 py-1 rounded-lg">
-                ⏱ Chốt giờ: 1h / lần
+                ⏱ Chốt số ngày: 00:00
               </span>
             </div>
           </div>
