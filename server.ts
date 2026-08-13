@@ -4,6 +4,12 @@ import fs from 'fs';
 import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI } from '@google/genai';
 import dotenv from 'dotenv';
+import {
+  loadServerProducts,
+  generateSitemapXml,
+  generateRobotsTxt,
+  renderSeoPage
+} from './src/utils/serverSeoRenderer';
 
 dotenv.config();
 
@@ -617,6 +623,22 @@ ${productContext}`;
     }
   });
 
+  // Load server-side product data for SEO prerendering
+  const serverProducts = loadServerProducts();
+
+  // Dynamic Sitemap XML
+  app.get('/sitemap.xml', (req, res) => {
+    res.setHeader('Content-Type', 'text/xml');
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    res.send(generateSitemapXml(serverProducts));
+  });
+
+  // Dynamic Robots.txt
+  app.get('/robots.txt', (req, res) => {
+    res.setHeader('Content-Type', 'text/plain');
+    res.send(generateRobotsTxt());
+  });
+
   // Serve Google Search Console site verification HTML files
   app.get('/google:id.html', (req, res) => {
     const filename = `google${req.params.id}.html`;
@@ -627,18 +649,44 @@ ${productContext}`;
     return res.status(404).send('File Google verification không tồn tại');
   });
 
-  // Vite middleware for dev / static for prod
+  // SEO Prerender Middleware & Static Server
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
       server: { middlewareMode: true },
-      appType: 'spa',
+      appType: 'custom',
     });
+
     app.use(vite.middlewares);
+
+    app.get('*', async (req, res, next) => {
+      if (req.path.startsWith('/api/')) return next();
+
+      try {
+        const indexPath = path.join(process.cwd(), 'index.html');
+        const rawIndexHtml = fs.readFileSync(indexPath, 'utf-8');
+        const rendered = renderSeoPage(req.path, req.query, rawIndexHtml, serverProducts);
+        const finalHtml = await vite.transformIndexHtml(req.originalUrl, rendered);
+        res.setHeader('Content-Type', 'text/html; charset=utf-8');
+        return res.status(200).send(finalHtml);
+      } catch (err) {
+        console.error('Dev SEO render error:', err);
+        return next(err);
+      }
+    });
   } else {
     const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
+
     app.get('*', (req, res) => {
-      res.sendFile(path.join(distPath, 'index.html'));
+      try {
+        const indexPath = path.join(distPath, 'index.html');
+        const indexHtml = fs.readFileSync(indexPath, 'utf-8');
+        const rendered = renderSeoPage(req.path, req.query, indexHtml, serverProducts);
+        res.setHeader('Content-Type', 'text/html; charset=utf-8');
+        return res.status(200).send(rendered);
+      } catch (err) {
+        return res.sendFile(path.join(distPath, 'index.html'));
+      }
     });
   }
 

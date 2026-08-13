@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Product } from '../types';
-import { ArrowLeft, ImageOff, Flame, ChevronRight, AlertCircle, ShoppingBag } from 'lucide-react';
+import { ArrowLeft, ImageOff, Flame, ChevronRight, AlertCircle, ShoppingBag, ShieldCheck, CheckCircle2, Info, BookOpen } from 'lucide-react';
 import { AffiliateButtons } from './AffiliateButtons';
 import { ProductCard } from './ProductCard';
 
@@ -89,20 +89,28 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-8">
       {/* Breadcrumb Navigation */}
-      <nav className="flex items-center gap-2 text-xs sm:text-sm text-slate-500 font-medium flex-wrap">
-        <button
-          onClick={() => onNavigate('/')}
-          className="hover:text-[#EE4D2D] transition-colors cursor-pointer"
+      <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs sm:text-sm text-slate-500 font-medium flex-wrap">
+        <a
+          href="/"
+          onClick={(e) => {
+            e.preventDefault();
+            onNavigate('/');
+          }}
+          className="hover:text-[#EE4D2D] transition-colors"
         >
           Trang Chủ
-        </button>
+        </a>
         <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-        <button
-          onClick={() => onNavigate('/san-pham')}
-          className="hover:text-[#EE4D2D] transition-colors cursor-pointer"
+        <a
+          href="/san-pham"
+          onClick={(e) => {
+            e.preventDefault();
+            onNavigate('/san-pham');
+          }}
+          className="hover:text-[#EE4D2D] transition-colors"
         >
           Sản Phẩm
-        </button>
+        </a>
         {product.category && (
           <>
             <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
@@ -129,7 +137,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
           ) : (
             <div className="flex flex-col items-center justify-center text-slate-400 gap-2 p-6 text-center">
               <ImageOff className="w-12 h-12 stroke-1" />
-              <span className="text-sm font-medium">Đang cập nhật hình ảnh</span>
+              <span className="text-sm font-medium">Đang cập nhật hình ảnh sản phẩm</span>
             </div>
           )}
 
@@ -166,7 +174,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
 
             {/* Price Box */}
             <div className="bg-orange-50/80 rounded-2xl p-4 border border-orange-200/80 space-y-1">
-              <div className="text-xs text-slate-500 font-medium">Giá tham khảo:</div>
+              <div className="text-xs text-slate-500 font-medium">Giá tham khảo LK Hòa:</div>
               <div className="flex items-baseline gap-3 flex-wrap">
                 {refPrice && refPrice > 0 ? (
                   <>
@@ -181,23 +189,42 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                   </>
                 ) : (
                   <span className="text-base font-bold text-slate-700">
-                    Kiểm tra giá mới nhất
+                    Kiểm tra giá mới nhất trên gian hàng
                   </span>
                 )}
               </div>
             </div>
 
-            {/* Optional Description */}
-            {product.description && (
-              <div className="bg-slate-50/80 rounded-2xl p-4 border border-slate-200/80 space-y-1 text-xs sm:text-sm text-slate-700 leading-relaxed">
-                <div className="font-bold text-slate-900 mb-1">Thông tin chi tiết:</div>
-                <p>{product.description}</p>
+            {/* Product Details & Specifications */}
+            <div className="bg-slate-50/80 rounded-2xl p-4 border border-slate-200/80 space-y-3 text-xs sm:text-sm text-slate-700">
+              <div className="font-extrabold text-slate-900 text-sm border-b border-slate-200 pb-2">
+                Thông tin & Đặc điểm sản phẩm
               </div>
-            )}
+              {product.description ? (
+                <p className="leading-relaxed">{product.description}</p>
+              ) : (
+                <p className="leading-relaxed">
+                  Sản phẩm đồ câu <strong>{product.name}</strong> chính hãng thuộc danh mục <strong>{product.category}</strong> của LK Hòa. Được thiết kế chuyên dụng cho cần thủ câu giải trí và câu thi đấu, đảm bảo độ bền cao và trải nghiệm tuyệt vời.
+                </p>
+              )}
+
+              {/* Target Use Case & Pre-buy Check */}
+              <div className="pt-2 space-y-2 border-t border-slate-200/80 text-xs">
+                <div className="flex items-start gap-1.5 font-semibold text-slate-800">
+                  <CheckCircle2 className="w-4 h-4 text-[#EE4D2D] shrink-0 mt-0.5" />
+                  <span><strong>Đối tượng & Nhu cầu:</strong> Thích hợp cho cần thủ câu đài, câu lure, câu sông hồ tự nhiên hoặc hồ dịch vụ.</span>
+                </div>
+                <div className="flex items-start gap-1.5 font-semibold text-slate-800">
+                  <ShieldCheck className="w-4 h-4 text-[#EE4D2D] shrink-0 mt-0.5" />
+                  <span><strong>Kiểm tra trước khi mua:</strong> Chọn đúng phân loại kích thước, độ cứng hoặc màu sắc mong muốn trên sàn trước khi chốt đơn.</span>
+                </div>
+              </div>
+            </div>
 
             {/* Mandatory Affiliate Disclaimer Notice */}
-            <div className="text-xs text-slate-500 bg-slate-50 border border-slate-200/80 p-3 rounded-xl italic">
-              * Giá và phân loại có thể thay đổi. Vui lòng kiểm tra thông tin cuối cùng trên sàn bán hàng.
+            <div className="text-xs text-slate-500 bg-amber-50/60 border border-amber-200/80 p-3 rounded-xl italic flex items-start gap-2">
+              <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+              <span>Ghi chú: Mức giá niêm yết trên website là giá tham khảo. Giá bán thực tế và các ưu đãi voucher giảm giá phụ thuộc vào chương trình áp dụng tại thời điểm mua trên gian hàng Shopee Mall và TikTok Shop.</span>
             </div>
           </div>
 

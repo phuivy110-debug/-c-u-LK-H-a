@@ -6,6 +6,8 @@ import { ProductDetailPage } from './components/ProductDetailPage';
 import { ProductDetailModal } from './components/ProductDetailModal';
 import { CatalogPage } from './components/CatalogPage';
 import { CategoryPage } from './components/CategoryPage';
+import { GuidePage } from './components/GuidePage';
+import { GuideDetailPage } from './components/GuideDetailPage';
 import { WhyUsSection } from './components/WhyUsSection';
 import { FaqSection } from './components/FaqSection';
 import { AffiliateGuideModal } from './components/AffiliateGuideModal';
@@ -178,7 +180,25 @@ export default function App() {
       );
     }
 
-    // 3. Route: /san-pham
+    // 3. Route: /cam-nang/:guideSlug
+    if (currentPath.startsWith('/cam-nang/')) {
+      const guideSlug = currentPath.replace('/cam-nang/', '').trim();
+      return (
+        <GuideDetailPage
+          guideSlug={guideSlug}
+          products={products}
+          onNavigate={navigate}
+          onOpenDetail={handleOpenDetailModal}
+        />
+      );
+    }
+
+    // 4. Route: /cam-nang
+    if (currentPath === '/cam-nang') {
+      return <GuidePage onNavigate={navigate} />;
+    }
+
+    // 5. Route: /san-pham
     if (currentPath === '/san-pham') {
       return (
         <CatalogPage

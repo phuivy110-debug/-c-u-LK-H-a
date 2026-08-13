@@ -128,6 +128,14 @@ export const Header: React.FC<HeaderProps> = ({
             >
               Phụ Kiện
             </button>
+            <button
+              onClick={() => onNavigate('/cam-nang')}
+              className={`hover:text-[#EE4D2D] transition-colors cursor-pointer ${
+                currentPath.startsWith('/cam-nang') ? 'text-[#EE4D2D]' : ''
+              }`}
+            >
+              Cẩm Nang
+            </button>
 
             {/* Admin Button */}
             {showAdminButton && (

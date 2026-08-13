@@ -79,7 +79,7 @@ export const AffiliateButtons: React.FC<AffiliateButtonsProps> = ({
             className="w-full bg-[#EE4D2D] hover:bg-[#d73a1c] text-white py-2 px-1 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-extrabold transition-all flex items-center justify-center gap-1 cursor-pointer shadow-xs uppercase truncate no-underline"
             title={`Xem ${productName} trên Shopee`}
           >
-            <span className="truncate">Xem trên Shopee</span>
+            <span className="truncate">Shopee</span>
             <ExternalLink className="w-2.5 h-2.5 sm:w-3 sm:h-3 shrink-0" />
           </a>
         ) : (
@@ -97,7 +97,7 @@ export const AffiliateButtons: React.FC<AffiliateButtonsProps> = ({
           title={`Xem gian hàng TikTok LK Hòa`}
         >
           <TikTokIcon className="w-2.5 h-2.5 sm:w-3 sm:h-3 shrink-0 fill-current text-white" />
-          <span className="truncate">Gian hàng TikTok</span>
+          <span className="truncate">Tiktok</span>
           <ExternalLink className="w-2.5 h-2.5 sm:w-3 sm:h-3 shrink-0" />
         </a>
       </div>
@@ -114,7 +114,7 @@ export const AffiliateButtons: React.FC<AffiliateButtonsProps> = ({
           onClick={handleShopeeClick}
           className="w-full bg-[#EE4D2D] hover:bg-orange-600 text-white font-extrabold text-xs sm:text-sm py-2.5 sm:py-3 px-3 rounded-xl shadow-md shadow-orange-500/20 flex items-center justify-center gap-1.5 cursor-pointer transition-all active:scale-[0.99] uppercase no-underline"
         >
-          <span>Xem trên Shopee</span>
+          <span>Shopee</span>
           <ExternalLink className="w-3.5 h-3.5 shrink-0" />
         </a>
       ) : (
@@ -131,7 +131,7 @@ export const AffiliateButtons: React.FC<AffiliateButtonsProps> = ({
         className="w-full bg-slate-900 hover:bg-black text-white font-extrabold text-xs sm:text-sm py-2.5 sm:py-3 px-3 rounded-xl shadow-md shadow-slate-900/20 flex items-center justify-center gap-1.5 cursor-pointer transition-all active:scale-[0.99] uppercase no-underline"
       >
         <TikTokIcon className="w-4 h-4 shrink-0 fill-current text-white" />
-        <span>Xem gian hàng TikTok</span>
+        <span>Tiktok</span>
         <ExternalLink className="w-3.5 h-3.5 shrink-0" />
       </a>
     </div>
