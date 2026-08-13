@@ -1,13 +1,13 @@
 import React from 'react';
 import { Product } from '../types';
-import { ExternalLink, Tag, Copy, Eye, ShieldCheck, ImageOff } from 'lucide-react';
+import { ExternalLink, Tag, Copy, Eye, ImageOff } from 'lucide-react';
 import { trackUserAction } from '../utils/analyticsService';
 import { AffiliateButtons } from './AffiliateButtons';
 
 interface ProductCardProps {
   product: Product;
   onOpenDetail: (product: Product) => void;
-  onCopyLink: (product: Product) => void;
+  onCopyLink?: (product: Product) => void;
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({
@@ -20,31 +20,32 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     return new Intl.NumberFormat('vi-VN').format(num) + 'đ';
   };
 
-  const displayPrice = product.price;
-  const displayOrigPrice = product.originalPrice;
-  const discountPercent =
-    displayOrigPrice > displayPrice && displayPrice > 0
-      ? Math.round(((displayOrigPrice - displayPrice) / displayOrigPrice) * 100)
-      : 0;
+  const refPrice = product.referencePrice;
+  const origPrice = product.originalPrice;
+
+  const hasValidDiscount =
+    origPrice && refPrice && origPrice > refPrice && refPrice > 0;
+
+  const discountPercent = hasValidDiscount
+    ? Math.round(((origPrice - refPrice) / origPrice) * 100)
+    : 0;
 
   const handleCardClick = () => {
     trackUserAction(`Xem chi tiết: ${product.name.substring(0, 25)}...`);
     onOpenDetail(product);
   };
 
-  const imageUrl = product.imageUrl;
-
   return (
     <div
       onClick={handleCardClick}
-      className="bg-white p-2.5 sm:p-4 rounded-2xl sm:rounded-3xl shadow-xs border border-slate-200/80 flex flex-col justify-between hover:shadow-md hover:-translate-y-0.5 transition-all group cursor-pointer"
+      className="product-card-container bg-white p-2.5 sm:p-4 rounded-2xl sm:rounded-3xl shadow-xs border border-slate-200/80 flex flex-col justify-between hover:shadow-md hover:-translate-y-0.5 transition-all group cursor-pointer relative"
     >
       <div>
         {/* Product Image Container */}
         <div className="relative aspect-square bg-slate-100 rounded-xl sm:rounded-2xl mb-2 sm:mb-3 overflow-hidden flex items-center justify-center">
-          {imageUrl ? (
+          {product.imageUrl ? (
             <img
-              src={imageUrl}
+              src={product.imageUrl}
               alt={product.name}
               loading="lazy"
               referrerPolicy="no-referrer"
@@ -57,37 +58,34 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             </div>
           )}
 
-          {/* Discount Tag Overlay */}
-          {discountPercent > 20 ? (
-            <div className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 bg-gradient-to-r from-[#EE4D2D] via-red-600 to-amber-500 text-white text-[10px] sm:text-xs font-black px-2 py-0.5 rounded-md sm:rounded-lg shadow-md z-10 flex items-center gap-1 animate-pulse border border-white/30">
-              <span>🔥</span>
-              <span>Giảm {discountPercent}%</span>
-            </div>
-          ) : discountPercent > 0 ? (
+          {/* Discount Tag Overlay (ONLY when valid) */}
+          {hasValidDiscount && discountPercent > 0 && (
             <div className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 bg-[#EE4D2D] text-white text-[10px] sm:text-xs font-black px-1.5 sm:px-2 py-0.5 rounded-md sm:rounded-lg shadow-xs z-10">
               -{discountPercent}%
             </div>
-          ) : null}
+          )}
 
           {/* Quick Actions */}
           <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-900/60 to-transparent p-2 flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onCopyLink(product);
-              }}
-              className="p-1.5 bg-white text-slate-800 rounded-lg shadow-xs hover:scale-105 transition-all"
-              title="Sao chép link sản phẩm chính hãng"
-            >
-              <Copy className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            </button>
+            {onCopyLink && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onCopyLink(product);
+                }}
+                className="p-1.5 bg-white text-slate-800 rounded-lg shadow-xs hover:scale-105 transition-all"
+                title="Sao chép link sản phẩm"
+              >
+                <Copy className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              </button>
+            )}
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 onOpenDetail(product);
               }}
               className="p-1.5 bg-white text-slate-800 rounded-lg shadow-xs hover:scale-105 transition-all"
-              title="Xem chi tiết"
+              title="Xem chi tiết sản phẩm"
             >
               <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
@@ -110,15 +108,15 @@ export const ProductCard: React.FC<ProductCardProps> = ({
       <div className="space-y-1.5 sm:space-y-2 mt-1 pt-1.5 sm:mt-2 sm:pt-2 border-t border-slate-100">
         {/* Price Row */}
         <div className="flex items-baseline justify-between gap-1 flex-wrap">
-          {displayPrice > 0 ? (
+          {refPrice && refPrice > 0 ? (
             <div className="flex items-baseline gap-1.5 flex-wrap">
               <span className="text-xs text-slate-500 font-normal">Giá tham khảo:</span>
               <span className="text-sm sm:text-base font-black text-[#EE4D2D]">
-                {formatVND(displayPrice)}
+                {formatVND(refPrice)}
               </span>
-              {displayOrigPrice > displayPrice && (
+              {hasValidDiscount && origPrice && (
                 <span className="text-[10px] sm:text-xs text-slate-400 line-through">
-                  {formatVND(displayOrigPrice)}
+                  {formatVND(origPrice)}
                 </span>
               )}
             </div>

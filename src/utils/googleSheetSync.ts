@@ -1,10 +1,13 @@
 import Papa from 'papaparse';
-import { Product } from '../types';
+import { Product, ProductCache } from '../types';
 import { generateSlug } from '../data/products';
 import { validateAffiliateUrl } from '../components/AffiliateButtons';
 
 export const DEFAULT_SHEET_URL =
   'https://docs.google.com/spreadsheets/d/e/2PACX-1vRoGVq7tIOSj8pAr-80FuQxNYY_JHVtyZdk6SJd59baBkVlMllh-hDwvm0Zen4FHAcmjtpYQPai9S_w/pubhtml?gid=0&single=true';
+
+export const SHARED_TIKTOK_URL = 'https://vt.tiktok.com/ZS9kJHJuDnoUp-AeYDB/';
+export const LKHOA_PRODUCTS_CACHE_V2 = 'lkhoa_products_cache_v2';
 
 export function convertSheetUrlToCsvUrl(url: string): string {
   if (!url || !url.trim()) return url;
@@ -37,37 +40,36 @@ export function convertSheetUrlToCsvUrl(url: string): string {
   return cleanUrl;
 }
 
-export function parsePriceNumber(raw: any): number {
-  if (raw === undefined || raw === null || raw === '') return 0;
+export function parsePriceNumber(raw: any): number | undefined {
+  if (raw === undefined || raw === null || raw === '') return undefined;
   const str = String(raw).replace(/[^\d]/g, '');
-  if (!str) return 0;
+  if (!str) return undefined;
   const parsed = parseInt(str, 10);
-  return isNaN(parsed) || parsed < 0 ? 0 : parsed;
+  return isNaN(parsed) || parsed <= 0 ? undefined : parsed;
 }
 
-export function mapCategoryName(catName: string): string {
-  if (!catName || !catName.trim()) return 'Chưa phân loại';
-  return catName.trim();
+export function normalizeHeader(header: string): string {
+  if (!header) return '';
+  return header
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/[^a-z0-9]/g, '');
 }
 
-function getRowValue(
+export function getExactColumnValue(
   row: Record<string, string>,
-  candidateSubstrings: string[],
-  excludeSubstrings: string[] = []
+  targetNormalizedKeys: string[]
 ): string {
-  const rowKeys = Object.keys(row);
-  for (const candidate of candidateSubstrings) {
-    const normCandidate = candidate.toLowerCase().replace(/\s+/g, '');
-    for (const key of rowKeys) {
-      const normKey = key.toLowerCase().replace(/\s+/g, '');
-
-      const isExcluded = excludeSubstrings.some((ex) => normKey.includes(ex.toLowerCase()));
-      if (isExcluded) continue;
-
-      if (normKey.includes(normCandidate) || normCandidate.includes(normKey)) {
-        if (row[key] !== undefined && row[key] !== null) {
-          const val = String(row[key]).trim();
-          if (val) return val;
+  const keys = Object.keys(row);
+  for (const targetKey of targetNormalizedKeys) {
+    for (const key of keys) {
+      if (normalizeHeader(key) === targetKey) {
+        const val = row[key];
+        if (val !== undefined && val !== null) {
+          const trimmed = String(val).trim();
+          if (trimmed) return trimmed;
         }
       }
     }
@@ -75,35 +77,66 @@ function getRowValue(
   return '';
 }
 
-export async function extractShopeeImageFromLink(affiliateUrl: string): Promise<string | null> {
-  if (!affiliateUrl || !affiliateUrl.trim()) return null;
-
-  const url = affiliateUrl.trim();
-  if (
-    url.match(/\.(jpeg|jpg|gif|png|webp)($|\?)/i) ||
-    url.includes('susercontent.com') ||
-    url.includes('cf.shopee.vn')
-  ) {
-    return url;
+export function generateStableTechnicalId(name: string, shopeeUrl: string = ''): string {
+  const input = name.trim().toLowerCase() + '|' + shopeeUrl.trim().toLowerCase();
+  let h1 = 0x811c9dc5;
+  for (let i = 0; i < input.length; i++) {
+    h1 ^= input.charCodeAt(i);
+    h1 = Math.imul(h1, 0x01000193);
   }
+  const hex = (h1 >>> 0).toString(36);
+  return `tech-${generateSlug(name).slice(0, 30)}-${hex}`;
+}
 
+export function saveProductsCache(products: Product[]): void {
   try {
-    const endpoint = typeof window !== 'undefined' ? '/api/extract-shopee-image' : 'http://localhost:3000/api/extract-shopee-image';
-    const res = await fetch(endpoint, {
+    const cache: ProductCache = {
+      schemaVersion: 2,
+      source: 'google-sheet',
+      syncedAt: new Date().toISOString(),
+      products,
+    };
+    localStorage.setItem(LKHOA_PRODUCTS_CACHE_V2, JSON.stringify(cache));
+  } catch (err) {
+    console.warn('Failed to save product cache:', err);
+  }
+}
+
+export function loadProductsCache(): ProductCache | null {
+  try {
+    const raw = localStorage.getItem(LKHOA_PRODUCTS_CACHE_V2);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (
+      parsed &&
+      parsed.schemaVersion === 2 &&
+      parsed.source === 'google-sheet' &&
+      Array.isArray(parsed.products)
+    ) {
+      return parsed as ProductCache;
+    }
+  } catch {
+    // Ignore corrupt cache
+  }
+  return null;
+}
+
+export async function extractShopeeImageFromLink(url: string): Promise<string | undefined> {
+  if (!url) return undefined;
+  try {
+    const response = await fetch('/api/extract-shopee-image', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ url }),
     });
-    if (res.ok) {
-      const data = await res.json();
-      if (data.success && data.imageUrl) {
-        return data.imageUrl;
-      }
+    const data = await response.json();
+    if (data.success && data.imageUrl) {
+      return data.imageUrl;
     }
-  } catch {
-    // Silent fail if image extraction is unavailable
+  } catch (err) {
+    console.warn('Failed to extract Shopee image:', err);
   }
-  return null;
+  return undefined;
 }
 
 export async function fetchProductsFromGoogleSheet(sheetUrl: string): Promise<Product[]> {
@@ -121,9 +154,10 @@ export async function fetchProductsFromGoogleSheet(sheetUrl: string): Promise<Pr
 
   if (!csvText) {
     try {
-      const proxyEndpoint = typeof window !== 'undefined' 
-        ? `/api/sync-sheet?url=${encodeURIComponent(sheetUrl)}` 
-        : `http://localhost:3000/api/sync-sheet?url=${encodeURIComponent(sheetUrl)}`;
+      const proxyEndpoint =
+        typeof window !== 'undefined'
+          ? `/api/sync-sheet?url=${encodeURIComponent(sheetUrl)}`
+          : `http://localhost:3000/api/sync-sheet?url=${encodeURIComponent(sheetUrl)}`;
       const proxyRes = await fetch(proxyEndpoint);
       if (proxyRes.ok) {
         csvText = await proxyRes.text();
@@ -133,7 +167,10 @@ export async function fetchProductsFromGoogleSheet(sheetUrl: string): Promise<Pr
       }
     } catch (proxyErr: any) {
       console.warn('Server proxy fetch for Google Sheet also failed:', proxyErr);
-      throw new Error(proxyErr.message || 'Không thể kết nối với Google Sheet. Vui lòng kiểm tra lại link đã Chia Sẻ Công Khai chưa.');
+      throw new Error(
+        proxyErr.message ||
+          'Không thể kết nối với Google Sheet. Vui lòng kiểm tra lại link đã Chia Sẻ Công Khai chưa.'
+      );
     }
   }
 
@@ -148,9 +185,67 @@ export async function fetchProductsFromGoogleSheet(sheetUrl: string): Promise<Pr
 
           for (let index = 0; index < results.data.length; index++) {
             const row = results.data[index];
-            const name = getRowValue(row, ['tênsảnphẩm', 'productname', 'tên', 'sảnphẩm', 'name']);
+            const sourceRow = index + 2; // 1-based header is row 1
 
-            if (!name) continue; // Skip rows without name
+            const name = getExactColumnValue(row, [
+              'tensanpham',
+              'productname',
+              'ten',
+              'sanpham',
+              'title',
+              'name',
+            ]);
+
+            if (!name) continue; // Skip rows without product name
+
+            const rawId = getExactColumnValue(row, ['id', 'masp', 'masanpham', 'ma']);
+
+            let rawShopee = getExactColumnValue(row, [
+              'linkaffiliateshopee',
+              'linkshopee',
+              'shopeeurl',
+              'linkaffshopee',
+              'shopee',
+              'linkaff',
+            ]);
+
+            let rawTikTok = getExactColumnValue(row, [
+              'linkaffiliatetiktok',
+              'linktiktok',
+              'tiktokurl',
+              'tiktokshop',
+              'linkafftiktok',
+              'tiktok',
+            ]);
+
+            if (rawShopee && (rawShopee.includes('tiktok.com') || rawShopee.includes('vt.tiktok'))) {
+              if (!rawTikTok) rawTikTok = rawShopee;
+              rawShopee = '';
+            }
+            if (rawTikTok && (rawTikTok.includes('shopee') || rawTikTok.includes('shp.ee'))) {
+              if (!rawShopee) rawShopee = rawTikTok;
+              rawTikTok = '';
+            }
+
+            const validShopee = validateAffiliateUrl(rawShopee, 'shopee');
+            let validTikTok = validateAffiliateUrl(rawTikTok, 'tiktok');
+
+            let tiktokLinkStatus: 'verified-product' | 'shared-unverified' | 'none' = 'none';
+            if (validTikTok) {
+              if (
+                validTikTok.includes('ZS9kJHJuDnoUp-AeYDB') ||
+                validTikTok === SHARED_TIKTOK_URL
+              ) {
+                tiktokLinkStatus = 'shared-unverified';
+              } else {
+                tiktokLinkStatus = 'verified-product';
+              }
+            } else {
+              validTikTok = SHARED_TIKTOK_URL;
+              tiktokLinkStatus = 'shared-unverified';
+            }
+
+            const id = rawId ? rawId.trim() : generateStableTechnicalId(name, validShopee || '');
 
             const baseSlug = generateSlug(name) || 'san-pham';
             let slug = baseSlug;
@@ -163,66 +258,78 @@ export async function fetchProductsFromGoogleSheet(sheetUrl: string): Promise<Pr
               slugCounts.set(baseSlug, 1);
             }
 
-            const rawId = getRowValue(row, ['id', 'mãsp', 'mãsảnphẩm', 'mã']);
-            const id = rawId ? rawId.trim() : `prod-${slug}`;
-
-            const categoryRaw = getRowValue(row, ['hạngmục', 'category', 'danhmục', 'loại', 'nhóm']);
-            const category = mapCategoryName(categoryRaw);
-
-            // Affiliate URLs
-            let rawShopee = getRowValue(
-              row,
-              ['linkaffiliateshopee', 'linkshopee', 'shopee', 'linkaffshopee', 'shopeeurl', 'linkaff', 'link', 'url'],
-              ['tiktok', 'ttshop', 'vt.tiktok']
-            );
-            let rawTikTok = getRowValue(
-              row,
-              ['linkaffiliatetiktok', 'linktiktok', 'tiktokshop', 'tiktokurl', 'linkafftiktok', 'tiktok'],
-              ['shopee', 'shp']
-            );
-
-            // Auto-detect and swap if misplaced
-            if (rawShopee && (rawShopee.includes('tiktok.com') || rawShopee.includes('vt.tiktok'))) {
-              if (!rawTikTok) rawTikTok = rawShopee;
-              rawShopee = '';
-            }
-            if (rawTikTok && (rawTikTok.includes('shopee') || rawTikTok.includes('shp.ee'))) {
-              if (!rawShopee) rawShopee = rawTikTok;
-              rawTikTok = '';
+            const categoryRaw = getExactColumnValue(row, [
+              'giathamkhao',
+              'danhmuc',
+              'hangmuc',
+              'category',
+              'loai',
+              'nhom',
+            ]);
+            let category = categoryRaw || 'Chưa phân loại';
+            if (category === categoryRaw && categoryRaw.match(/^\d+$/)) {
+              category = 'Chưa phân loại';
             }
 
-            const validShopee = validateAffiliateUrl(rawShopee, 'shopee');
-            const validTikTok = validateAffiliateUrl(rawTikTok, 'tiktok');
+            const description = getExactColumnValue(row, ['mota', 'description', 'thongso', 'chitiet']);
 
-            // Image handling
-            let imageRaw = getRowValue(row, ['linkảnh', 'ảnhsảnphẩm', 'imageurl', 'image', 'hìnhảnh', 'ảnh', 'picture', 'photo']);
-            let imageUrl = imageRaw && imageRaw.startsWith('http') ? imageRaw : '';
+            const refPriceRaw = getExactColumnValue(row, [
+              'giathamkhao',
+              'giaban',
+              'giadagiam',
+              'referenceprice',
+              'price',
+            ]);
+            const origPriceRaw = getExactColumnValue(row, [
+              'giagoc',
+              'originalprice',
+              'niemyet',
+            ]);
 
-            if (!imageUrl && validShopee) {
-              const extracted = await extractShopeeImageFromLink(validShopee);
-              if (extracted) imageUrl = extracted;
-            }
+            const referencePrice = parsePriceNumber(refPriceRaw);
+            const originalPrice = parsePriceNumber(origPriceRaw);
 
-            // Prices
-            const origPriceRaw = getRowValue(row, ['giágốc', 'originalprice', 'niêmyết']);
-            const dealPriceRaw = getRowValue(row, ['giá', 'giáthamkhảo', 'giábán', 'dealprice', 'giáưuđãi', 'giákhuyếnmãi']);
+            const imageRaw = getExactColumnValue(row, [
+              'linkanh',
+              'anhsanpham',
+              'imageurl',
+              'image',
+              'hinhanh',
+              'anh',
+            ]);
+            const imageUrl = imageRaw && (imageRaw.startsWith('http://') || imageRaw.startsWith('https://'))
+              ? imageRaw
+              : undefined;
 
-            const origPrice = parsePriceNumber(origPriceRaw);
-            const dealPrice = parsePriceNumber(dealPriceRaw);
+            const statusRaw = getExactColumnValue(row, ['trangthai', 'status', 'tinhtrang']).toLowerCase();
+            const status: 'active' | 'inactive' =
+              ['inactive', 'an', 'off', 'disabled', '0', 'khonghoatdong'].includes(statusRaw)
+                ? 'inactive'
+                : 'active';
+
+            const featuredRaw = getExactColumnValue(row, ['noibat', 'featured', 'hot', 'ishot']).toLowerCase();
+            const featured = ['1', 'true', 'yes', 'co', 'hot', 'x'].includes(featuredRaw);
 
             parsedProducts.push({
               id,
               slug,
               name,
               category,
-              price: dealPrice,
-              originalPrice: origPrice,
+              description: description || undefined,
+              referencePrice,
+              originalPrice,
               imageUrl,
               shopeeUrl: validShopee,
               tiktokUrl: validTikTok,
+              tiktokLinkStatus,
+              status,
+              featured,
+              updatedAt: new Date().toISOString(),
+              sourceRow,
             });
           }
 
+          saveProductsCache(parsedProducts);
           resolve(parsedProducts);
         } catch (err) {
           reject(err);

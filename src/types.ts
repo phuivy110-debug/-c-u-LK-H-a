@@ -3,19 +3,37 @@ export type CategoryId = string;
 export interface Category {
   id: CategoryId;
   name: string;
-  iconName: string;
+  slug: string;
+  iconName?: string;
+  description?: string;
 }
 
 export interface Product {
   id: string;
   slug: string;
   name: string;
-  category: string;
-  price: number;
-  originalPrice: number;
-  imageUrl: string;
-  shopeeUrl: string;
-  tiktokUrl: string;
+  category: CategoryId;
+  description?: string;
+
+  referencePrice?: number;
+  originalPrice?: number;
+
+  imageUrl?: string;
+  shopeeUrl?: string;
+  tiktokUrl?: string;
+  tiktokLinkStatus: 'verified-product' | 'shared-unverified' | 'none';
+
+  status: 'active' | 'inactive';
+  featured: boolean;
+  updatedAt?: string;
+  sourceRow: number;
+}
+
+export interface ProductCache {
+  schemaVersion: 2;
+  source: 'google-sheet';
+  syncedAt: string;
+  products: Product[];
 }
 
 export interface ReasonItem {

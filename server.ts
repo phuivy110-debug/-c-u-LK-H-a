@@ -27,7 +27,7 @@ async function startServer() {
     });
   };
 
-  // Persistent Analytics Store (Chính xác 100% & Khóa chỉ số đo lường)
+  // Persistent Analytics Store
   const analyticsFilePath = path.join(process.cwd(), 'analytics_store.json');
   const activeSessions = new Map<string, number>(); // clientId -> timestamp
 
@@ -35,16 +35,6 @@ async function startServer() {
     'Nghệ An, VN', 'Hà Nội, VN', 'TP. Hồ Chí Minh, VN', 'Thanh Hóa, VN',
     'Đà Nẵng, VN', 'Hải Phòng, VN', 'Đồng Nai, VN', 'Bình Dương, VN', 'Cần Thơ, VN',
     'Nam Định, VN', 'Cà Mau, VN', 'Quảng Ninh, VN', 'Bắc Ninh, VN', 'Thái Bình, VN'
-  ];
-
-  const actionsList = [
-    'Xem Cần Tay LK Hòa Carbon',
-    'Bấm Mua Sản Phẩm Trên Shopee',
-    'Tư vấn cùng Trợ Lý AI LK Hòa',
-    'Xem Dây Dù Siêu Bền X8',
-    'Lọc danh mục Cần Câu',
-    'Xem Phao Câu Nano Đêm LK',
-    'Bấm Mua Sản Phẩm Trên TikTok Shop'
   ];
 
   interface AnalyticsData {
@@ -101,7 +91,6 @@ async function startServer() {
     }
   };
 
-  // Auto reset date check (Tự động chuyển ngày lúc 00:00 & Khóa số liệu ngày cũ)
   const checkDateReset = () => {
     const todayStr = getTodayStr();
     if (todayStr !== analyticsData.lastDateStr) {
@@ -116,7 +105,6 @@ async function startServer() {
     }
   };
 
-  // Clean stale active sessions older than 3 minutes
   const cleanStaleSessions = () => {
     const now = Date.now();
     for (const [id, ts] of activeSessions.entries()) {
@@ -126,7 +114,7 @@ async function startServer() {
     }
   };
 
-  // Analytics Ping API (Ghi nhận truy cập thực tế 100%)
+  // Analytics Ping API
   app.post('/api/analytics/ping', (req, res) => {
     try {
       checkDateReset();
@@ -136,7 +124,6 @@ async function startServer() {
       const now = Date.now();
       const cid = clientId || req.ip || 'anon_' + Math.random().toString(36).substring(2, 8);
 
-      // Refresh active session timestamp
       activeSessions.set(cid, now);
 
       let dataChanged = false;
@@ -181,7 +168,7 @@ async function startServer() {
     }
   });
 
-  // Analytics Stats API (Trả về số liệu đo lường đã được khóa chính xác)
+  // Analytics Stats API
   app.get('/api/analytics/stats', (req, res) => {
     try {
       checkDateReset();
@@ -213,7 +200,7 @@ async function startServer() {
         } else if (i === 5) {
           viewsCount = analyticsData.yesterdayPageViews;
         } else {
-          viewsCount = analyticsData.weeklyTrafficMap[key] || (1100 + ((d.getDate() * 37) % 450));
+          viewsCount = analyticsData.weeklyTrafficMap[key] || 0;
         }
 
         return {
@@ -226,7 +213,7 @@ async function startServer() {
       const topCategories = [
         { name: 'Cần câu cá Carbon LK', views: Math.round(analyticsData.todayPageViews * 0.45), percent: 45 },
         { name: 'Máy câu đứng / máy ngang', views: Math.round(analyticsData.todayPageViews * 0.25), percent: 25 },
-        { name: 'Phụ kiện & Dây dù X8', views: Math.round(analyticsData.todayPageViews * 0.18), percent: 18 },
+        { name: 'Phụ kiện & Dây câu', views: Math.round(analyticsData.todayPageViews * 0.18), percent: 18 },
         { name: 'Mồi câu & Cám xả LK', views: Math.round(analyticsData.todayPageViews * 0.12), percent: 12 },
       ];
 
@@ -242,7 +229,7 @@ async function startServer() {
         topCategories,
         recentActivities: analyticsData.recentActivities.slice(0, 10),
         lastUpdated: new Date().toLocaleTimeString('vi-VN'),
-        systemStatus: 'Chính xác 100% (Số liệu đã được khóa)',
+        systemStatus: 'Đang ghi nhận thực tế',
         updateCycle: 'Tự động chốt số liệu khi chuyển ngày',
       });
     } catch (err: any) {
@@ -250,7 +237,7 @@ async function startServer() {
     }
   });
 
-  // Google Sheet Proxy Sync API to bypass client CORS / network blocks
+  // Google Sheet Proxy Sync API
   app.get('/api/sync-sheet', async (req, res) => {
     try {
       const rawUrl = (req.query.url as string) || '';
@@ -309,7 +296,6 @@ async function startServer() {
 
       const targetUrl = url.trim();
 
-      // Step 1: Direct image check
       if (
         targetUrl.match(/\.(jpeg|jpg|gif|png|webp)($|\?)/i) ||
         ((targetUrl.includes('susercontent.com') || targetUrl.includes('cf.shopee.vn')) && targetUrl.includes('/file/'))
@@ -322,7 +308,6 @@ async function startServer() {
       const visitedUrls: string[] = [targetUrl];
       let htmlContent = '';
 
-      // Step 2: Trace redirects manually (up to 8 steps)
       while (redirectCount < 8) {
         const response = await fetch(currentUrl, {
           redirect: 'manual',
@@ -342,7 +327,6 @@ async function startServer() {
           redirectCount++;
         } else {
           htmlContent = await response.text();
-          // Check for client JS redirect in small HTML responses
           if (htmlContent.length < 5000) {
             const jsLocMatch =
               htmlContent.match(/location\.href\s*=\s*["']([^"']+)["']/i) ||
@@ -364,7 +348,6 @@ async function startServer() {
         }
       }
 
-      // Step 3: Extract Item ID & Shop ID from visited URLs
       let shopid: string | null = null;
       let itemid: string | null = null;
 
@@ -392,7 +375,6 @@ async function startServer() {
         }
       }
 
-      // Step 4: Fetch Shopee Product API if itemid & shopid found
       if (shopid && itemid) {
         const apiUrls = [
           `https://shopee.vn/api/v4/item/get?itemid=${itemid}&shopid=${shopid}`,
@@ -431,7 +413,6 @@ async function startServer() {
         }
       }
 
-      // Step 5: Check Shop ID if no item found
       if (!shopid) {
         for (const u of visitedUrls) {
           const shopMatch = u.match(/\/shop\/(\d+)/) || u.match(/shopid=(\d+)/);
@@ -467,7 +448,6 @@ async function startServer() {
         }
       }
 
-      // Step 6: Parse OpenGraph / Twitter meta tags and HTML Regex
       if (htmlContent) {
         const ogMatch =
           htmlContent.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i) ||
@@ -508,13 +488,13 @@ async function startServer() {
     const prods = Array.isArray(productsList) ? productsList : [];
 
     const formatProd = (p: any) =>
-      `• **${p.title}**\n  👉 Giá ưu đãi: **${(p.dealPrice || 0).toLocaleString('vi-VN')}đ** (Gốc: ${(p.originalPrice || 0).toLocaleString('vi-VN')}đ)\n  👉 Mã giảm: **${p.couponCode || 'LKHOA10K'}**\n  👉 Shopee Mall: ${p.affiliateUrl}`;
+      `• **${p.name || p.title}**\n  👉 Giá tham khảo: **${p.referencePrice ? p.referencePrice.toLocaleString('vi-VN') + 'đ' : 'Kiểm tra giá mới nhất'}**\n  👉 Liên kết mua: ${p.shopeeUrl || p.tiktokUrl || 'https://vt.tiktok.com/ZS9kJHJuDnoUp-AeYDB/'}`;
 
     const matchProds = (keywords: string[]) =>
       prods.filter((p) =>
         keywords.some(
           (k) =>
-            (p.title || '').toLowerCase().includes(k) || (p.category || '').toLowerCase().includes(k)
+            (p.name || '').toLowerCase().includes(k) || (p.category || '').toLowerCase().includes(k)
         )
       );
 
@@ -530,106 +510,29 @@ async function startServer() {
       const matched = matchProds(['5h', '6h', '8h', 'cần', 'carbon', 'đài']);
       const top3 = matched.length > 0 ? matched.slice(0, 3) : prods.slice(0, 3);
 
-      return `Chào Sếp! 🎣 Về **Cần Câu Đài (5H/6H/Carbon)** đánh rô chép, em LK Hòa xin tư vấn kỹ thuật như sau:
+      return `Chào Bác! 🎣 Về **Cần Câu Đài (5H/6H/Carbon)** đánh rô chép, em LK Hòa xin tư vấn kỹ thuật như sau:
 
 1️⃣ **Chọn Độ Cứng (H):**
-   • **Cần 5H**: Độ nảy dẻo vừa phải, giữ cá êm tay, rất hợp đánh rô chép sông/hồ dịch vụ, đọt 1.1mm - 1.2mm dẻo dai.
-   • **Cần 6H/8H**: Tải tĩnh trâu bò 8-10kg, thích hợp bạo lực bắt cá trắm chép khủng hoặc hồ tự nhiên nước chảy.
+   • **Cần 5H**: Độ nảy dẻo vừa phải, giữ cá êm tay, rất hợp đánh rô chép sông/hồ dịch vụ.
+   • **Cần 6H/8H**: Tải tĩnh trâu bò, thích hợp bắt cá trắm chép khủng hoặc hồ tự nhiên nước chảy.
 
 2️⃣ **Gợi Ý Cần Câu Đang HOT Tốt Nhất:**
-${top3.map(formatProd).join('\n\n')}
-
-💡 *Mẹo nhỏ*: Sếp nhớ nhập mã **LKHOA10K** ở bước thanh toán Shopee để được giảm thêm 10k nhé!`;
-    }
-
-    if (
-      q.includes('mồi') ||
-      q.includes('cám') ||
-      q.includes('thính') ||
-      q.includes('xả') ||
-      q.includes('chép') ||
-      q.includes('mồi câu')
-    ) {
-      const matched = matchProds(['mồi', 'cám', 'chép', 'thính', 'xả']);
-      const top3 =
-        matched.length > 0
-          ? matched.slice(0, 3)
-          : prods
-              .filter((p) => (p.category || '').includes('Mồi') || (p.title || '').includes('Mồi'))
-              .slice(0, 3);
-
-      return `Chào Sếp! 🐟 Bài **Mồi Cám Chép LK Hòa** dụ ổ nhanh & nhạy cá nhất:
-
-1️⃣ **Công Thức Trộn Chuẩn Bài:**
-   • **Mồi xả**: 2 phần cám xả LK + 1 phần nước hồ. Đảo đều tay 3 phút tạo độ tơi xốp thả ổ.
-   • **Mồi câu**: 1 phần cám chép LK + 0.8 phần nước + 3-5 giọt tinh dầu dụ chép LK. Nhào miết 5 phút cho dẻo quánh.
-
-2️⃣ **Mồi Câu & Phụ Kiện Đang Bán Chạy:**
-${(top3.length > 0 ? top3 : prods.slice(0, 3)).map(formatProd).join('\n\n')}
-
-🔥 Sếp bấm vào đường link Shopee Mall ở trên để xem chi tiết và săn mã ưu đãi nhé!`;
-    }
-
-    if (
-      q.includes('lure') ||
-      q.includes('tiểu') ||
-      q.includes('máy câu') ||
-      q.includes('ngang') ||
-      q.includes('đứng')
-    ) {
-      const matched = matchProds(['lure', 'máy', 'tiểu', 'ngang', 'đứng']);
-      const top3 = matched.length > 0 ? matched.slice(0, 3) : prods.slice(0, 3);
-
-      return `Chào Sếp! ⚡ Dòng **Cần Lure & Máy Câu LK** chuyên trị cá lóc, chẽm, trắm quả:
-
-1️⃣ **Kỹ Thuật Chọn Lure:**
-   • **Cần Lure Đứng**: Dễ sử dụng, ít bị rối dây, thích hợp cho cần thủ mới tập lure.
-   • **Cần Lure Ngang**: Ném chính xác vị trí bụi rậm, cảm giác kéo cá rất sướng tay!
-
-2️⃣ **Sản Phẩm Khuyên Dùng Giá Tốt:**
-${top3.map(formatProd).join('\n\n')}
-
-🎁 Sếp đặt mua ngay trên Shopee Mall chính hãng LK Hòa để nhận quà tặng kèm dây dù X4/X8 nha!`;
-    }
-
-    if (
-      q.includes('mã') ||
-      q.includes('giảm giá') ||
-      q.includes('voucher') ||
-      q.includes('coupon') ||
-      q.includes('khuyến mãi') ||
-      q.includes('shopee')
-    ) {
-      return `Chào Sếp! 🎁 Tổng hợp **Mã Giảm Giá LK Hòa** mới nhất hôm nay:
-
-🔥 **LKHOA10K** — Giảm trực tiếp 10.000đ cho đơn hàng Shopee
-🔥 **NHAI5K** — Giảm 5.000đ cho sản phẩm mồi nhái giả & phụ kiện
-🔥 **FREESHIP** — Áp dụng mã Miễn phí vận chuyển toàn quốc Shopee Extra
-
-👉 **Sản Phẩm Đang Đợt Sale Sâu Nhất:**
-${prods.slice(0, 3).map(formatProd).join('\n\n')}
-
-Sếp chọn sản phẩm yêu thích và áp mã giảm giá ngay nha! 🎣`;
+${top3.map(formatProd).join('\n\n')}`;
     }
 
     const matchedAll = prods.filter(
       (p) =>
-        (p.title || '').toLowerCase().includes(q) || (p.category || '').toLowerCase().includes(q)
+        (p.name || '').toLowerCase().includes(q) || (p.category || '').toLowerCase().includes(q)
     );
     const displayList = matchedAll.length > 0 ? matchedAll.slice(0, 3) : prods.slice(0, 3);
 
-    return `Chào Sếp! 🎣 Em là **Trợ Lý Tư Vấn Đồ Câu LK Hòa**.
+    return `Chào Bác! 🎣 Em là **Trợ Lý Tư Vấn Đồ Câu LK Hòa**.
 
-Cảm ơn Sếp đã quan tâm! Dưới đây là các sản phẩm đồ câu chất lượng cao đang sẵn hàng tại shop LK Hòa:
+Cảm ơn Bác đã quan tâm! Dưới đây là các sản phẩm đồ câu chất lượng cao tại cửa hàng LK Hòa:
 
 ${displayList.map(formatProd).join('\n\n')}
 
-💡 Sếp có thể hỏi em chi tiết về:
-• Tư vấn cần câu đài 5H/6H, cần Lure lóc chẽm
-• Công thức trộn mồi cám chép rô LK Hòa
-• Hướng dẫn chọn máy câu đứng/ngang & dây dù X8
-
-Sếp cần em tư vấn thêm gì nữa không ạ? 😊`;
+Bác cần em tư vấn thêm gì nữa không ạ? 😊`;
   }
 
   // Chat API endpoint
@@ -656,19 +559,19 @@ Sếp cần em tư vấn thêm gì nữa không ạ? 😊`;
               .slice(0, 50)
               .map(
                 (p: any, i: number) =>
-                  `${i + 1}. [${p.category}] ${p.title} - Giá ưu đãi: ${p.dealPrice?.toLocaleString('vi-VN')}đ (Gốc: ${p.originalPrice?.toLocaleString('vi-VN')}đ) - Mã giảm: ${p.couponCode || 'LKHOA10K'} - Link Shopee: ${p.affiliateUrl}`
+                  `${i + 1}. [${p.category}] ${p.name} - Giá tham khảo: ${p.referencePrice ? p.referencePrice.toLocaleString('vi-VN') + 'đ' : 'Kiểm tra giá mới nhất'} - Link Shopee: ${p.shopeeUrl || 'Chưa có'} - Link TikTok: ${p.tiktokUrl}`
               )
               .join('\n');
         }
 
-        const systemInstruction = `Bạn là "Trợ Lý Tư Vấn Đồ Câu LK Hòa" - chuyên gia tư vấn câu cá chuyên nghiệp, nhiệt tình, am hiểu sâu sắc về kỹ thuật câu cá (câu đài, câu lure, câu lăng xê, câu đầm, câu sông, hồ dịch vụ...).
+        const systemInstruction = `Bạn là "Trợ Lý Tư Vấn Đồ Câu LK Hòa" - chuyên gia tư vấn câu cá chuyên nghiệp, nhiệt tình.
 
 Nhiệm vụ chính:
-1. Giải đáp thắc mắc về thiết bị câu cá: độ cứng cần câu (4H, 5H, 6H, 8H, carbon 24T/30T/36T), độ dài (2.7m, 3.6m, 4.5m, 5.4m, 6.3m...), chọn máy câu đứng/ngang (1000, 2500, 3000, 4000), loại dây dù X4/X8, thẻo câu, phao nano, mồi xả, mồi vuốt cám chép/rô...
-2. Tư vấn sản phẩm phù hợp nhu cầu & ngân sách cụ thể của cần thủ dựa trên danh sách sản phẩm cửa hàng LK Hòa dưới đây.
-3. Khi giới thiệu sản phẩm, hãy trích dẫn tên chính xác, giá bán ưu đãi và kèm theo đường link Shopee Mall để cần thủ dễ bấm chọn mua.
-4. Thái độ: Thân thiện, chu đáo, xưng "Em" hoặc "LK Hòa Bot", gọi người dùng là "Sếp", "Cần thủ" hoặc "Anh/Chị". Dùng câu từ gần gũi, dùng một số emoji sinh động 🎣🐟🔥.
-5. Luôn trả lời bằng Tiếng Việt rõ ràng, trình bày có gạch đầu dòng dễ nhìn.
+1. Giải đáp thắc mắc về thiết bị câu cá: độ cứng cần câu (4H, 5H, 6H, 8H), chọn máy câu đứng/ngang, loại dây dù X4/X8, phao nano, mồi xả, mồi vuốt cám chép/rô...
+2. Tư vấn sản phẩm phù hợp dựa trên danh sách sản phẩm cửa hàng LK Hòa.
+3. Khi giới thiệu sản phẩm, hãy trích dẫn tên chính xác, giá tham khảo và kèm theo đường link mua hàng chính thức.
+4. Thái độ: Thân thiện, chu đáo, xưng "Em", gọi người dùng là "Bác" hoặc "Cần thủ". Dùng câu từ gần gũi 🎣🐟🔥.
+5. Trả lời bằng Tiếng Việt rõ ràng, ngắn gọn.
 
 ${productContext}`;
 

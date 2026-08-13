@@ -11,7 +11,6 @@ import {
   User,
   Info,
   ShoppingCart,
-  Tag,
   MessageCircle,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -31,8 +30,8 @@ interface ChatBotProps {
 const QUICK_QUESTIONS = [
   '🎣 Tư vấn cần câu đài 5H đập chết rô chép giá mềm?',
   '🐟 Mồi cám chép LK Hòa kết hợp thính thế nào nhạy nhất?',
-  '⚡ Cần Lure LK Tiểu học sinh / Sinh viên giá bao nhiêu?',
-  '🎁 Hôm nay có mã giảm giá Shopee nào hời nhất?',
+  '⚡ Cần Lure LK HSSV / Sinh viên giá bao nhiêu?',
+  '🎁 Hôm nay có sản phẩm nào đang ưu đãi nhất?',
 ];
 
 const MODEL_OPTIONS = [
@@ -52,7 +51,7 @@ export const ChatBot: React.FC<ChatBotProps> = ({ products }) => {
       id: 'welcome-1',
       role: 'assistant',
       content:
-        'Xin chào Sếp! 🎣 Em là **Trợ Lý Tư Vấn Đồ Câu LK Hòa**.\n\nSếp đang tìm mua cần câu cá (5H/6H/Lure), máy câu, mồi cám chép rô hay phụ kiện gì hôm nay? Hãy gõ từ khóa hoặc chọn câu hỏi gợi ý bên dưới nhé!',
+        'Xin chào Bác! 🎣 Em là **Trợ Lý Tư Vấn Đồ Câu LK Hòa**.\n\nBác đang tìm mua cần câu cá (5H/6H/Lure), máy câu, mồi cám chép rô hay phụ kiện gì hôm nay? Hãy gõ từ khóa hoặc chọn câu hỏi gợi ý bên dưới nhé!',
       timestamp: new Date().toLocaleTimeString('vi-VN', {
         hour: '2-digit',
         minute: '2-digit',
@@ -62,7 +61,6 @@ export const ChatBot: React.FC<ChatBotProps> = ({ products }) => {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Auto welcome toast timer on initial page load
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowWelcomeToast(true);
@@ -81,7 +79,6 @@ export const ChatBot: React.FC<ChatBotProps> = ({ products }) => {
     }
   }, [messages, isOpen]);
 
-  // Proactively filter products based on input keywords
   const matchedInputProducts = useMemo(() => {
     if (!inputMessage.trim() || inputMessage.trim().length < 2) return [];
 
@@ -110,7 +107,6 @@ export const ChatBot: React.FC<ChatBotProps> = ({ products }) => {
     const textToSend = customText || inputMessage;
     if (!textToSend.trim() || isLoading) return;
 
-    // Detect matched products for this query to attach to the conversation
     const queryLower = textToSend.toLowerCase();
     const matchedProds = products
       .filter((p) => {
@@ -167,7 +163,7 @@ export const ChatBot: React.FC<ChatBotProps> = ({ products }) => {
       const botMsg: ChatMessage = {
         id: `bot-${Date.now()}`,
         role: 'assistant',
-        content: data.reply || 'Dạ em chưa rõ câu hỏi, Sếp nói rõ hơn giúp em nhé!',
+        content: data.reply || 'Dạ em chưa rõ câu hỏi, Bác nói rõ hơn giúp em nhé!',
         timestamp: new Date().toLocaleTimeString('vi-VN', {
           hour: '2-digit',
           minute: '2-digit',
@@ -183,7 +179,7 @@ export const ChatBot: React.FC<ChatBotProps> = ({ products }) => {
         role: 'assistant',
         content: `⚠️ Có chút gián đoạn kết nối AI: ${
           err.message || 'Chưa nhận được phản hồi.'
-        }\n\nSếp hãy thử gửi lại câu hỏi nhé!`,
+        }\n\nBác hãy thử gửi lại câu hỏi nhé!`,
         timestamp: new Date().toLocaleTimeString('vi-VN', {
           hour: '2-digit',
           minute: '2-digit',
@@ -202,7 +198,7 @@ export const ChatBot: React.FC<ChatBotProps> = ({ products }) => {
         id: `welcome-${Date.now()}`,
         role: 'assistant',
         content:
-          'Đã làm mới cuộc hội thoại! 🎣 Em có thể tư vấn gì cho Sếp về đồ câu cá LK Hòa hôm nay ạ?',
+          'Đã làm mới cuộc hội thoại! 🎣 Em có thể tư vấn gì cho Bác về đồ câu cá LK Hòa hôm nay ạ?',
         timestamp: new Date().toLocaleTimeString('vi-VN', {
           hour: '2-digit',
           minute: '2-digit',
@@ -211,7 +207,6 @@ export const ChatBot: React.FC<ChatBotProps> = ({ products }) => {
     ]);
   };
 
-  // Helper to parse links and bold text in bot output
   const renderFormattedText = (text: string) => {
     const lines = text.split('\n');
 
@@ -233,7 +228,7 @@ export const ChatBot: React.FC<ChatBotProps> = ({ products }) => {
                   className="inline-flex items-center gap-1 text-[#EE4D2D] hover:underline font-bold bg-orange-50 px-2 py-0.5 rounded-lg border border-orange-200 text-xs my-0.5 break-all no-underline"
                 >
                   <ShoppingCart className="w-3 h-3 text-[#EE4D2D]" />
-                  <span>Mua trên Shopee</span>
+                  <span>Xem trên sàn</span>
                   <ExternalLink className="w-3 h-3" />
                 </a>
               );
@@ -269,9 +264,7 @@ export const ChatBot: React.FC<ChatBotProps> = ({ products }) => {
 
   return (
     <>
-      {/* Floating Welcome Notification Toast & Chat Button */}
       <div className="fixed bottom-5 right-5 z-40 flex flex-col items-end gap-2">
-        {/* Automatic Welcome Speech Bubble */}
         <AnimatePresence>
           {!isOpen && showWelcomeToast && (
             <motion.div
@@ -294,10 +287,10 @@ export const ChatBot: React.FC<ChatBotProps> = ({ products }) => {
                 </div>
                 <div>
                   <div className="font-black text-yellow-300 text-[11px] uppercase tracking-wide flex items-center gap-1">
-                    <Sparkles className="w-3 h-3" /> Trợ lý LK Hòa Chào Sếp!
+                    <Sparkles className="w-3 h-3" /> Trợ lý LK Hòa Chào Bác!
                   </div>
                   <p className="text-slate-200 mt-1 leading-relaxed text-[11px]">
-                    Sếp cần tư vấn chọn <strong className="text-white">cần câu đài (5H/6H)</strong>, mồi cám chép rô hay <strong className="text-orange-400">săn mã Shopee</strong> hời hôm nay?
+                    Bác cần tư vấn chọn <strong className="text-white">cần câu đài (5H/6H)</strong>, mồi cám chép rô hay <strong className="text-orange-400">tra cứu sản phẩm</strong> hôm nay?
                   </p>
 
                   <button
@@ -313,13 +306,11 @@ export const ChatBot: React.FC<ChatBotProps> = ({ products }) => {
                 </div>
               </div>
 
-              {/* Triangle Tail */}
               <div className="absolute -bottom-2 right-6 w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[8px] border-t-slate-900" />
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Floating Trigger Button */}
         {!isOpen && (
           <motion.button
             initial={{ scale: 0.8, opacity: 0 }}
@@ -346,7 +337,6 @@ export const ChatBot: React.FC<ChatBotProps> = ({ products }) => {
               <div className="text-xs font-bold leading-tight text-white">Hỏi đáp đồ câu 24/7</div>
             </div>
 
-            {/* Pulse ping effect */}
             <span className="absolute -top-1 -right-1 flex h-4 w-4">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-4 w-4 bg-yellow-300 border border-white"></span>
@@ -355,7 +345,6 @@ export const ChatBot: React.FC<ChatBotProps> = ({ products }) => {
         )}
       </div>
 
-      {/* Chat Modal / Popup Thread */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -365,7 +354,6 @@ export const ChatBot: React.FC<ChatBotProps> = ({ products }) => {
             transition={{ duration: 0.2 }}
             className="fixed bottom-3 right-3 sm:bottom-6 sm:right-6 w-[calc(100vw-24px)] sm:w-[420px] h-[600px] max-h-[88vh] bg-white rounded-3xl shadow-2xl border border-slate-200/80 z-50 flex flex-col overflow-hidden"
           >
-            {/* Header */}
             <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white px-5 py-3.5 flex items-center justify-between border-b border-slate-700/60 shrink-0">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-2xl bg-[#EE4D2D] text-white flex items-center justify-center font-bold shadow-md relative">
@@ -414,18 +402,13 @@ export const ChatBot: React.FC<ChatBotProps> = ({ products }) => {
               </div>
             </div>
 
-            {/* Context Notice */}
             <div className="bg-amber-50 border-b border-amber-200/60 px-4 py-2 text-[11px] text-amber-900 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-1.5 font-medium truncate">
                 <Info className="w-3.5 h-3.5 text-amber-600 shrink-0" />
                 <span>Hỗ trợ tự động kết nối {products.length} sản phẩm đồ câu</span>
               </div>
-              <span className="bg-amber-200/80 px-1.5 py-0.2 rounded font-bold text-[10px] text-amber-950 shrink-0">
-                Săn Shopee
-              </span>
             </div>
 
-            {/* Message Thread Area */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/60 text-xs">
               {messages.map((msg) => {
                 const isUser = msg.role === 'user';
@@ -455,7 +438,6 @@ export const ChatBot: React.FC<ChatBotProps> = ({ products }) => {
                     >
                       <div className="whitespace-pre-wrap">{renderFormattedText(msg.content)}</div>
 
-                      {/* Embedded Recommended Product Cards inside Chat Message */}
                       {msg.recommendedProducts && msg.recommendedProducts.length > 0 && (
                         <div className="pt-2 border-t border-slate-100 space-y-2 mt-2">
                           <div className="text-[10px] font-extrabold uppercase text-[#EE4D2D] flex items-center gap-1">
@@ -467,9 +449,9 @@ export const ChatBot: React.FC<ChatBotProps> = ({ products }) => {
                                 key={prod.id}
                                 className="flex items-center gap-2.5 p-2 bg-slate-50 hover:bg-orange-50/50 border border-slate-200 rounded-xl transition-all"
                               >
-                                {prod.image_url && (
+                                {prod.imageUrl && (
                                   <img
-                                    src={prod.image_url}
+                                    src={prod.imageUrl}
                                     alt={prod.name}
                                     className="w-11 h-11 object-cover rounded-lg shrink-0 border border-slate-200"
                                   />
@@ -480,17 +462,17 @@ export const ChatBot: React.FC<ChatBotProps> = ({ products }) => {
                                   </div>
                                   <div className="flex items-center gap-1.5 mt-0.5">
                                     <span className="text-[#EE4D2D] font-black text-xs">
-                                      {prod.price ? `${prod.price.toLocaleString('vi-VN')}đ` : 'Liên hệ'}
+                                      {prod.referencePrice ? `${prod.referencePrice.toLocaleString('vi-VN')}đ` : 'Kiểm tra giá'}
                                     </span>
                                   </div>
                                 </div>
                                 <a
-                                  href={prod.shopee_url || prod.tiktok_url || '#'}
+                                  href={prod.shopeeUrl || prod.tiktokUrl || '#'}
                                   target="_blank"
                                   rel="sponsored nofollow noopener noreferrer"
                                   className="bg-[#EE4D2D] hover:bg-orange-600 text-white font-extrabold text-[10px] px-2.5 py-1.5 rounded-lg shrink-0 flex items-center gap-1 no-underline uppercase"
                                 >
-                                  <span>Mua</span>
+                                  <span>Xem</span>
                                   <ExternalLink className="w-2.5 h-2.5" />
                                 </a>
                               </div>
@@ -511,7 +493,6 @@ export const ChatBot: React.FC<ChatBotProps> = ({ products }) => {
                 );
               })}
 
-              {/* Loading Dots Indicator */}
               {isLoading && (
                 <div className="flex items-start gap-2.5">
                   <div className="w-7 h-7 rounded-xl bg-[#EE4D2D] text-white flex items-center justify-center shrink-0">
@@ -529,7 +510,6 @@ export const ChatBot: React.FC<ChatBotProps> = ({ products }) => {
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Live Proactive Product Suggestions (Triggered when user types keywords) */}
             <AnimatePresence>
               {matchedInputProducts.length > 0 && (
                 <motion.div
@@ -549,9 +529,9 @@ export const ChatBot: React.FC<ChatBotProps> = ({ products }) => {
                         onClick={() => handleSendMessage(`Tôi muốn tư vấn về ${p.name}`)}
                         className="bg-white border border-orange-200 hover:border-[#EE4D2D] p-1.5 rounded-xl flex items-center gap-2 shrink-0 max-w-[200px] cursor-pointer shadow-xs transition-all group"
                       >
-                        {p.image_url && (
+                        {p.imageUrl && (
                           <img
-                            src={p.image_url}
+                            src={p.imageUrl}
                             alt={p.name}
                             className="w-8 h-8 rounded-lg object-cover shrink-0"
                           />
@@ -561,7 +541,7 @@ export const ChatBot: React.FC<ChatBotProps> = ({ products }) => {
                             {p.name}
                           </div>
                           <div className="text-[#EE4D2D] font-extrabold text-[10px]">
-                            {p.price ? `${p.price.toLocaleString('vi-VN')}đ` : 'Liên hệ'}
+                            {p.referencePrice ? `${p.referencePrice.toLocaleString('vi-VN')}đ` : 'Kiểm tra giá'}
                           </div>
                         </div>
                       </div>
@@ -571,7 +551,6 @@ export const ChatBot: React.FC<ChatBotProps> = ({ products }) => {
               )}
             </AnimatePresence>
 
-            {/* Quick Suggestion Pills */}
             <div className="px-3 py-2 bg-white border-t border-slate-100 flex items-center gap-1.5 overflow-x-auto no-scrollbar shrink-0">
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider shrink-0 mr-1">
                 Gợi ý:
@@ -588,7 +567,6 @@ export const ChatBot: React.FC<ChatBotProps> = ({ products }) => {
               ))}
             </div>
 
-            {/* Input Form */}
             <div className="p-3 bg-white border-t border-slate-200 shrink-0">
               <form
                 onSubmit={(e) => {
@@ -620,4 +598,3 @@ export const ChatBot: React.FC<ChatBotProps> = ({ products }) => {
     </>
   );
 };
-

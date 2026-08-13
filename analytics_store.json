@@ -1,94 +1,11 @@
 {
-  "totalPageViews": 28951,
-  "todayPageViews": 1241,
-  "yesterdayPageViews": 1580,
-  "mobileCount": 981,
-  "desktopCount": 260,
+  "totalPageViews": 0,
+  "todayPageViews": 0,
+  "yesterdayPageViews": 0,
+  "mobileCount": 0,
+  "desktopCount": 0,
   "lastDateStr": "2026-08-12",
-  "hourlyMap": {
-    "0": 24,
-    "1": 13,
-    "2": 8,
-    "3": 5,
-    "4": 10,
-    "5": 35,
-    "6": 68,
-    "7": 115,
-    "8": 142,
-    "9": 130,
-    "10": 118,
-    "11": 105,
-    "12": 92,
-    "13": 98,
-    "14": 88,
-    "15": 75,
-    "16": 64,
-    "17": 70,
-    "18": 52,
-    "19": 38,
-    "20": 28,
-    "21": 20,
-    "22": 15,
-    "23": 10
-  },
-  "weeklyTrafficMap": {
-    "2026-08-11": 1217,
-    "2026-08-10": 1670,
-    "2026-08-09": 1623,
-    "2026-08-08": 1576,
-    "2026-08-07": 1529,
-    "2026-08-06": 1482,
-    "2026-08-05": 1435,
-    "2026-08-04": 1388,
-    "2026-08-03": 1341,
-    "2026-08-02": 1294,
-    "2026-08-01": 1247,
-    "2026-07-31": 1657,
-    "2026-07-30": 1610,
-    "2026-07-29": 1563
-  },
-  "recentActivities": [
-    {
-      "id": "1786499151950_crs",
-      "time": "Vừa xong",
-      "location": "Đồng Nai, VN",
-      "action": "Bấm mua Shopee Mall Cần Tay 6H"
-    },
-    {
-      "id": "1",
-      "time": "Vừa xong",
-      "location": "Nghệ An, VN",
-      "action": "Xem Cần Tay LK Hòa 6H Carbon"
-    },
-    {
-      "id": "2",
-      "time": "1 phút trước",
-      "location": "Hà Nội, VN",
-      "action": "Bấm Link Shopee Mall Máy Câu Đứng"
-    },
-    {
-      "id": "3",
-      "time": "2 phút trước",
-      "location": "TP. Hồ Chí Minh, VN",
-      "action": "Xem Mồi Cám Chép LK Hòa"
-    },
-    {
-      "id": "4",
-      "time": "3 phút trước",
-      "location": "Thanh Hóa, VN",
-      "action": "Sao chép mã giảm giá LKHOA10K"
-    },
-    {
-      "id": "5",
-      "time": "5 phút trước",
-      "location": "Đà Nẵng, VN",
-      "action": "Hỏi Trợ Lý AI LK Hòa"
-    },
-    {
-      "id": "6",
-      "time": "7 phút trước",
-      "location": "Hải Phòng, VN",
-      "action": "Lọc danh mục Cần Câu Tay 5H"
-    }
-  ]
+  "hourlyMap": {},
+  "weeklyTrafficMap": {},
+  "recentActivities": []
 }

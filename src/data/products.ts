@@ -13,13 +13,13 @@ export function generateSlug(text: string): string {
 }
 
 export const CATEGORIES: Category[] = [
-  { id: 'all', name: 'Tất Cả Đồ Câu', iconName: 'Sparkles' },
-  { id: 'rods', name: 'Cần Câu Cá', iconName: 'Fish' },
-  { id: 'reels', name: 'Máy Câu Cá', iconName: 'Compass' },
-  { id: 'baits', name: 'Mồi Câu & Thính LK', iconName: 'Feather' },
-  { id: 'lines', name: 'Dây Câu & Thẻo', iconName: 'Waves' },
-  { id: 'floats', name: 'Phao & Lưỡi Câu', iconName: 'Anchor' },
-  { id: 'accessories', name: 'Thùng & Phụ Kiện', iconName: 'ShieldCheck' },
+  { id: 'all', slug: 'tat-ca', name: 'Tất Cả Sản Phẩm', iconName: 'Sparkles', description: 'Toàn bộ danh mục đồ câu cá giải trí LK Hòa' },
+  { id: 'can-cau', slug: 'can-cau', name: 'Cần Câu', iconName: 'Fish', description: 'Cần câu tay, cần carbon 5H, 6H, 8H, cần lure cao cấp' },
+  { id: 'may-cau', slug: 'may-cau', name: 'Máy Câu', iconName: 'Compass', description: 'Máy câu đứng, máy câu ngang chính hãng LK Hòa' },
+  { id: 'moi-cau', slug: 'moi-cau', name: 'Mồi Câu', iconName: 'Feather', description: 'Mồi cám chép, mồi xả, thính dụ cá LK Hòa' },
+  { id: 'day-cau', slug: 'day-cau', name: 'Dây Câu', iconName: 'Waves', description: 'Dây dù X8, dây cước trục thẻo siêu bền' },
+  { id: 'phao-luoi', slug: 'phao-luoi', name: 'Phao & Lưỡi', iconName: 'Anchor', description: 'Phao câu đài nano, phao đêm, lưỡi câu bén' },
+  { id: 'phu-kien', slug: 'phu-kien', name: 'Phụ Kiện', iconName: 'ShieldCheck', description: 'Thùng đựng cá, chân chống cần, gác cần, rế đựng cám' },
 ];
 
 export const INITIAL_PRODUCTS: Product[] = [];
@@ -27,26 +27,26 @@ export const INITIAL_PRODUCTS: Product[] = [];
 export const WHY_US_ITEMS: ReasonItem[] = [
   {
     id: 'reason-1',
-    title: 'Website Danh Mục & Affiliate Chính Thức LK Hòa',
-    description: 'Nơi tổng hợp thông tin sản phẩm và liên kết trực tiếp tới gian hàng chính hãng LK Hòa trên Shopee Mall & TikTok Shop.',
+    title: 'Website Danh Mục & Affiliate LK Hòa',
+    description: 'Tổng hợp thông tin sản phẩm và liên kết trực tiếp tới gian hàng chính hãng LK Hòa trên Shopee & TikTok Shop.',
     icon: 'ShieldCheck'
   },
   {
     id: 'reason-2',
-    title: 'Cập Nhật Link Nhanh - Mua Sắm Dễ Dàng',
-    description: 'Dễ dàng tra cứu thông tin sản phẩm và mở trực tiếp ứng dụng Shopee hoặc TikTok Shop để hoàn tất mua hàng.',
+    title: 'Tra Cứu Nhanh & Mua Sắm Dễ Dàng',
+    description: 'Tra cứu thông số kỹ thuật và chọn mua trực tiếp trên các sàn thương mại điện tử uy tín.',
     icon: 'BadgePercent'
   },
   {
     id: 'reason-3',
-    title: 'Chính Hãng & An Toàn',
-    description: 'Mọi liên kết mua hàng đều mở ứng dụng hoặc website chính thức của sàn thương mại điện tử.',
+    title: 'Liên Kết Mua Hàng Chính Thức',
+    description: 'Mọi liên kết mua hàng đều mở trực tiếp ứng dụng hoặc website chính thức của sàn.',
     icon: 'CheckCircle2'
   },
   {
     id: 'reason-4',
     title: 'Hỗ Trợ Thông Tin 24/7',
-    description: 'Trợ lý tư vấn AI hỗ trợ tra cứu sản phẩm, thông số kỹ thuật và chọn loại đồ câu phù hợp.',
+    description: 'Trợ lý AI hỗ trợ giải đáp thắc mắc, tư vấn chọn đồ câu phù hợp với nhu cầu.',
     icon: 'Clock'
   }
 ];
