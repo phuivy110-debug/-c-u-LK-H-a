@@ -444,9 +444,9 @@ export const ChatBot: React.FC<ChatBotProps> = ({ products }) => {
                             <Sparkles className="w-3 h-3" /> Gợi ý sản phẩm phù hợp:
                           </div>
                           <div className="grid grid-cols-1 gap-2">
-                            {msg.recommendedProducts.map((prod) => (
+                            {msg.recommendedProducts.map((prod, pIdx) => (
                               <div
-                                key={prod.id}
+                                key={`${prod.id}-rec-${pIdx}`}
                                 className="flex items-center gap-2.5 p-2 bg-slate-50 hover:bg-orange-50/50 border border-slate-200 rounded-xl transition-all"
                               >
                                 {prod.imageUrl && (
@@ -523,9 +523,9 @@ export const ChatBot: React.FC<ChatBotProps> = ({ products }) => {
                     <span>Gợi ý theo từ khóa "{inputMessage.trim()}":</span>
                   </div>
                   <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-0.5">
-                    {matchedInputProducts.map((p) => (
+                    {matchedInputProducts.map((p, pIdx) => (
                       <div
-                        key={p.id}
+                        key={`${p.id}-match-${pIdx}`}
                         onClick={() => handleSendMessage(`Tôi muốn tư vấn về ${p.name}`)}
                         className="bg-white border border-orange-200 hover:border-[#EE4D2D] p-1.5 rounded-xl flex items-center gap-2 shrink-0 max-w-[200px] cursor-pointer shadow-xs transition-all group"
                       >

@@ -16,16 +16,23 @@ import { ScrollToTopButton } from './components/ScrollToTopButton';
 import { Product } from './types';
 import { CATEGORIES } from './data/products';
 import { Flame, ArrowRight, RefreshCw, FileSpreadsheet, ChevronRight, ShieldCheck, Fish, Compass, Feather, Waves, Anchor } from 'lucide-react';
-import { fetchProductsFromGoogleSheet, DEFAULT_SHEET_URL, loadProductsCache } from './utils/googleSheetSync';
+import { fetchProductsFromGoogleSheet, DEFAULT_SHEET_URL, loadProductsCache, ensureUniqueProductIds } from './utils/googleSheetSync';
 
 const SHEET_URL_KEY = 'lkhoa_sheet_url_v2';
 
 export default function App() {
   // Products state (defaults to cached or empty array until synced)
-  const [products, setProducts] = useState<Product[]>(() => {
-    const cached = loadProductsCache();
-    return cached && cached.products ? cached.products : [];
+  const [products, setProductsState] = useState<Product[]>(() => {
+    const cached = loadProductsCache(DEFAULT_SHEET_URL);
+    return cached && cached.products ? ensureUniqueProductIds(cached.products) : [];
   });
+
+  const setProducts = useCallback((newProds: Product[] | ((prev: Product[]) => Product[])) => {
+    setProductsState((prev) => {
+      const resolved = typeof newProds === 'function' ? newProds(prev) : newProds;
+      return ensureUniqueProductIds(resolved);
+    });
+  }, []);
 
   // Client Routing State
   const [currentPath, setCurrentPath] = useState<string>(() => {
@@ -113,7 +120,7 @@ export default function App() {
         console.error('Failed to sync Google Sheet:', err);
         setSyncError(err.message || 'Không thể kết nối Google Sheet.');
         // Fall back to cache if available
-        const cached = loadProductsCache();
+        const cached = loadProductsCache(urlToFetch);
         if (cached && cached.products.length > 0) {
           setProducts(cached.products);
         }

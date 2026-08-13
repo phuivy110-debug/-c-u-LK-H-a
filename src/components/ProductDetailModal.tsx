@@ -27,8 +27,8 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 
   const name = product.name;
   const imageUrl = product.imageUrl;
-  const displayPrice = product.price;
-  const displayOrigPrice = product.originalPrice;
+  const displayPrice = product.referencePrice || 0;
+  const displayOrigPrice = product.originalPrice || 0;
   const discountPercent =
     displayOrigPrice > displayPrice && displayPrice > 0
       ? Math.round(((displayOrigPrice - displayPrice) / displayOrigPrice) * 100)
@@ -165,9 +165,9 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                {similarProducts.map((simProd) => (
+                {similarProducts.map((simProd, idx) => (
                   <div
-                    key={simProd.id}
+                    key={`${simProd.id}-sim-${idx}`}
                     onClick={() => {
                       if (onSelectProduct) {
                         onSelectProduct(simProd);
@@ -196,7 +196,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 
                     <div className="mt-1 pt-1 border-t border-slate-200/60 flex items-center justify-between">
                       <span className="text-xs font-black text-[#EE4D2D]">
-                        {formatVND(simProd.price) || 'Xem giá'}
+                        {formatVND(simProd.referencePrice) || 'Xem giá'}
                       </span>
                       <ChevronRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-[#EE4D2D] transition-colors" />
                     </div>

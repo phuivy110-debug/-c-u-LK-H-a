@@ -22,8 +22,6 @@ export const CATEGORIES: Category[] = [
   { id: 'phu-kien', slug: 'phu-kien', name: 'Phụ Kiện', iconName: 'ShieldCheck', description: 'Thùng đựng cá, chân chống cần, gác cần, rế đựng cám' },
 ];
 
-export const INITIAL_PRODUCTS: Product[] = [];
-
 export const WHY_US_ITEMS: ReasonItem[] = [
   {
     id: 'reason-1',

@@ -245,6 +245,10 @@ async function startServer() {
         return res.status(400).json({ error: 'Thiếu url Google Sheet' });
       }
 
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+
       let csvUrl = rawUrl.trim();
       if (csvUrl.includes('/pubhtml') || csvUrl.includes('/pub')) {
         if (csvUrl.includes('/pubhtml')) {
@@ -257,16 +261,21 @@ async function startServer() {
         const docIdMatch = csvUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
         if (docIdMatch && docIdMatch[1]) {
           const docId = docIdMatch[1];
-          let gid = '0';
-          const gidMatch = csvUrl.match(/[?&]gid=(\d+)/) || csvUrl.match(/#gid=(\d+)/);
-          if (gidMatch && gidMatch[1]) {
-            gid = gidMatch[1];
+          if (docId === '1KO_7U5VJJNKBphq_NNM4MnwbsfDq1GEg6mRGxz4y3B8') {
+            csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRoGVq7tIOSj8pAr-80FuQxNYY_JHVtyZdk6SJd59baBkVlMllh-hDwvm0Zen4FHAcmjtpYQPai9S_w/pub?output=csv&gid=0';
+          } else {
+            let gid = '0';
+            const gidMatch = csvUrl.match(/[?&]gid=(\d+)/) || csvUrl.match(/#gid=(\d+)/);
+            if (gidMatch && gidMatch[1]) {
+              gid = gidMatch[1];
+            }
+            csvUrl = `https://docs.google.com/spreadsheets/d/${docId}/export?format=csv&gid=${gid}`;
           }
-          csvUrl = `https://docs.google.com/spreadsheets/d/${docId}/export?format=csv&gid=${gid}`;
         }
       }
 
       const response = await fetch(csvUrl, {
+        cache: 'no-store',
         headers: {
           'User-Agent':
             'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',

@@ -30,8 +30,9 @@ export interface Product {
 }
 
 export interface ProductCache {
-  schemaVersion: 2;
+  schemaVersion: 3;
   source: 'google-sheet';
+  spreadsheetId: string;
   syncedAt: string;
   products: Product[];
 }

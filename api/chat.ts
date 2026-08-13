@@ -38,7 +38,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           .slice(0, 50)
           .map(
             (p: any, i: number) =>
-              `${i + 1}. [${p.category || 'Khác'}] ${p.name || ''} - Giá: ${p.price ? `${p.price.toLocaleString('vi-VN')}đ` : 'Liên hệ'} (Gốc: ${p.original_price ? `${p.original_price.toLocaleString('vi-VN')}đ` : 'Không'}) - Link Shopee: ${p.shopee_url || 'Không'} - Link TikTok: ${p.tiktok_url || 'Không'}`
+              `${i + 1}. [${p.category || 'Khác'}] ${p.name || ''} - Giá: ${p.referencePrice ? `${p.referencePrice.toLocaleString('vi-VN')}đ` : 'Liên hệ'} (Gốc: ${p.originalPrice ? `${p.originalPrice.toLocaleString('vi-VN')}đ` : 'Không'}) - Link Shopee: ${p.shopeeUrl || 'Không'} - Link TikTok: ${p.tiktokUrl || 'Không'}`
           )
           .join('\n');
     }

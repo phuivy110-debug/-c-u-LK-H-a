@@ -35,6 +35,10 @@ export const AffiliateGuideModal: React.FC<AffiliateGuideModalProps> = ({
   const [loadingExtractId, setLoadingExtractId] = useState<string | null>(null);
   const [isBatchExtracting, setIsBatchExtracting] = useState(false);
 
+  React.useEffect(() => {
+    setEditingProducts(products);
+  }, [products]);
+
   const handleExtractSingleImage = async (id: string, url: string) => {
     if (!url) return;
     setLoadingExtractId(id);
@@ -100,7 +104,7 @@ export const AffiliateGuideModal: React.FC<AffiliateGuideModalProps> = ({
     return `// Copy toàn bộ nội dung này dán vào file src/data/products.ts
 import { Product } from '../types';
 
-export const INITIAL_PRODUCTS: Product[] = ${JSON.stringify(editingProducts, null, 2)};
+export const PRODUCTS_LIST: Product[] = ${JSON.stringify(editingProducts, null, 2)};
 `;
   };
 

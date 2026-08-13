@@ -4,13 +4,31 @@ import { generateSlug } from '../data/products';
 import { validateAffiliateUrl } from '../components/AffiliateButtons';
 
 export const DEFAULT_SHEET_URL =
-  'https://docs.google.com/spreadsheets/d/e/2PACX-1vRoGVq7tIOSj8pAr-80FuQxNYY_JHVtyZdk6SJd59baBkVlMllh-hDwvm0Zen4FHAcmjtpYQPai9S_w/pubhtml?gid=0&single=true';
+  'https://docs.google.com/spreadsheets/d/1KO_7U5VJJNKBphq_NNM4MnwbsfDq1GEg6mRGxz4y3B8/edit?gid=0#gid=0';
 
+export const PUBLISHED_FALLBACK_CSV_URL =
+  'https://docs.google.com/spreadsheets/d/e/2PACX-1vRoGVq7tIOSj8pAr-80FuQxNYY_JHVtyZdk6SJd59baBkVlMllh-hDwvm0Zen4FHAcmjtpYQPai9S_w/pub?output=csv&gid=0';
+
+export const PRODUCT_CACHE_KEY = 'lkhoa_products_google_sheet_v3';
 export const SHARED_TIKTOK_URL = 'https://vt.tiktok.com/ZS9kJHJuDnoUp-AeYDB/';
-export const LKHOA_PRODUCTS_CACHE_V2 = 'lkhoa_products_cache_v2';
+
+export const SHOPEE_HOSTNAMES = [
+  's.shopee.vn',
+  'shopee.vn',
+  'www.shopee.vn',
+  'shp.ee',
+  'shope.ee',
+];
+
+export function extractSpreadsheetId(url: string): string {
+  if (!url) return '1KO_7U5VJJNKBphq_NNM4MnwbsfDq1GEg6mRGxz4y3B8';
+  const match = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
+  if (match && match[1]) return match[1];
+  return '1KO_7U5VJJNKBphq_NNM4MnwbsfDq1GEg6mRGxz4y3B8';
+}
 
 export function convertSheetUrlToCsvUrl(url: string): string {
-  if (!url || !url.trim()) return url;
+  if (!url || !url.trim()) return PUBLISHED_FALLBACK_CSV_URL;
   let cleanUrl = url.trim();
 
   if (cleanUrl.includes('/pubhtml') || cleanUrl.includes('/pub')) {
@@ -26,6 +44,9 @@ export function convertSheetUrlToCsvUrl(url: string): string {
   const docIdMatch = cleanUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
   if (docIdMatch && docIdMatch[1]) {
     const docId = docIdMatch[1];
+    if (docId === '1KO_7U5VJJNKBphq_NNM4MnwbsfDq1GEg6mRGxz4y3B8') {
+      return PUBLISHED_FALLBACK_CSV_URL;
+    }
     let gid = '0';
     const gidMatch = cleanUrl.match(/[?&]gid=(\d+)/) || cleanUrl.match(/#gid=(\d+)/);
     if (gidMatch && gidMatch[1]) {
@@ -40,9 +61,24 @@ export function convertSheetUrlToCsvUrl(url: string): string {
   return cleanUrl;
 }
 
+export function isValidShopeeUrl(url: string | undefined | null): boolean {
+  if (!url || typeof url !== 'string') return false;
+  const trimmed = url.trim();
+  if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://')) return false;
+  try {
+    const parsed = new URL(trimmed);
+    const hostname = parsed.hostname.toLowerCase();
+    return SHOPEE_HOSTNAMES.some((valid) => hostname === valid || hostname.endsWith('.' + valid));
+  } catch {
+    return false;
+  }
+}
+
 export function parsePriceNumber(raw: any): number | undefined {
   if (raw === undefined || raw === null || raw === '') return undefined;
-  const str = String(raw).replace(/[^\d]/g, '');
+  const trimmed = String(raw).trim();
+  if (trimmed.startsWith('-')) return undefined;
+  const str = trimmed.replace(/[^\d]/g, '');
   if (!str) return undefined;
   const parsed = parseInt(str, 10);
   return isNaN(parsed) || parsed <= 0 ? undefined : parsed;
@@ -57,6 +93,27 @@ export function normalizeHeader(header: string): string {
     .replace(/đ/g, 'd')
     .replace(/[^a-z0-9]/g, '');
 }
+
+export const HEADER_ALIASES = {
+  category: ['hangmuccategory', 'hangmuc', 'danhmuc', 'category', 'nhom', 'loai'],
+  name: ['tensanpham', 'productname', 'ten', 'sanpham', 'title', 'name'],
+  shopeeUrl: [
+    'linkaffiliate',
+    'linkaffiliateshopee',
+    'linkaffshopee',
+    'linkshopee',
+    'shopeeurl',
+  ],
+  tiktokUrl: [
+    'linkaffiliatetiktok',
+    'linktiktok',
+    'linkafftiktok',
+    'tiktokurl',
+  ],
+  image: ['anhsanpham', 'linkanh', 'imageurl', 'image', 'hinhanh', 'anh'],
+  originalPrice: ['giagoc', 'originalprice', 'niemyet'],
+  referencePrice: ['giathamkhao', 'giasale', 'giaban', 'giadagiam', 'referenceprice', 'price'],
+};
 
 export function getExactColumnValue(
   row: Record<string, string>,
@@ -77,8 +134,8 @@ export function getExactColumnValue(
   return '';
 }
 
-export function generateStableTechnicalId(name: string, shopeeUrl: string = ''): string {
-  const input = name.trim().toLowerCase() + '|' + shopeeUrl.trim().toLowerCase();
+export function generateStableTechnicalId(name: string, shopeeUrl: string = '', sourceRow?: number): string {
+  const input = name.trim().toLowerCase() + '|' + shopeeUrl.trim().toLowerCase() + (sourceRow ? `|row${sourceRow}` : '');
   let h1 = 0x811c9dc5;
   for (let i = 0; i < input.length; i++) {
     h1 ^= input.charCodeAt(i);
@@ -88,35 +145,93 @@ export function generateStableTechnicalId(name: string, shopeeUrl: string = ''):
   return `tech-${generateSlug(name).slice(0, 30)}-${hex}`;
 }
 
-export function saveProductsCache(products: Product[]): void {
+export function ensureUniqueProductIds(products: Product[]): Product[] {
+  const seenIds = new Set<string>();
+  return products.map((p, idx) => {
+    let id = p.id || `prod-${idx + 1}`;
+    if (seenIds.has(id)) {
+      id = `${id}-row${p.sourceRow || idx + 1}`;
+      let counter = 1;
+      while (seenIds.has(id)) {
+        id = `${p.id || 'prod'}-row${p.sourceRow || idx + 1}-${counter}`;
+        counter++;
+      }
+    }
+    seenIds.add(id);
+    return { ...p, id };
+  });
+}
+
+export function cleanupLegacyCaches(): void {
+  if (typeof window === 'undefined' || typeof localStorage === 'undefined') return;
+  const legacyKeys = [
+    'dealngon247_products_data_v1',
+    'lkhoa_products_cache_v2',
+    'lkhoa_products_cache',
+    'products_data',
+    'dealngon247_products',
+  ];
+  legacyKeys.forEach((key) => {
+    try {
+      localStorage.removeItem(key);
+    } catch {}
+  });
+}
+
+export function saveProductsCache(products: Product[], spreadsheetUrl: string = DEFAULT_SHEET_URL): void {
   try {
+    cleanupLegacyCaches();
+    if (typeof window === 'undefined' || typeof localStorage === 'undefined') return;
+    const sanitizedProducts = ensureUniqueProductIds(products);
     const cache: ProductCache = {
-      schemaVersion: 2,
+      schemaVersion: 3,
       source: 'google-sheet',
+      spreadsheetId: extractSpreadsheetId(spreadsheetUrl),
       syncedAt: new Date().toISOString(),
-      products,
+      products: sanitizedProducts,
     };
-    localStorage.setItem(LKHOA_PRODUCTS_CACHE_V2, JSON.stringify(cache));
+    localStorage.setItem(PRODUCT_CACHE_KEY, JSON.stringify(cache));
   } catch (err) {
     console.warn('Failed to save product cache:', err);
   }
 }
 
-export function loadProductsCache(): ProductCache | null {
+export function loadProductsCache(spreadsheetUrl: string = DEFAULT_SHEET_URL): ProductCache | null {
   try {
-    const raw = localStorage.getItem(LKHOA_PRODUCTS_CACHE_V2);
+    cleanupLegacyCaches();
+    if (typeof window === 'undefined' || typeof localStorage === 'undefined') return null;
+    const raw = localStorage.getItem(PRODUCT_CACHE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
+    const expectedSpreadsheetId = extractSpreadsheetId(spreadsheetUrl);
+
     if (
       parsed &&
-      parsed.schemaVersion === 2 &&
+      parsed.schemaVersion === 3 &&
       parsed.source === 'google-sheet' &&
+      parsed.spreadsheetId === expectedSpreadsheetId &&
       Array.isArray(parsed.products)
     ) {
-      return parsed as ProductCache;
+      const hasInvalidSchema = parsed.products.some(
+        (p: any) => !p || 'affiliateUrl' in p || 'shopee_url' in p
+      );
+      if (hasInvalidSchema) {
+        localStorage.removeItem(PRODUCT_CACHE_KEY);
+        return null;
+      }
+
+      const sanitized = ensureUniqueProductIds(parsed.products);
+      return {
+        ...parsed,
+        products: sanitized,
+      } as ProductCache;
+    } else {
+      localStorage.removeItem(PRODUCT_CACHE_KEY);
     }
   } catch {
-    // Ignore corrupt cache
+    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+      localStorage.removeItem(PRODUCT_CACHE_KEY);
+    }
   }
   return null;
 }
@@ -140,13 +255,26 @@ export async function extractShopeeImageFromLink(url: string): Promise<string | 
 }
 
 export async function fetchProductsFromGoogleSheet(sheetUrl: string): Promise<Product[]> {
-  const csvUrl = convertSheetUrlToCsvUrl(sheetUrl);
+  let csvUrl = convertSheetUrlToCsvUrl(sheetUrl);
+
+  try {
+    const urlObj = new URL(csvUrl);
+    urlObj.searchParams.set('_sync', Date.now().toString());
+    csvUrl = urlObj.toString();
+  } catch {}
+
   let csvText = '';
 
   try {
-    const response = await fetch(csvUrl, { cache: 'no-store' });
+    const response = await fetch(csvUrl, {
+      cache: 'no-store',
+      headers: { Accept: 'text/csv,text/plain,*/*' },
+    });
     if (response.ok) {
-      csvText = await response.text();
+      const text = await response.text();
+      if (text && !text.includes('<!DOCTYPE html>') && !text.includes('<html')) {
+        csvText = text;
+      }
     }
   } catch (err) {
     console.warn('Direct client fetch from Google Sheet failed, trying server proxy fallback:', err);
@@ -156,29 +284,46 @@ export async function fetchProductsFromGoogleSheet(sheetUrl: string): Promise<Pr
     try {
       const proxyEndpoint =
         typeof window !== 'undefined'
-          ? `/api/sync-sheet?url=${encodeURIComponent(sheetUrl)}`
-          : `http://localhost:3000/api/sync-sheet?url=${encodeURIComponent(sheetUrl)}`;
-      const proxyRes = await fetch(proxyEndpoint);
+          ? `/api/sync-sheet?url=${encodeURIComponent(sheetUrl)}&_sync=${Date.now()}`
+          : `http://localhost:3000/api/sync-sheet?url=${encodeURIComponent(sheetUrl)}&_sync=${Date.now()}`;
+      const proxyRes = await fetch(proxyEndpoint, { cache: 'no-store' });
       if (proxyRes.ok) {
-        csvText = await proxyRes.text();
-      } else {
-        const errJson = await proxyRes.json().catch(() => null);
-        throw new Error(errJson?.error || `Không thể tải dữ liệu Sheet (mã ${proxyRes.status})`);
+        const text = await proxyRes.text();
+        if (text && !text.includes('<!DOCTYPE html>') && !text.includes('<html')) {
+          csvText = text;
+        }
       }
     } catch (proxyErr: any) {
       console.warn('Server proxy fetch for Google Sheet also failed:', proxyErr);
-      throw new Error(
-        proxyErr.message ||
-          'Không thể kết nối với Google Sheet. Vui lòng kiểm tra lại link đã Chia Sẻ Công Khai chưa.'
-      );
     }
+  }
+
+  if (!csvText && PUBLISHED_FALLBACK_CSV_URL) {
+    try {
+      const fallbackUrl = `${PUBLISHED_FALLBACK_CSV_URL}&_sync=${Date.now()}`;
+      const fallbackRes = await fetch(fallbackUrl, { cache: 'no-store' });
+      if (fallbackRes.ok) {
+        const text = await fallbackRes.text();
+        if (text && !text.includes('<!DOCTYPE html>') && !text.includes('<html')) {
+          csvText = text;
+        }
+      }
+    } catch (fbErr) {
+      console.warn('Published fallback fetch failed:', fbErr);
+    }
+  }
+
+  if (!csvText) {
+    throw new Error(
+      'Không thể kết nối với Google Sheet. Vui lòng kiểm tra lại đường dẫn chia sẻ.'
+    );
   }
 
   return new Promise((resolve, reject) => {
     Papa.parse<Record<string, string>>(csvText, {
       header: true,
       skipEmptyLines: true,
-      complete: async (results) => {
+      complete: (results) => {
         try {
           const parsedProducts: Product[] = [];
           const slugCounts = new Map<string, number>();
@@ -187,36 +332,13 @@ export async function fetchProductsFromGoogleSheet(sheetUrl: string): Promise<Pr
             const row = results.data[index];
             const sourceRow = index + 2; // 1-based header is row 1
 
-            const name = getExactColumnValue(row, [
-              'tensanpham',
-              'productname',
-              'ten',
-              'sanpham',
-              'title',
-              'name',
-            ]);
-
-            if (!name) continue; // Skip rows without product name
+            const name = getExactColumnValue(row, HEADER_ALIASES.name);
+            if (!name) continue;
 
             const rawId = getExactColumnValue(row, ['id', 'masp', 'masanpham', 'ma']);
 
-            let rawShopee = getExactColumnValue(row, [
-              'linkaffiliateshopee',
-              'linkshopee',
-              'shopeeurl',
-              'linkaffshopee',
-              'shopee',
-              'linkaff',
-            ]);
-
-            let rawTikTok = getExactColumnValue(row, [
-              'linkaffiliatetiktok',
-              'linktiktok',
-              'tiktokurl',
-              'tiktokshop',
-              'linkafftiktok',
-              'tiktok',
-            ]);
+            let rawShopee = getExactColumnValue(row, HEADER_ALIASES.shopeeUrl);
+            let rawTikTok = getExactColumnValue(row, HEADER_ALIASES.tiktokUrl);
 
             if (rawShopee && (rawShopee.includes('tiktok.com') || rawShopee.includes('vt.tiktok'))) {
               if (!rawTikTok) rawTikTok = rawShopee;
@@ -227,7 +349,7 @@ export async function fetchProductsFromGoogleSheet(sheetUrl: string): Promise<Pr
               rawTikTok = '';
             }
 
-            const validShopee = validateAffiliateUrl(rawShopee, 'shopee');
+            const validShopee = isValidShopeeUrl(rawShopee) ? rawShopee.trim() : undefined;
             let validTikTok = validateAffiliateUrl(rawTikTok, 'tiktok');
 
             let tiktokLinkStatus: 'verified-product' | 'shared-unverified' | 'none' = 'none';
@@ -245,7 +367,7 @@ export async function fetchProductsFromGoogleSheet(sheetUrl: string): Promise<Pr
               tiktokLinkStatus = 'shared-unverified';
             }
 
-            const id = rawId ? rawId.trim() : generateStableTechnicalId(name, validShopee || '');
+            const id = rawId ? rawId.trim() : generateStableTechnicalId(name, validShopee || '', sourceRow);
 
             const baseSlug = generateSlug(name) || 'san-pham';
             let slug = baseSlug;
@@ -258,14 +380,7 @@ export async function fetchProductsFromGoogleSheet(sheetUrl: string): Promise<Pr
               slugCounts.set(baseSlug, 1);
             }
 
-            const categoryRaw = getExactColumnValue(row, [
-              'giathamkhao',
-              'danhmuc',
-              'hangmuc',
-              'category',
-              'loai',
-              'nhom',
-            ]);
+            const categoryRaw = getExactColumnValue(row, HEADER_ALIASES.category);
             let category = categoryRaw || 'Chưa phân loại';
             if (category === categoryRaw && categoryRaw.match(/^\d+$/)) {
               category = 'Chưa phân loại';
@@ -273,30 +388,10 @@ export async function fetchProductsFromGoogleSheet(sheetUrl: string): Promise<Pr
 
             const description = getExactColumnValue(row, ['mota', 'description', 'thongso', 'chitiet']);
 
-            const refPriceRaw = getExactColumnValue(row, [
-              'giathamkhao',
-              'giaban',
-              'giadagiam',
-              'referenceprice',
-              'price',
-            ]);
-            const origPriceRaw = getExactColumnValue(row, [
-              'giagoc',
-              'originalprice',
-              'niemyet',
-            ]);
+            const referencePrice = parsePriceNumber(getExactColumnValue(row, HEADER_ALIASES.referencePrice));
+            const originalPrice = parsePriceNumber(getExactColumnValue(row, HEADER_ALIASES.originalPrice));
 
-            const referencePrice = parsePriceNumber(refPriceRaw);
-            const originalPrice = parsePriceNumber(origPriceRaw);
-
-            const imageRaw = getExactColumnValue(row, [
-              'linkanh',
-              'anhsanpham',
-              'imageurl',
-              'image',
-              'hinhanh',
-              'anh',
-            ]);
+            const imageRaw = getExactColumnValue(row, HEADER_ALIASES.image);
             const imageUrl = imageRaw && (imageRaw.startsWith('http://') || imageRaw.startsWith('https://'))
               ? imageRaw
               : undefined;
@@ -329,8 +424,9 @@ export async function fetchProductsFromGoogleSheet(sheetUrl: string): Promise<Pr
             });
           }
 
-          saveProductsCache(parsedProducts);
-          resolve(parsedProducts);
+          const finalProducts = ensureUniqueProductIds(parsedProducts);
+          saveProductsCache(finalProducts, sheetUrl);
+          resolve(finalProducts);
         } catch (err) {
           reject(err);
         }

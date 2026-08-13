@@ -222,9 +222,9 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
             <h2 className="text-lg font-black text-slate-900">Sản Phẩm Cùng Danh Mục</h2>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-            {relatedProducts.map((relProd) => (
+            {relatedProducts.map((relProd, idx) => (
               <ProductCard
-                key={relProd.id}
+                key={`${relProd.id}-rel-${idx}`}
                 product={relProd}
                 onOpenDetail={() => {
                   if (onOpenDetail) onOpenDetail(relProd);
