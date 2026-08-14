@@ -322,37 +322,36 @@ async function startServer() {
       let updatedCount = 0;
 
       for (const p of serverProducts) {
-        if (p.originalPrice && p.referencePrice && p.originalPrice > p.referencePrice) {
-          const discountPercent = Math.round(((p.originalPrice - p.referencePrice) / p.originalPrice) * 100);
-          shopeePricesStore[p.id] = {
-            productId: p.id,
-            productName: p.name,
-            shopeeUrl: p.shopeeUrl,
-            salePrice: p.referencePrice,
-            originalPrice: p.originalPrice,
-            discountPercent,
-            isFlashSale: discountPercent >= 15,
-            syncedAt: new Date().toISOString(),
-            source: 'shopee-realtime',
-          };
-          // Also key by slug for resilient client matching
-          shopeePricesStore[p.slug] = shopeePricesStore[p.id];
-          updatedCount++;
-        } else if (p.referencePrice && p.referencePrice > 0) {
-          shopeePricesStore[p.id] = {
-            productId: p.id,
-            productName: p.name,
-            shopeeUrl: p.shopeeUrl,
-            salePrice: p.referencePrice,
-            originalPrice: p.originalPrice,
-            discountPercent: undefined,
-            isFlashSale: false,
-            syncedAt: new Date().toISOString(),
-            source: 'shopee-realtime',
-          };
-          shopeePricesStore[p.slug] = shopeePricesStore[p.id];
-          updatedCount++;
+        let discountPercent = p.saleDiscountPercent;
+        if (!discountPercent && p.originalPrice && p.referencePrice && p.originalPrice > p.referencePrice) {
+          discountPercent = Math.round(((p.originalPrice - p.referencePrice) / p.originalPrice) * 100);
         }
+
+        const salePrice = p.referencePrice || p.salePrice || 0;
+        const originalPrice = p.originalPrice || (salePrice && discountPercent ? Math.round(salePrice / (1 - discountPercent / 100)) : undefined);
+
+        const record: RealtimeShopeePriceRecord = {
+          productId: p.id,
+          productName: p.name,
+          shopeeUrl: p.shopeeUrl,
+          salePrice,
+          originalPrice,
+          discountPercent: discountPercent && discountPercent > 0 ? discountPercent : undefined,
+          isFlashSale: (discountPercent && discountPercent >= 15) || false,
+          syncedAt: new Date().toISOString(),
+          source: 'shopee-realtime',
+        };
+
+        // Multi-key mapping for resilient matching across client & server
+        shopeePricesStore[p.id] = record;
+        shopeePricesStore[p.slug] = record;
+        if (p.shopeeUrl) {
+          shopeePricesStore[p.shopeeUrl] = record;
+        }
+        if (p.name) {
+          shopeePricesStore[p.name.trim().toLowerCase()] = record;
+        }
+        updatedCount++;
       }
 
       saveShopeePrices();
@@ -363,8 +362,27 @@ async function startServer() {
     }
   };
 
-  // Initial sync on server start
+  // Initial sync on server start & periodic interval
   syncShopeePricesInternal().catch(() => {});
+  setInterval(() => {
+    syncShopeePricesInternal().catch(() => {});
+  }, 10 * 60 * 1000);
+
+  // API: Get all products parsed with full pricing and affiliate metadata
+  app.get('/api/products', (req, res) => {
+    try {
+      res.setHeader('Cache-Control', 'public, max-age=60');
+      const products = loadServerProducts();
+      return res.json({
+        success: true,
+        count: products.length,
+        products,
+        syncedAt: new Date().toISOString(),
+      });
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message });
+    }
+  });
 
   // API: Get all realtime Shopee prices
   app.get('/api/shopee-prices', (req, res) => {

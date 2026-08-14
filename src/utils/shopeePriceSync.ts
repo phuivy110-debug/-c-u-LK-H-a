@@ -87,23 +87,57 @@ export async function triggerShopeePriceSync(): Promise<{ success: boolean; coun
  * Merge realtime Shopee prices into Product[] array
  */
 export function mergeRealtimeShopeePrices(products: Product[], priceMap: ShopeePriceMap): Product[] {
+  if (!products || products.length === 0) return [];
   if (!priceMap || Object.keys(priceMap).length === 0) {
-    return products;
+    return products.map(p => {
+      if (p.originalPrice && p.referencePrice && p.originalPrice > p.referencePrice) {
+        const discount = Math.round(((p.originalPrice - p.referencePrice) / p.originalPrice) * 100);
+        return {
+          ...p,
+          saleDiscountPercent: p.saleDiscountPercent || discount,
+          isFlashSale: p.isFlashSale ?? (discount >= 15),
+        };
+      }
+      return p;
+    });
   }
 
+  // Precompute price list for search
+  const priceValues = Object.values(priceMap);
+
   return products.map((product) => {
-    // Match by ID, slug, or technical ID
-    const livePrice = priceMap[product.id] || priceMap[product.slug];
+    // 1. Direct match by ID or slug
+    let livePrice = priceMap[product.id] || priceMap[product.slug];
+
+    // 2. Match by Shopee URL
+    if (!livePrice && product.shopeeUrl) {
+      livePrice = priceMap[product.shopeeUrl] || priceValues.find(v => v.shopeeUrl && v.shopeeUrl === product.shopeeUrl);
+    }
+
+    // 3. Match by Name similarity
+    if (!livePrice && product.name) {
+      const cleanName = product.name.trim().toLowerCase();
+      livePrice = priceValues.find(v => v.productName && v.productName.trim().toLowerCase() === cleanName);
+    }
 
     if (!livePrice || !livePrice.salePrice) {
+      // If product has originalPrice and referencePrice, ensure discount percent is computed
+      if (product.originalPrice && product.referencePrice && product.originalPrice > product.referencePrice) {
+        const discount = Math.round(((product.originalPrice - product.referencePrice) / product.originalPrice) * 100);
+        return {
+          ...product,
+          saleDiscountPercent: product.saleDiscountPercent || discount,
+          isFlashSale: product.isFlashSale ?? (discount >= 15),
+        };
+      }
       return product;
     }
 
     const salePrice = livePrice.salePrice;
     let originalPrice = livePrice.originalPrice || product.originalPrice;
-    let referencePrice = salePrice;
+    const referencePrice = salePrice;
 
-    // If originalPrice wasn't provided or is less than sale price, check product's initial referencePrice
+    // If originalPrice wasn't provided or is less than sale price, check product's initial referencePrice or calculate
     if (!originalPrice && product.referencePrice && product.referencePrice > salePrice) {
       originalPrice = product.referencePrice;
     }
@@ -113,7 +147,7 @@ export function mergeRealtimeShopeePrices(products: Product[], priceMap: ShopeeP
       discountPercent = Math.round(((originalPrice - salePrice) / originalPrice) * 100);
     }
 
-    const isFlashSale = livePrice.isFlashSale || (discountPercent !== undefined && discountPercent >= 15);
+    const isFlashSale = livePrice.isFlashSale ?? (discountPercent !== undefined && discountPercent >= 15);
 
     return {
       ...product,

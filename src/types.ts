@@ -50,7 +50,7 @@ export interface RealtimeShopeePrice {
 export type ShopeePriceMap = Record<string, RealtimeShopeePrice>;
 
 export interface ProductCache {
-  schemaVersion: 3;
+  schemaVersion: number;
   source: 'google-sheet';
   spreadsheetId: string;
   syncedAt: string;

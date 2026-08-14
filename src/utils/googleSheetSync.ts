@@ -9,7 +9,7 @@ export const DEFAULT_SHEET_URL =
 export const PUBLISHED_FALLBACK_CSV_URL =
   'https://docs.google.com/spreadsheets/d/e/2PACX-1vRoGVq7tIOSj8pAr-80FuQxNYY_JHVtyZdk6SJd59baBkVlMllh-hDwvm0Zen4FHAcmjtpYQPai9S_w/pub?output=csv&gid=0';
 
-export const PRODUCT_CACHE_KEY = 'lkhoa_products_google_sheet_v3';
+export const PRODUCT_CACHE_KEY = 'lkhoa_products_google_sheet_v4';
 export const SHARED_TIKTOK_URL = 'https://vt.tiktok.com/ZS9kJHJuDnoUp-AeYDB/';
 
 export const SHOPEE_HOSTNAMES = [
@@ -187,6 +187,7 @@ export function ensureUniqueProductIds(products: Product[]): Product[] {
 export function cleanupLegacyCaches(): void {
   if (typeof window === 'undefined' || typeof localStorage === 'undefined') return;
   const legacyKeys = [
+    'lkhoa_products_google_sheet_v3',
     'dealngon247_products_data_v1',
     'lkhoa_products_cache_v2',
     'lkhoa_products_cache',
@@ -206,7 +207,7 @@ export function saveProductsCache(products: Product[], spreadsheetUrl: string = 
     if (typeof window === 'undefined' || typeof localStorage === 'undefined') return;
     const sanitizedProducts = ensureUniqueProductIds(products);
     const cache: ProductCache = {
-      schemaVersion: 3,
+      schemaVersion: 4,
       source: 'google-sheet',
       spreadsheetId: extractSpreadsheetId(spreadsheetUrl),
       syncedAt: new Date().toISOString(),
@@ -229,7 +230,7 @@ export function loadProductsCache(spreadsheetUrl: string = DEFAULT_SHEET_URL): P
 
     if (
       parsed &&
-      parsed.schemaVersion === 3 &&
+      parsed.schemaVersion === 4 &&
       parsed.source === 'google-sheet' &&
       parsed.spreadsheetId === expectedSpreadsheetId &&
       Array.isArray(parsed.products)
@@ -336,6 +337,18 @@ export async function fetchProductsFromGoogleSheet(sheetUrl: string): Promise<Pr
   }
 
   if (!csvText) {
+    try {
+      const apiRes = await fetch('/api/products', { cache: 'no-store' });
+      if (apiRes.ok) {
+        const data = await apiRes.json();
+        if (data && Array.isArray(data.products) && data.products.length > 0) {
+          return ensureUniqueProductIds(data.products);
+        }
+      }
+    } catch (e) {
+      console.warn('API fallback /api/products failed:', e);
+    }
+
     throw new Error(
       'Không thể kết nối với Google Sheet. Vui lòng kiểm tra lại đường dẫn chia sẻ.'
     );

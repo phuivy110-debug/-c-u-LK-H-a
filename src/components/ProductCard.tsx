@@ -145,32 +145,37 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         {/* Price Box */}
         <div className="flex flex-col gap-0.5">
           {refPrice && refPrice > 0 ? (
-            <div>
-              <div className="flex items-center gap-1">
-                <span className="text-[10px] sm:text-[11px] font-bold text-slate-500">
-                  {hasValidDiscount ? '⚡ Giá Sale Shopee:' : 'Giá tham khảo:'}
+            <div className="space-y-1">
+              <div className="flex items-center justify-between gap-1">
+                <span className="text-[10px] sm:text-[11px] font-extrabold text-slate-600 flex items-center gap-1">
+                  {discountPercent > 0 ? (
+                    <>
+                      <Zap className="w-3 h-3 text-[#EE4D2D] fill-[#EE4D2D]" />
+                      <span>Giá Sale Shopee:</span>
+                      <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    </>
+                  ) : (
+                    <span>Giá tham khảo:</span>
+                  )}
                 </span>
-                {hasValidDiscount && (
-                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                )}
-              </div>
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="text-sm sm:text-base font-black text-[#EE4D2D]">
-                  {formatVND(refPrice)}
-                </span>
-                {hasValidDiscount && origPrice && (
-                  <span className="text-[10px] sm:text-xs text-slate-400 line-through font-medium">
-                    {formatVND(origPrice)}
-                  </span>
-                )}
                 {discountPercent > 0 && (
-                  <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-red-50 text-red-600 border border-red-200/80 text-[10px] font-black">
+                  <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-red-600 text-white text-[10px] font-black shadow-2xs">
                     -{discountPercent}%
                   </span>
                 )}
               </div>
+              <div className="flex items-baseline gap-1.5 flex-wrap">
+                <span className="text-base sm:text-lg font-black text-[#EE4D2D]">
+                  {formatVND(refPrice)}
+                </span>
+                {origPrice && origPrice > refPrice && (
+                  <span className="text-[11px] sm:text-xs text-slate-400 line-through font-semibold">
+                    {formatVND(origPrice)}
+                  </span>
+                )}
+              </div>
               {savingsAmount > 0 && (
-                <div className="text-[10px] font-bold text-emerald-700 mt-0.5 flex items-center gap-1">
+                <div className="text-[10px] sm:text-[11px] font-bold text-emerald-700 bg-emerald-50/90 border border-emerald-200/80 px-2 py-0.5 rounded-md inline-flex items-center gap-1">
                   <span>Tiết kiệm: {formatVND(savingsAmount)}</span>
                 </div>
               )}
