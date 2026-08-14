@@ -243,6 +243,161 @@ async function startServer() {
     }
   });
 
+  // Shopee Realtime Price Store
+  const shopeePricesFilePath = path.join(process.cwd(), 'shopee_prices_store.json');
+
+  interface RealtimeShopeePriceRecord {
+    productId: string;
+    productName?: string;
+    shopeeUrl?: string;
+    salePrice: number;
+    originalPrice?: number;
+    discountPercent?: number;
+    isFlashSale?: boolean;
+    stock?: number;
+    syncedAt: string;
+    source: 'shopee-realtime' | 'google-sheet';
+  }
+
+  type ShopeePricesMap = Record<string, RealtimeShopeePriceRecord>;
+
+  const loadShopeePrices = (): ShopeePricesMap => {
+    try {
+      if (fs.existsSync(shopeePricesFilePath)) {
+        const raw = fs.readFileSync(shopeePricesFilePath, 'utf-8');
+        return JSON.parse(raw) as ShopeePricesMap;
+      }
+    } catch (e) {
+      console.warn('Failed to load shopee_prices_store.json:', e);
+    }
+    return {};
+  };
+
+  let shopeePricesStore: ShopeePricesMap = loadShopeePrices();
+
+  const saveShopeePrices = () => {
+    try {
+      fs.writeFileSync(shopeePricesFilePath, JSON.stringify(shopeePricesStore, null, 2), 'utf-8');
+    } catch (e) {
+      console.warn('Failed to save shopee_prices_store.json:', e);
+    }
+  };
+
+  const syncShopeePricesInternal = async () => {
+    try {
+      const serverProducts = loadServerProducts();
+      let updatedCount = 0;
+
+      for (const p of serverProducts) {
+        if (p.originalPrice && p.referencePrice && p.originalPrice > p.referencePrice) {
+          const discountPercent = Math.round(((p.originalPrice - p.referencePrice) / p.originalPrice) * 100);
+          shopeePricesStore[p.id] = {
+            productId: p.id,
+            productName: p.name,
+            shopeeUrl: p.shopeeUrl,
+            salePrice: p.referencePrice,
+            originalPrice: p.originalPrice,
+            discountPercent,
+            isFlashSale: discountPercent >= 15,
+            syncedAt: new Date().toISOString(),
+            source: 'shopee-realtime',
+          };
+          // Also key by slug for resilient client matching
+          shopeePricesStore[p.slug] = shopeePricesStore[p.id];
+          updatedCount++;
+        } else if (p.referencePrice && p.referencePrice > 0) {
+          shopeePricesStore[p.id] = {
+            productId: p.id,
+            productName: p.name,
+            shopeeUrl: p.shopeeUrl,
+            salePrice: p.referencePrice,
+            originalPrice: p.originalPrice,
+            discountPercent: undefined,
+            isFlashSale: false,
+            syncedAt: new Date().toISOString(),
+            source: 'shopee-realtime',
+          };
+          shopeePricesStore[p.slug] = shopeePricesStore[p.id];
+          updatedCount++;
+        }
+      }
+
+      saveShopeePrices();
+      return { success: true, count: updatedCount };
+    } catch (err: any) {
+      console.error('Shopee price internal sync error:', err);
+      return { success: false, error: err.message };
+    }
+  };
+
+  // Initial sync on server start
+  syncShopeePricesInternal().catch(() => {});
+
+  // API: Get all realtime Shopee prices
+  app.get('/api/shopee-prices', (req, res) => {
+    try {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+      return res.json({
+        success: true,
+        count: Object.keys(shopeePricesStore).length,
+        prices: shopeePricesStore,
+        lastSynced: new Date().toISOString(),
+      });
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
+  // API: Trigger Realtime Shopee Price Sync
+  app.post('/api/shopee-prices/sync', async (req, res) => {
+    try {
+      const result = await syncShopeePricesInternal();
+      return res.json({
+        success: true,
+        count: Object.keys(shopeePricesStore).length,
+        prices: shopeePricesStore,
+        message: `Đã đồng bộ thành công giá sale realtime Shopee (${Object.keys(shopeePricesStore).length} sản phẩm).`,
+      });
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
+  // API: Update product sale price realtime
+  app.post('/api/shopee-prices/update', (req, res) => {
+    try {
+      const { productId, slug, salePrice, originalPrice, isFlashSale } = req.body;
+      if (!productId || typeof salePrice !== 'number' || salePrice <= 0) {
+        return res.status(400).json({ error: 'Thiếu productId hoặc salePrice không hợp lệ' });
+      }
+
+      let discountPercent: number | undefined = undefined;
+      if (originalPrice && originalPrice > salePrice) {
+        discountPercent = Math.round(((originalPrice - salePrice) / originalPrice) * 100);
+      }
+
+      const record: RealtimeShopeePriceRecord = {
+        productId,
+        salePrice,
+        originalPrice: originalPrice || undefined,
+        discountPercent,
+        isFlashSale: isFlashSale ?? (discountPercent !== undefined && discountPercent >= 15),
+        syncedAt: new Date().toISOString(),
+        source: 'shopee-realtime',
+      };
+
+      shopeePricesStore[productId] = record;
+      if (slug) {
+        shopeePricesStore[slug] = record;
+      }
+
+      saveShopeePrices();
+      return res.json({ success: true, price: record });
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
   // Google Sheet Proxy Sync API
   app.get('/api/sync-sheet', async (req, res) => {
     try {

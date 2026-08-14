@@ -19,6 +19,7 @@ import { Product } from './types';
 import { CATEGORIES } from './data/products';
 import { Flame, ArrowRight, RefreshCw, FileSpreadsheet, ChevronRight, ShieldCheck, Fish, Compass, Feather, Waves, Anchor } from 'lucide-react';
 import { fetchProductsFromGoogleSheet, DEFAULT_SHEET_URL, loadProductsCache, ensureUniqueProductIds } from './utils/googleSheetSync';
+import { fetchLiveShopeePrices, mergeRealtimeShopeePrices, triggerShopeePriceSync } from './utils/shopeePriceSync';
 
 const SHEET_URL_KEY = 'lkhoa_sheet_url_v2';
 
@@ -96,6 +97,8 @@ export default function App() {
     }, 3500);
   };
 
+  const [isShopeePriceRefreshing, setIsShopeePriceRefreshing] = useState(false);
+
   // Sync Google Sheet Function
   const handleSyncGoogleSheet = useCallback(
     async (targetUrl?: string, quiet = false) => {
@@ -105,7 +108,10 @@ export default function App() {
       try {
         const fetchedProducts = await fetchProductsFromGoogleSheet(urlToFetch);
         if (fetchedProducts.length > 0) {
-          setProducts(fetchedProducts);
+          // Fetch live Shopee prices in parallel and merge
+          const livePrices = await fetchLiveShopeePrices();
+          const merged = mergeRealtimeShopeePrices(fetchedProducts, livePrices);
+          setProducts(merged);
           const timeStr = new Date().toLocaleTimeString('vi-VN', {
             hour: '2-digit',
             minute: '2-digit',
@@ -113,7 +119,7 @@ export default function App() {
           });
           setLastSyncTime(timeStr);
           if (!quiet) {
-            showToast(`Đồng bộ thành công ${fetchedProducts.length} sản phẩm từ Google Sheet!`);
+            showToast(`Đồng bộ thành công ${fetchedProducts.length} sản phẩm & cập nhật giá Shopee realtime!`);
           }
         } else {
           setSyncError('Google Sheet không có dữ liệu phù hợp.');
@@ -133,9 +139,37 @@ export default function App() {
     [sheetUrl]
   );
 
-  // Auto sync on mount
+  // Manual or background Shopee realtime price refresh
+  const handleRefreshShopeePrices = useCallback(async () => {
+    setIsShopeePriceRefreshing(true);
+    try {
+      // First trigger background scraping if needed
+      await triggerShopeePriceSync();
+      // Fetch latest prices store
+      const livePrices = await fetchLiveShopeePrices();
+      setProductsState((currentProds) => {
+        return mergeRealtimeShopeePrices(currentProds, livePrices);
+      });
+      showToast('Đã cập nhật giá sale realtime từ Shopee!');
+    } catch (e) {
+      console.warn('Shopee price refresh failed:', e);
+    } finally {
+      setIsShopeePriceRefreshing(false);
+    }
+  }, []);
+
+  // Auto sync Google Sheet on mount and fetch Shopee prices
   useEffect(() => {
     handleSyncGoogleSheet(sheetUrl, true);
+    // Periodic refresh of Shopee prices every 5 minutes
+    const interval = setInterval(() => {
+      fetchLiveShopeePrices().then((livePrices) => {
+        if (livePrices && Object.keys(livePrices).length > 0) {
+          setProductsState((currentProds) => mergeRealtimeShopeePrices(currentProds, livePrices));
+        }
+      });
+    }, 5 * 60 * 1000);
+    return () => clearInterval(interval);
   }, []);
 
   const handleOpenDetailModal = (product: Product) => {
@@ -163,6 +197,7 @@ export default function App() {
           products={products}
           onNavigate={navigate}
           onOpenDetail={handleOpenDetailModal}
+          onRefreshPrices={handleRefreshShopeePrices}
         />
       );
     }
@@ -206,6 +241,8 @@ export default function App() {
           onNavigate={navigate}
           onOpenDetail={handleOpenDetailModal}
           initialQuery={searchQuery}
+          onRefreshPrices={handleRefreshShopeePrices}
+          isRefreshingPrices={isShopeePriceRefreshing}
         />
       );
     }

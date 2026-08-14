@@ -1,14 +1,16 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Product } from '../types';
-import { ArrowLeft, ImageOff, Flame, ChevronRight, AlertCircle, ShoppingBag, ShieldCheck, CheckCircle2, Info, BookOpen } from 'lucide-react';
+import { ArrowLeft, ImageOff, Flame, ChevronRight, AlertCircle, ShoppingBag, ShieldCheck, CheckCircle2, Info, Zap, RefreshCw } from 'lucide-react';
 import { AffiliateButtons } from './AffiliateButtons';
 import { ProductCard } from './ProductCard';
+import { triggerShopeePriceSync } from '../utils/shopeePriceSync';
 
 interface ProductDetailPageProps {
   productSlug: string;
   products: Product[];
   onNavigate: (path: string) => void;
   onOpenDetail?: (product: Product) => void;
+  onRefreshPrices?: () => Promise<void>;
 }
 
 export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
@@ -16,7 +18,11 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
   products,
   onNavigate,
   onOpenDetail,
+  onRefreshPrices,
 }) => {
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [refreshSuccess, setRefreshSuccess] = useState(false);
+
   const product = useMemo(() => {
     return products.find((p) => p.slug === productSlug);
   }, [products, productSlug]);
@@ -73,13 +79,35 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
     );
   }
 
-  const refPrice = product.referencePrice;
+  const refPrice = product.referencePrice || product.salePrice;
   const origPrice = product.originalPrice;
   const hasValidDiscount =
     origPrice && refPrice && origPrice > refPrice && refPrice > 0;
-  const discountPercent = hasValidDiscount
-    ? Math.round(((origPrice - refPrice) / origPrice) * 100)
-    : 0;
+  const discountPercent = product.saleDiscountPercent || (
+    hasValidDiscount && origPrice && refPrice
+      ? Math.round(((origPrice - refPrice) / origPrice) * 100)
+      : 0
+  );
+  const savingsAmount = hasValidDiscount && origPrice && refPrice ? origPrice - refPrice : 0;
+  const isSale = Boolean((product.salePrice && product.salePrice > 0) || discountPercent > 0 || product.isFlashSale);
+
+  const handleManualPriceRefresh = async () => {
+    setIsRefreshing(true);
+    setRefreshSuccess(false);
+    try {
+      if (onRefreshPrices) {
+        await onRefreshPrices();
+      } else {
+        await triggerShopeePriceSync();
+      }
+      setRefreshSuccess(true);
+      setTimeout(() => setRefreshSuccess(false), 3000);
+    } catch (e) {
+      console.warn('Manual refresh failed:', e);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   // Compute related products in same category
   const relatedProducts = products.filter(
@@ -141,11 +169,17 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
             </div>
           )}
 
-          {hasValidDiscount && discountPercent > 0 && (
-            <div className="absolute top-4 left-4 bg-[#EE4D2D] text-white font-black text-xs px-3 py-1.5 rounded-xl shadow-md">
-              GIẢM {discountPercent}%
+          {discountPercent > 0 ? (
+            <div className="absolute top-4 left-4 bg-gradient-to-r from-red-600 to-[#EE4D2D] text-white font-black text-xs sm:text-sm px-3 py-1.5 rounded-xl shadow-lg flex items-center gap-1.5">
+              {product.isFlashSale ? <Flame className="w-4 h-4 text-yellow-300 fill-yellow-300 animate-pulse" /> : <Zap className="w-4 h-4 text-yellow-300 fill-yellow-300" />}
+              <span>GIẢM {discountPercent}%</span>
             </div>
-          )}
+          ) : isSale ? (
+            <div className="absolute top-4 left-4 bg-[#EE4D2D] text-white font-black text-xs px-3 py-1.5 rounded-xl shadow-md flex items-center gap-1">
+              <Zap className="w-3.5 h-3.5 text-yellow-300 fill-yellow-300" />
+              <span>GIÁ SALE</span>
+            </div>
+          ) : null}
         </div>
 
         {/* Info & Buy Section */}
@@ -172,26 +206,60 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
               {product.name}
             </h1>
 
-            {/* Price Box */}
-            <div className="bg-orange-50/80 rounded-2xl p-4 border border-orange-200/80 space-y-1">
-              <div className="text-xs text-slate-500 font-medium">Giá tham khảo LK Hòa:</div>
-              <div className="flex items-baseline gap-3 flex-wrap">
-                {refPrice && refPrice > 0 ? (
-                  <>
-                    <span className="text-2xl sm:text-3xl font-black text-[#EE4D2D]">
-                      {formatVND(refPrice)}
-                    </span>
-                    {hasValidDiscount && origPrice && (
-                      <span className="text-sm sm:text-base text-slate-400 line-through font-medium">
-                        {formatVND(origPrice)}
-                      </span>
-                    )}
-                  </>
-                ) : (
-                  <span className="text-base font-bold text-slate-700">
-                    Kiểm tra giá mới nhất trên gian hàng
+            {/* Realtime Shopee Price Box */}
+            <div className="bg-gradient-to-br from-orange-50/90 via-red-50/40 to-amber-50/60 rounded-2xl p-4 sm:p-5 border border-orange-200/90 space-y-3 shadow-xs">
+              <div className="flex items-center justify-between gap-2 border-b border-orange-200/60 pb-2">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                  <span className="text-xs font-extrabold text-slate-700 uppercase tracking-wide">
+                    {isSale ? '⚡ Giá Sale Realtime Shopee' : 'Giá Tham Khảo Shopee'}
                   </span>
+                </div>
+                <button
+                  onClick={handleManualPriceRefresh}
+                  disabled={isRefreshing}
+                  className="inline-flex items-center gap-1 text-[11px] font-bold text-orange-700 hover:text-[#EE4D2D] bg-white px-2 py-1 rounded-lg border border-orange-200 shadow-2xs transition-all cursor-pointer disabled:opacity-50"
+                  title="Cập nhật lại giá sale realtime từ Shopee"
+                >
+                  <RefreshCw className={`w-3 h-3 ${isRefreshing ? 'animate-spin text-[#EE4D2D]' : ''}`} />
+                  <span>{isRefreshing ? 'Đang tải...' : refreshSuccess ? 'Đã làm mới!' : 'Làm mới giá'}</span>
+                </button>
+              </div>
+
+              <div className="space-y-1">
+                <div className="flex items-baseline gap-3 flex-wrap">
+                  {refPrice && refPrice > 0 ? (
+                    <>
+                      <span className="text-2xl sm:text-3xl font-black text-[#EE4D2D]">
+                        {formatVND(refPrice)}
+                      </span>
+                      {hasValidDiscount && origPrice && (
+                        <span className="text-sm sm:text-base text-slate-400 line-through font-medium">
+                          {formatVND(origPrice)}
+                        </span>
+                      )}
+                      {discountPercent > 0 && (
+                        <span className="bg-[#EE4D2D] text-white font-black text-xs px-2 py-0.5 rounded-md">
+                          -{discountPercent}%
+                        </span>
+                      )}
+                    </>
+                  ) : (
+                    <span className="text-base font-bold text-slate-700">
+                      Kiểm tra giá mới nhất trên sàn Shopee
+                    </span>
+                  )}
+                </div>
+
+                {savingsAmount > 0 && (
+                  <div className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 bg-emerald-100/80 px-2.5 py-0.5 rounded-md">
+                    <span>✨ Tiết kiệm {formatVND(savingsAmount)} khi đặt mua hôm nay</span>
+                  </div>
                 )}
+              </div>
+
+              <div className="text-[11px] text-slate-500 pt-1">
+                Giá sale và ưu đãi voucher giảm giá được áp dụng trực tiếp khi mở ứng dụng Shopee.
               </div>
             </div>
 
@@ -224,7 +292,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
             {/* Mandatory Affiliate Disclaimer Notice */}
             <div className="text-xs text-slate-500 bg-amber-50/60 border border-amber-200/80 p-3 rounded-xl italic flex items-start gap-2">
               <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-              <span>Ghi chú: Mức giá niêm yết trên website là giá tham khảo. Giá bán thực tế và các ưu đãi voucher giảm giá phụ thuộc vào chương trình áp dụng tại thời điểm mua trên gian hàng Shopee Mall và TikTok Shop.</span>
+              <span>Ghi chú: Mức giá niêm yết trên website được đồng bộ realtime theo thông tin sàn. Giá bán thực tế và các ưu đãi voucher giảm giá phụ thuộc vào chương trình áp dụng tại thời điểm mua trên gian hàng Shopee và TikTok Shop.</span>
             </div>
           </div>
 

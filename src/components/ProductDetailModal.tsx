@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Product } from '../types';
-import { X, ShieldCheck, Tag, Flame, ChevronRight, ImageOff } from 'lucide-react';
+import { X, ShieldCheck, Tag, Flame, ChevronRight, ImageOff, Zap } from 'lucide-react';
 import { AffiliateButtons } from './AffiliateButtons';
 
 interface ProductDetailModalProps {
@@ -93,9 +93,31 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 </div>
               )}
 
-              {discountPercent > 0 && (
-                <div className="absolute top-3 left-3 bg-[#EE4D2D] text-white font-black text-xs px-2.5 py-1 rounded-lg shadow-md">
-                  GIẢM {discountPercent}%
+              {discountPercent > 0 ? (
+                <div className="absolute top-3 left-3 bg-gradient-to-r from-red-600 via-[#EE4D2D] to-orange-500 text-white font-black text-xs px-2.5 py-1 rounded-lg shadow-md shadow-red-500/25 flex items-center gap-1 border border-white/20">
+                  {product.isFlashSale ? (
+                    <>
+                      <Flame className="w-3.5 h-3.5 text-yellow-300 animate-pulse fill-yellow-300 shrink-0" />
+                      <span>GIẢM {discountPercent}%</span>
+                    </>
+                  ) : (
+                    <>
+                      <Zap className="w-3 h-3 text-yellow-300 fill-yellow-300 shrink-0" />
+                      <span>GIẢM {discountPercent}%</span>
+                    </>
+                  )}
+                </div>
+              ) : product.salePrice ? (
+                <div className="absolute top-3 left-3 bg-[#EE4D2D] text-white font-black text-xs px-2.5 py-1 rounded-lg shadow-md flex items-center gap-1 border border-white/20">
+                  <Zap className="w-3 h-3 text-yellow-300 fill-yellow-300 shrink-0" />
+                  <span>GIÁ SALE</span>
+                </div>
+              ) : null}
+
+              {product.shopeeUrl && (
+                <div className="absolute bottom-2 left-2 bg-slate-950/75 backdrop-blur-xs text-white text-[10px] font-semibold px-2 py-0.5 rounded-md flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                  <span>Shopee Live</span>
                 </div>
               )}
             </div>
@@ -117,9 +139,19 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 
                 {/* Price Breakdown */}
                 {displayPrice > 0 ? (
-                  <div className="bg-orange-50/70 rounded-2xl p-3 sm:p-3.5 border border-orange-200/60 mb-3">
-                    <div className="text-[11px] text-slate-500 font-semibold mb-0.5">Giá tham khảo:</div>
-                    <div className="flex items-baseline gap-2.5">
+                  <div className="bg-gradient-to-br from-orange-50/90 to-amber-50/60 rounded-2xl p-3 sm:p-3.5 border border-orange-200/80 mb-3 space-y-1">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5 text-[11px] text-slate-600 font-bold">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span>{discountPercent > 0 || product.salePrice ? '⚡ Giá Sale Shopee Realtime:' : 'Giá tham khảo Shopee:'}</span>
+                      </div>
+                      {discountPercent > 0 && (
+                        <span className="text-[10px] font-extrabold text-[#EE4D2D] bg-orange-100 px-1.5 py-0.5 rounded">
+                          -{discountPercent}%
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-baseline gap-2.5 flex-wrap">
                       <span className="text-xl sm:text-2xl font-black text-[#EE4D2D]">
                         {formatVND(displayPrice)}
                       </span>
@@ -129,6 +161,11 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                         </span>
                       )}
                     </div>
+                    {displayOrigPrice > displayPrice && (
+                      <div className="text-[11px] font-bold text-emerald-700 pt-0.5">
+                        Tiết kiệm: {formatVND(displayOrigPrice - displayPrice)} khi đặt trên sàn
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="bg-slate-50 rounded-2xl p-3 border border-slate-200 mb-3 text-xs font-semibold text-slate-600">

@@ -41,7 +41,7 @@ export function loadServerProducts(): Product[] {
       const rawName = cols[1] || '';
       const rawShopee = cols[2] || '';
       const rawImage = cols[3] || '';
-      const rawOrigPrice = cols[4] || '';
+      const rawSalePrice = cols[4] || '';
       const rawRefPrice = cols[5] || '';
       const rawTiktok = cols[6] || '';
 
@@ -51,6 +51,33 @@ export function loadServerProducts(): Product[] {
         const cleaned = val.replace(/[^0-9]/g, '');
         return cleaned ? parseInt(cleaned, 10) : undefined;
       };
+
+      const parsedSale = parsePrice(rawSalePrice);
+      const parsedRef = parsePrice(rawRefPrice);
+
+      let salePrice: number | undefined = parsedSale;
+      let referencePrice: number | undefined = parsedRef;
+      let originalPrice: number | undefined = undefined;
+
+      if (salePrice && referencePrice) {
+        if (referencePrice > salePrice) {
+          originalPrice = referencePrice;
+          referencePrice = salePrice;
+        } else if (salePrice > referencePrice) {
+          originalPrice = salePrice;
+        }
+      } else if (salePrice && !referencePrice) {
+        referencePrice = salePrice;
+      }
+
+      let saleDiscountPercent: number | undefined = undefined;
+      let isFlashSale = false;
+      if (originalPrice && referencePrice && originalPrice > referencePrice) {
+        saleDiscountPercent = Math.round(((originalPrice - referencePrice) / originalPrice) * 100);
+        if (saleDiscountPercent >= 15) {
+          isFlashSale = true;
+        }
+      }
 
       const generateSlug = (text: string) => {
         return text
@@ -75,8 +102,12 @@ export function loadServerProducts(): Product[] {
         tiktokUrl: rawTiktok || 'https://vt.tiktok.com/ZS9kJHJuDnoUp-AeYDB/',
         tiktokLinkStatus: rawTiktok ? 'verified-product' : 'shared-unverified',
         imageUrl: rawImage,
-        originalPrice: parsePrice(rawOrigPrice),
-        referencePrice: parsePrice(rawRefPrice),
+        originalPrice,
+        referencePrice,
+        salePrice,
+        saleDiscountPercent,
+        isFlashSale,
+        priceSource: salePrice ? 'google-sheet' : 'default',
         status: 'active',
         featured: false,
         sourceRow: i + 1,

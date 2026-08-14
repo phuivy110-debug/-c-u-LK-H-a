@@ -11,6 +11,8 @@ interface CatalogPageProps {
   onOpenDetail: (product: Product) => void;
   initialCategorySlug?: string;
   initialQuery?: string;
+  onRefreshPrices?: () => Promise<void>;
+  isRefreshingPrices?: boolean;
 }
 
 export const CatalogPage: React.FC<CatalogPageProps> = ({
@@ -19,15 +21,31 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({
   onOpenDetail,
   initialCategorySlug = 'tat-ca',
   initialQuery = '',
+  onRefreshPrices,
+  isRefreshingPrices = false,
 }) => {
   const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [selectedCategorySlug, setSelectedCategorySlug] = useState(initialCategorySlug);
-  const [sortBy, setSortBy] = useState<'default' | 'price-asc' | 'price-desc' | 'name-asc'>('default');
+  const [sortBy, setSortBy] = useState<'default' | 'price-asc' | 'price-desc' | 'name-asc' | 'discount-desc'>('default');
+  const [showSaleOnly, setShowSaleOnly] = useState(false);
   const [visibleCount, setVisibleCount] = useState(16);
+
+  const saleProductsCount = useMemo(() => {
+    return products.filter((p) => p.status === 'active' && (p.salePrice || (p.originalPrice && p.referencePrice && p.originalPrice > p.referencePrice) || p.isFlashSale)).length;
+  }, [products]);
 
   // Active products filter & search & category & sort
   const filteredProducts = useMemo(() => {
     let list = products.filter((p) => p.status === 'active');
+
+    // Sale only filter
+    if (showSaleOnly) {
+      list = list.filter((p) => Boolean(
+        p.salePrice ||
+        (p.originalPrice && p.referencePrice && p.originalPrice > p.referencePrice) ||
+        p.isFlashSale
+      ));
+    }
 
     // Category filter
     if (selectedCategorySlug && selectedCategorySlug !== 'tat-ca') {
@@ -68,16 +86,22 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({
     }
 
     // Sort
-    if (sortBy === 'price-asc') {
+    if (sortBy === 'discount-desc') {
       list.sort((a, b) => {
-        const pa = a.referencePrice || Number.MAX_SAFE_INTEGER;
-        const pb = b.referencePrice || Number.MAX_SAFE_INTEGER;
+        const da = a.saleDiscountPercent || (a.originalPrice && a.referencePrice && a.originalPrice > a.referencePrice ? Math.round(((a.originalPrice - a.referencePrice) / a.originalPrice) * 100) : 0);
+        const db = b.saleDiscountPercent || (b.originalPrice && b.referencePrice && b.originalPrice > b.referencePrice ? Math.round(((b.originalPrice - b.referencePrice) / b.originalPrice) * 100) : 0);
+        return db - da;
+      });
+    } else if (sortBy === 'price-asc') {
+      list.sort((a, b) => {
+        const pa = a.referencePrice || a.salePrice || Number.MAX_SAFE_INTEGER;
+        const pb = b.referencePrice || b.salePrice || Number.MAX_SAFE_INTEGER;
         return pa - pb;
       });
     } else if (sortBy === 'price-desc') {
       list.sort((a, b) => {
-        const pa = a.referencePrice || 0;
-        const pb = b.referencePrice || 0;
+        const pa = a.referencePrice || a.salePrice || 0;
+        const pb = b.referencePrice || b.salePrice || 0;
         return pb - pa;
       });
     } else if (sortBy === 'name-asc') {
@@ -85,7 +109,7 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({
     }
 
     return list;
-  }, [products, selectedCategorySlug, searchQuery, sortBy]);
+  }, [products, selectedCategorySlug, searchQuery, sortBy, showSaleOnly]);
 
   const displayedProducts = useMemo(() => {
     return filteredProducts.slice(0, visibleCount);
@@ -137,7 +161,15 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({
         onCategorySelect={handleCategorySelect}
         sortBy={sortBy}
         onSortChange={setSortBy}
+        showSaleOnly={showSaleOnly}
+        onToggleSaleOnly={() => {
+          setShowSaleOnly((prev) => !prev);
+          setVisibleCount(16);
+        }}
+        onRefreshPrices={onRefreshPrices}
+        isRefreshingPrices={isRefreshingPrices}
         totalFiltered={filteredProducts.length}
+        saleCount={saleProductsCount}
       />
 
       {/* Grid */}

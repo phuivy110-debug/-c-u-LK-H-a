@@ -1,6 +1,6 @@
 import React from 'react';
 import { Product } from '../types';
-import { ExternalLink, Tag, Copy, Eye, ImageOff } from 'lucide-react';
+import { ExternalLink, Tag, Copy, Eye, ImageOff, Zap, Flame } from 'lucide-react';
 import { trackUserAction } from '../utils/analyticsService';
 import { AffiliateButtons } from './AffiliateButtons';
 
@@ -20,15 +20,24 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     return new Intl.NumberFormat('vi-VN').format(num) + 'đ';
   };
 
-  const refPrice = product.referencePrice;
+  const refPrice = product.referencePrice || product.salePrice;
   const origPrice = product.originalPrice;
+  const isSale = Boolean(
+    (product.salePrice && product.salePrice > 0) ||
+    (origPrice && refPrice && origPrice > refPrice) ||
+    product.isFlashSale
+  );
 
   const hasValidDiscount =
     origPrice && refPrice && origPrice > refPrice && refPrice > 0;
 
-  const discountPercent = hasValidDiscount
-    ? Math.round(((origPrice - refPrice) / origPrice) * 100)
-    : 0;
+  const discountPercent = product.saleDiscountPercent || (
+    hasValidDiscount && origPrice && refPrice
+      ? Math.round(((origPrice - refPrice) / origPrice) * 100)
+      : 0
+  );
+
+  const savingsAmount = hasValidDiscount && origPrice && refPrice ? origPrice - refPrice : 0;
 
   const handleCardClick = () => {
     trackUserAction(`Xem chi tiết: ${product.name.substring(0, 25)}...`);
@@ -58,10 +67,33 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             </div>
           )}
 
-          {/* Discount Tag Overlay (ONLY when valid) */}
-          {hasValidDiscount && discountPercent > 0 && (
-            <div className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 bg-[#EE4D2D] text-white text-[10px] sm:text-xs font-black px-1.5 sm:px-2 py-0.5 rounded-md sm:rounded-lg shadow-xs z-10">
-              -{discountPercent}%
+          {/* Discount / Flash Sale Tag Overlay */}
+          {discountPercent > 0 ? (
+            <div className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 bg-gradient-to-r from-red-600 via-[#EE4D2D] to-orange-500 text-white text-[11px] sm:text-xs font-black px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-lg shadow-md shadow-red-500/25 z-10 flex items-center gap-1 border border-white/20">
+              {product.isFlashSale ? (
+                <>
+                  <Flame className="w-3.5 h-3.5 text-yellow-300 animate-pulse fill-yellow-300 shrink-0" />
+                  <span>GIẢM {discountPercent}%</span>
+                </>
+              ) : (
+                <>
+                  <Zap className="w-3 h-3 text-yellow-300 fill-yellow-300 shrink-0" />
+                  <span>-{discountPercent}%</span>
+                </>
+              )}
+            </div>
+          ) : isSale ? (
+            <div className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 bg-[#EE4D2D] text-white text-[10px] sm:text-xs font-black px-2 py-0.5 sm:py-1 rounded-lg shadow-md z-10 flex items-center gap-1 border border-white/20">
+              <Zap className="w-3 h-3 text-yellow-300 fill-yellow-300 shrink-0" />
+              <span>GIÁ SALE</span>
+            </div>
+          ) : null}
+
+          {/* Realtime Shopee badge */}
+          {product.shopeeUrl && (
+            <div className="absolute bottom-1.5 left-1.5 bg-slate-950/70 backdrop-blur-xs text-white text-[9px] font-semibold px-1.5 py-0.5 rounded-md flex items-center gap-1 z-10">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span>Shopee Live</span>
             </div>
           )}
 
@@ -106,22 +138,43 @@ export const ProductCard: React.FC<ProductCardProps> = ({
       </div>
 
       <div className="space-y-1.5 sm:space-y-2 mt-1 pt-1.5 sm:mt-2 sm:pt-2 border-t border-slate-100">
-        {/* Price Row */}
-        <div className="flex items-baseline justify-between gap-1 flex-wrap">
+        {/* Price Box */}
+        <div className="flex flex-col gap-0.5">
           {refPrice && refPrice > 0 ? (
-            <div className="flex items-baseline gap-1.5 flex-wrap">
-              <span className="text-xs text-slate-500 font-normal">Giá tham khảo:</span>
-              <span className="text-sm sm:text-base font-black text-[#EE4D2D]">
-                {formatVND(refPrice)}
-              </span>
-              {hasValidDiscount && origPrice && (
-                <span className="text-[10px] sm:text-xs text-slate-400 line-through">
-                  {formatVND(origPrice)}
+            <div>
+              <div className="flex items-center gap-1">
+                <span className="text-[10px] sm:text-[11px] font-bold text-slate-500">
+                  {hasValidDiscount ? '⚡ Giá Sale Shopee:' : 'Giá tham khảo:'}
                 </span>
+                {hasValidDiscount && (
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                )}
+              </div>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="text-sm sm:text-base font-black text-[#EE4D2D]">
+                  {formatVND(refPrice)}
+                </span>
+                {hasValidDiscount && origPrice && (
+                  <span className="text-[10px] sm:text-xs text-slate-400 line-through font-medium">
+                    {formatVND(origPrice)}
+                  </span>
+                )}
+                {discountPercent > 0 && (
+                  <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-red-50 text-red-600 border border-red-200/80 text-[10px] font-black">
+                    -{discountPercent}%
+                  </span>
+                )}
+              </div>
+              {savingsAmount > 0 && (
+                <div className="text-[10px] font-bold text-emerald-700 mt-0.5 flex items-center gap-1">
+                  <span>Tiết kiệm: {formatVND(savingsAmount)}</span>
+                </div>
               )}
             </div>
           ) : (
-            <span className="text-xs font-semibold text-slate-500">Kiểm tra giá mới nhất</span>
+            <div className="text-xs font-semibold text-slate-500 py-1">
+              Kiểm tra giá mới nhất trên Shopee
+            </div>
           )}
         </div>
 

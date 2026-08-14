@@ -111,8 +111,30 @@ export const HEADER_ALIASES = {
     'tiktokurl',
   ],
   image: ['anhsanpham', 'linkanh', 'imageurl', 'image', 'hinhanh', 'anh'],
-  originalPrice: ['giagoc', 'originalprice', 'niemyet'],
-  referencePrice: ['giathamkhao', 'giasale', 'giaban', 'giadagiam', 'referenceprice', 'price'],
+  salePrice: [
+    'giasale',
+    'giasaleshopee',
+    'giakhuyenmai',
+    'giadagiam',
+    'saleprice',
+    'giamgia',
+    'sale',
+    'giashopee',
+  ],
+  referencePrice: [
+    'giathamkhao',
+    'referenceprice',
+    'giaban',
+    'price',
+    'thamkhao',
+  ],
+  originalPrice: [
+    'giagoc',
+    'originalprice',
+    'niemyet',
+    'giachuagiam',
+    'giatruockhuyenmai',
+  ],
 };
 
 export function getExactColumnValue(
@@ -388,8 +410,40 @@ export async function fetchProductsFromGoogleSheet(sheetUrl: string): Promise<Pr
 
             const description = getExactColumnValue(row, ['mota', 'description', 'thongso', 'chitiet']);
 
-            const referencePrice = parsePriceNumber(getExactColumnValue(row, HEADER_ALIASES.referencePrice));
-            const originalPrice = parsePriceNumber(getExactColumnValue(row, HEADER_ALIASES.originalPrice));
+            const rawSalePrice = parsePriceNumber(getExactColumnValue(row, HEADER_ALIASES.salePrice));
+            const rawRefPrice = parsePriceNumber(getExactColumnValue(row, HEADER_ALIASES.referencePrice));
+            const rawOrigPrice = parsePriceNumber(getExactColumnValue(row, HEADER_ALIASES.originalPrice));
+
+            let salePrice: number | undefined = rawSalePrice;
+            let referencePrice: number | undefined = rawRefPrice;
+            let originalPrice: number | undefined = rawOrigPrice;
+
+            // Intelligent Price Reconciliation:
+            if (salePrice && referencePrice) {
+              if (referencePrice > salePrice) {
+                // referencePrice is higher, so treat it as original price and salePrice as active sale price
+                if (!originalPrice) originalPrice = referencePrice;
+                referencePrice = salePrice;
+              } else if (salePrice > referencePrice) {
+                if (!originalPrice) originalPrice = salePrice;
+              }
+            } else if (salePrice && !referencePrice) {
+              referencePrice = salePrice;
+            } else if (referencePrice && !salePrice) {
+              if (originalPrice && originalPrice <= referencePrice) {
+                originalPrice = undefined;
+              }
+            }
+
+            let saleDiscountPercent: number | undefined = undefined;
+            let isFlashSale = false;
+
+            if (originalPrice && referencePrice && originalPrice > referencePrice) {
+              saleDiscountPercent = Math.round(((originalPrice - referencePrice) / originalPrice) * 100);
+              if (saleDiscountPercent >= 15) {
+                isFlashSale = true;
+              }
+            }
 
             const imageRaw = getExactColumnValue(row, HEADER_ALIASES.image);
             const imageUrl = imageRaw && (imageRaw.startsWith('http://') || imageRaw.startsWith('https://'))
@@ -413,6 +467,11 @@ export async function fetchProductsFromGoogleSheet(sheetUrl: string): Promise<Pr
               description: description || undefined,
               referencePrice,
               originalPrice,
+              salePrice,
+              saleDiscountPercent,
+              isFlashSale,
+              liveShopeeUpdated: new Date().toISOString(),
+              priceSource: salePrice ? 'google-sheet' : 'default',
               imageUrl,
               shopeeUrl: validShopee,
               tiktokUrl: validTikTok,

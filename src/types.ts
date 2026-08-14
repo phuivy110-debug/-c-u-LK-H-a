@@ -17,6 +17,11 @@ export interface Product {
 
   referencePrice?: number;
   originalPrice?: number;
+  salePrice?: number;
+  saleDiscountPercent?: number;
+  isFlashSale?: boolean;
+  liveShopeeUpdated?: string;
+  priceSource?: 'shopee-live' | 'google-sheet' | 'default';
 
   imageUrl?: string;
   shopeeUrl?: string;
@@ -28,6 +33,21 @@ export interface Product {
   updatedAt?: string;
   sourceRow: number;
 }
+
+export interface RealtimeShopeePrice {
+  productId: string;
+  productName?: string;
+  shopeeUrl?: string;
+  salePrice: number;
+  originalPrice?: number;
+  discountPercent?: number;
+  isFlashSale?: boolean;
+  stock?: number;
+  syncedAt: string;
+  source: 'shopee-realtime' | 'google-sheet';
+}
+
+export type ShopeePriceMap = Record<string, RealtimeShopeePrice>;
 
 export interface ProductCache {
   schemaVersion: 3;
