@@ -69,6 +69,10 @@ export interface AnalyticsStats {
   todayPageViews: number;
   yesterdayPageViews: number;
   activeUsersOnline: number;
+  todayConversions?: number;
+  totalAffiliateClicks?: number;
+  satisfactionRate?: number;
+  activeProvincesCount?: number;
   mobilePercent: number;
   desktopPercent: number;
   hourlyTraffic: { hour: string; views: number }[];

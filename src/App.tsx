@@ -15,6 +15,9 @@ import { Footer } from './components/Footer';
 import { Toast } from './components/Toast';
 import { ChatBot } from './components/ChatBot';
 import { ScrollToTopButton } from './components/ScrollToTopButton';
+import { RealtimeTrafficTrustSection } from './components/RealtimeTrafficTrustSection';
+import { FloatingTrafficWidget } from './components/FloatingTrafficWidget';
+import { AnalyticsModal } from './components/AnalyticsModal';
 import { Product } from './types';
 import { CATEGORIES } from './data/products';
 import { Flame, ArrowRight, RefreshCw, FileSpreadsheet, ChevronRight, ShieldCheck, Fish, Compass, Feather, Waves, Anchor } from 'lucide-react';
@@ -71,6 +74,7 @@ export default function App() {
   // Modals & Feedback
   const [selectedDetailProduct, setSelectedDetailProduct] = useState<Product | null>(null);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
+  const [isAnalyticsModalOpen, setIsAnalyticsModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Admin status toggle (URL ?admin=true or double click logo)
@@ -265,6 +269,9 @@ export default function App() {
           activeCount={activeProducts.length}
         />
 
+        {/* Realtime Traffic & Community Trust Section */}
+        <RealtimeTrafficTrustSection onOpenModal={() => setIsAnalyticsModalOpen(true)} />
+
         {/* Featured Category Section */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
           <div className="flex items-center justify-between">
@@ -378,6 +385,7 @@ export default function App() {
       {/* Header */}
       <Header
         onOpenAdmin={() => setIsAdminOpen(true)}
+        onOpenAnalyticsModal={() => setIsAnalyticsModalOpen(true)}
         productCount={activeProducts.length}
         showAdminButton={isAdmin}
         categories={CATEGORIES.map((c) => ({ name: c.name, slug: c.slug }))}
@@ -389,7 +397,16 @@ export default function App() {
       <main className="flex-1">{renderContent()}</main>
 
       {/* Footer */}
-      <Footer />
+      <Footer onOpenAnalyticsModal={() => setIsAnalyticsModalOpen(true)} />
+
+      {/* Persistent Floating Live Traffic Widget */}
+      <FloatingTrafficWidget onOpenModal={() => setIsAnalyticsModalOpen(true)} />
+
+      {/* Realtime Traffic & Trust Dashboard Modal */}
+      <AnalyticsModal
+        isOpen={isAnalyticsModalOpen}
+        onClose={() => setIsAnalyticsModalOpen(false)}
+      />
 
       {/* Product Detail Modal */}
       <ProductDetailModal

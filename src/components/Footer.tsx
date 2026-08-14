@@ -1,15 +1,20 @@
 import React from 'react';
-import { ShieldCheck, ArrowUp, Phone, MessageCircle, MapPin, Store, Share2 } from 'lucide-react';
+import { ShieldCheck, ArrowUp, Phone, MessageCircle, MapPin, Store, Share2, Activity } from 'lucide-react';
 import { LkHoaLogo } from './LkHoaLogo';
 import { SHARED_TIKTOK_URL } from '../utils/googleSheetSync';
+import { AnalyticsWidget } from './AnalyticsWidget';
+
+interface FooterProps {
+  onOpenAnalyticsModal?: () => void;
+}
 
 const TikTokIcon: React.FC<{ className?: string }> = ({ className = 'w-3.5 h-3.5' }) => (
   <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-    <path d="M19.589 6.686a4.793 4.793 0 0 1-3.77-4.245V2h-3.445v13.672a2.896 2.896 0 0 1-2.89-2.89 2.893 2.893 0 0 1-2.89-2.89 2.893 2.893 0 0 1 2.89-2.89c.28 0 .543.044.793.122v-3.52a6.333 6.333 0 0 0-.793-.05A6.338 6.338 0 0 0 3.125 15.68 6.338 6.338 0 0 0 9.463 22a6.338 6.338 0 0 0 6.338-6.32V9.043a8.163 8.163 0 0 0 4.788 1.536V7.134a4.832 4.832 0 0 1-1.000-.448z" />
+    <path d="M19.589 6.686a4.793 4.793 0 0 1-3.77-4.245V2h-3.445v13.672a2.896 2.896 0 0 1-2.901 2.89 2.893 2.893 0 0 1-2.89-2.89 2.893 2.893 0 0 1 2.89-2.89c.28 0 .543.044.793.122v-3.52a6.333 6.333 0 0 0-.793-.05A6.338 6.338 0 0 0 3.125 15.68 6.338 6.338 0 0 0 9.463 22a6.338 6.338 0 0 0 6.338-6.32V9.043a8.163 8.163 0 0 0 4.788 1.536V7.134a4.832 4.832 0 0 1-1.000-.448z" />
   </svg>
 );
 
-export const Footer: React.FC = () => {
+export const Footer: React.FC<FooterProps> = ({ onOpenAnalyticsModal }) => {
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -30,9 +35,15 @@ export const Footer: React.FC = () => {
               Trang chủ chính thức của Đồ Câu LK Hòa – Nơi tổng hợp thông tin sản phẩm cần câu, máy câu, mồi câu và phụ kiện chính hãng LK Hòa mua trực tiếp từ Shopee & TikTok Shop.
             </p>
 
-            <div className="inline-flex items-center gap-2 bg-slate-900 border border-slate-800 text-slate-300 text-xs px-3.5 py-1.5 rounded-full font-semibold">
-              <ShieldCheck className="w-4 h-4 text-emerald-400" />
-              <span>Cửa Hàng Chính Thức Đồ Câu LK Hòa</span>
+            <div className="flex flex-wrap items-center gap-2 pt-1">
+              <div className="inline-flex items-center gap-2 bg-slate-900 border border-slate-800 text-slate-300 text-xs px-3.5 py-1.5 rounded-full font-semibold">
+                <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                <span>Cửa Hàng Chính Thức Đồ Câu LK Hòa</span>
+              </div>
+
+              {onOpenAnalyticsModal && (
+                <AnalyticsWidget onOpenModal={onOpenAnalyticsModal} variant="footer" />
+              )}
             </div>
           </div>
 

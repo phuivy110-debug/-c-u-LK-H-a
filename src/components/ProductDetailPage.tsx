@@ -4,6 +4,7 @@ import { ArrowLeft, ImageOff, Flame, ChevronRight, AlertCircle, ShoppingBag, Shi
 import { AffiliateButtons } from './AffiliateButtons';
 import { ProductCard } from './ProductCard';
 import { triggerShopeePriceSync } from '../utils/shopeePriceSync';
+import { LiveProductTrustBadge } from './LiveProductTrustBadge';
 
 interface ProductDetailPageProps {
   productSlug: string;
@@ -262,6 +263,9 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                 Giá sale và ưu đãi voucher giảm giá được áp dụng trực tiếp khi mở ứng dụng Shopee.
               </div>
             </div>
+
+            {/* Live Social Proof Badge */}
+            <LiveProductTrustBadge productId={product.id} variant="full" />
 
             {/* Product Details & Specifications */}
             <div className="bg-slate-50/80 rounded-2xl p-4 border border-slate-200/80 space-y-3 text-xs sm:text-sm text-slate-700">

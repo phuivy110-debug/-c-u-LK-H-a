@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { Product } from '../types';
 import { X, ShieldCheck, Tag, Flame, ChevronRight, ImageOff, Zap } from 'lucide-react';
 import { AffiliateButtons } from './AffiliateButtons';
+import { LiveProductTrustBadge } from './LiveProductTrustBadge';
 
 interface ProductDetailModalProps {
   product: Product | null;
@@ -172,6 +173,10 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                     Kiểm tra giá mới nhất trên ứng dụng Shopee / TikTok Shop
                   </div>
                 )}
+                {/* Live Social Proof Badge */}
+                <div className="mb-3">
+                  <LiveProductTrustBadge productId={product.id} variant="full" />
+                </div>
               </div>
 
               {/* Action Buttons */}

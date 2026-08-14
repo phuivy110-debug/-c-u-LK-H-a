@@ -3,6 +3,7 @@ import { Product } from '../types';
 import { ExternalLink, Tag, Copy, Eye, ImageOff, Zap, Flame } from 'lucide-react';
 import { trackUserAction } from '../utils/analyticsService';
 import { AffiliateButtons } from './AffiliateButtons';
+import { LiveProductTrustBadge } from './LiveProductTrustBadge';
 
 interface ProductCardProps {
   product: Product;
@@ -124,12 +125,15 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           </div>
         </div>
 
-        {/* Category Label */}
-        {product.category && (
-          <div className="text-[10px] sm:text-xs text-[#EE4D2D] font-bold mb-1 truncate">
-            {product.category}
-          </div>
-        )}
+        {/* Category & Live Viewer Badge */}
+        <div className="flex items-center justify-between gap-1 mb-1">
+          {product.category ? (
+            <div className="text-[10px] sm:text-xs text-[#EE4D2D] font-bold truncate">
+              {product.category}
+            </div>
+          ) : <div />}
+          <LiveProductTrustBadge productId={product.id} variant="compact" />
+        </div>
 
         {/* Title */}
         <h3 className="text-xs sm:text-sm font-bold text-slate-800 group-hover:text-[#EE4D2D] transition-colors line-clamp-2 leading-snug mb-1.5 min-h-[2.25rem] sm:min-h-[2.5rem]">

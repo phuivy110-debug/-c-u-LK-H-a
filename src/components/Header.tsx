@@ -11,12 +11,15 @@ import {
   ChevronRight,
   Share2,
   Search,
+  Activity,
 } from 'lucide-react';
 import { LkHoaLogo } from './LkHoaLogo';
 import { SHARED_TIKTOK_URL } from '../utils/googleSheetSync';
+import { AnalyticsWidget } from './AnalyticsWidget';
 
 interface HeaderProps {
   onOpenAdmin: () => void;
+  onOpenAnalyticsModal?: () => void;
   productCount: number;
   showAdminButton?: boolean;
   categories?: { name: string; slug: string }[];
@@ -32,6 +35,7 @@ const TikTokIcon: React.FC<{ className?: string }> = ({ className = 'w-3.5 h-3.5
 
 export const Header: React.FC<HeaderProps> = ({
   onOpenAdmin,
+  onOpenAnalyticsModal,
   productCount,
   showAdminButton = false,
   categories = [],
@@ -49,9 +53,15 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-100 shadow-xs">
       {/* Top Banner Bar */}
-      <div className="bg-gradient-to-r from-orange-600 via-slate-900 to-slate-950 text-white text-xs font-semibold py-1.5 px-4 text-center flex items-center justify-center gap-2 flex-wrap">
-        <span>Trang Chủ Đồ Câu LK Hòa – Mồi Câu, Cần Câu, Phụ Kiện & Kinh Nghiệm Câu Cá</span>
-        <div className="flex items-center gap-1.5 ml-1">
+      <div className="bg-gradient-to-r from-orange-600 via-slate-900 to-slate-950 text-white text-xs font-semibold py-1.5 px-4 text-center flex items-center justify-between gap-2 flex-wrap">
+        <div className="flex items-center gap-2 mx-auto lg:mx-0">
+          <span>Trang Chủ Đồ Câu LK Hòa – Mồi Câu, Cần Câu, Phụ Kiện & Kinh Nghiệm Câu Cá</span>
+          {onOpenAnalyticsModal && (
+            <AnalyticsWidget onOpenModal={onOpenAnalyticsModal} variant="banner-pill" />
+          )}
+        </div>
+        
+        <div className="flex items-center gap-1.5 ml-auto hidden sm:flex">
           <a
             href="https://s.shopee.vn/7fYvAFHqaP"
             target="_blank"
@@ -151,7 +161,11 @@ export const Header: React.FC<HeaderProps> = ({
           </nav>
 
           {/* Right Controls */}
-          <div className="hidden md:flex items-center gap-2">
+          <div className="hidden md:flex items-center gap-2.5">
+            {onOpenAnalyticsModal && (
+              <AnalyticsWidget onOpenModal={onOpenAnalyticsModal} variant="header-pill" />
+            )}
+
             <button
               onClick={() => onNavigate('/san-pham')}
               className="p-2 text-slate-600 hover:text-[#EE4D2D] rounded-xl hover:bg-slate-50 cursor-pointer"
@@ -168,13 +182,17 @@ export const Header: React.FC<HeaderProps> = ({
               title="Ghé TikTok Shop LK Hòa"
             >
               <TikTokIcon className="w-3.5 h-3.5 fill-current text-white" />
-              <span>Xem gian hàng TikTok</span>
+              <span>Gian hàng TikTok</span>
               <ExternalLink className="w-3 h-3 text-slate-300 opacity-70 group-hover/tt:opacity-100" />
             </a>
           </div>
 
           {/* Mobile Toggle */}
           <div className="flex items-center gap-2 lg:hidden">
+            {onOpenAnalyticsModal && (
+              <AnalyticsWidget onOpenModal={onOpenAnalyticsModal} variant="header-pill" />
+            )}
+
             <button
               onClick={() => onNavigate('/san-pham')}
               className="p-2 text-slate-700 rounded-xl hover:bg-slate-100"
@@ -251,6 +269,33 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           </div>
 
+          {/* Realtime Live Stats Mobile Card */}
+          {onOpenAnalyticsModal && (
+            <div
+              onClick={() => {
+                setMobileMenuOpen(false);
+                onOpenAnalyticsModal();
+              }}
+              className="bg-gradient-to-r from-emerald-950 to-slate-900 text-white p-3.5 rounded-2xl border border-emerald-800/40 cursor-pointer shadow-md flex items-center justify-between"
+            >
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-500/30">
+                  <Activity className="w-4 h-4 text-emerald-400 animate-pulse" />
+                </div>
+                <div>
+                  <div className="text-xs font-extrabold text-white flex items-center gap-1.5">
+                    <span>Lưu Lượng Trực Tuyến</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                  </div>
+                  <div className="text-[10px] text-emerald-300 font-medium">
+                    Bấm xem chi tiết truy cập thực tế
+                  </div>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-slate-400" />
+            </div>
+          )}
+
           <div className="pt-2 border-t border-slate-100 space-y-2">
             <a
               href={SHARED_TIKTOK_URL}
@@ -312,3 +357,4 @@ export const Header: React.FC<HeaderProps> = ({
     </header>
   );
 };
+
