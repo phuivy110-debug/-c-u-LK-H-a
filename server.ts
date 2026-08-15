@@ -7,6 +7,7 @@ import dotenv from 'dotenv';
 import {
   loadServerProducts,
   generateSitemapXml,
+  generateRssXml,
   generateRobotsTxt,
   renderSeoPage
 } from './src/utils/serverSeoRenderer';
@@ -837,6 +838,13 @@ ${productContext}`;
     res.setHeader('Content-Type', 'text/xml');
     res.setHeader('Cache-Control', 'public, max-age=3600');
     res.send(generateSitemapXml(serverProducts));
+  });
+
+  // Dynamic RSS Feed
+  app.get(['/feed.xml', '/rss.xml'], (req, res) => {
+    res.setHeader('Content-Type', 'text/xml');
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    res.send(generateRssXml(serverProducts));
   });
 
   // Dynamic Robots.txt

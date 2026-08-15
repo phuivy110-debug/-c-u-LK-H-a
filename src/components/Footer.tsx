@@ -1,11 +1,12 @@
 import React from 'react';
-import { ShieldCheck, ArrowUp, Phone, MessageCircle, MapPin, Store, Share2, Activity } from 'lucide-react';
+import { ShieldCheck, ArrowUp, Phone, MessageCircle, MapPin, Store, Share2, Activity, Zap, FileCode } from 'lucide-react';
 import { LkHoaLogo } from './LkHoaLogo';
 import { SHARED_TIKTOK_URL } from '../utils/googleSheetSync';
 import { AnalyticsWidget } from './AnalyticsWidget';
 
 interface FooterProps {
   onOpenAnalyticsModal?: () => void;
+  onOpenSeoModal?: () => void;
 }
 
 const TikTokIcon: React.FC<{ className?: string }> = ({ className = 'w-3.5 h-3.5' }) => (
@@ -14,7 +15,7 @@ const TikTokIcon: React.FC<{ className?: string }> = ({ className = 'w-3.5 h-3.5
   </svg>
 );
 
-export const Footer: React.FC<FooterProps> = ({ onOpenAnalyticsModal }) => {
+export const Footer: React.FC<FooterProps> = ({ onOpenAnalyticsModal, onOpenSeoModal }) => {
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -44,6 +45,16 @@ export const Footer: React.FC<FooterProps> = ({ onOpenAnalyticsModal }) => {
               {onOpenAnalyticsModal && (
                 <AnalyticsWidget onOpenModal={onOpenAnalyticsModal} variant="footer" />
               )}
+
+              {onOpenSeoModal && (
+                <button
+                  onClick={onOpenSeoModal}
+                  className="inline-flex items-center gap-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs px-3.5 py-1.5 rounded-full font-semibold transition-colors cursor-pointer"
+                >
+                  <Zap className="w-3.5 h-3.5 fill-current" />
+                  <span>Trung Tâm SEO & GSC</span>
+                </button>
+              )}
             </div>
           </div>
 
@@ -67,7 +78,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenAnalyticsModal }) => {
               <div className="flex items-start gap-2">
                 <MessageCircle className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
                 <div>
-                  <span className="text-slate-500 block text-[11px]">Zalo Hỗ Trợ:</span>
+                  <span className="text-slate-500 block text-[11px]">Zalo Hỗ Trệu:</span>
                   <a
                     href="https://zalo.me/0933040999"
                     target="_blank"
@@ -118,6 +129,21 @@ export const Footer: React.FC<FooterProps> = ({ onOpenAnalyticsModal }) => {
                 <TikTokIcon className="w-4 h-4 fill-current text-white shrink-0" />
                 <span>Xem gian hàng TikTok</span>
               </a>
+
+              {/* Sitemap and RSS for crawlers */}
+              <div className="pt-2 flex items-center gap-3 text-[11px] text-slate-500">
+                <a href="/sitemap.xml" target="_blank" rel="noreferrer" className="hover:text-slate-300 underline">
+                  Sitemap XML
+                </a>
+                <span>·</span>
+                <a href="/feed.xml" target="_blank" rel="noreferrer" className="hover:text-slate-300 underline">
+                  RSS Feed
+                </a>
+                <span>·</span>
+                <a href="/robots.txt" target="_blank" rel="noreferrer" className="hover:text-slate-300 underline">
+                  Robots.txt
+                </a>
+              </div>
             </div>
           </div>
 
@@ -147,3 +173,4 @@ export const Footer: React.FC<FooterProps> = ({ onOpenAnalyticsModal }) => {
     </footer>
   );
 };
+

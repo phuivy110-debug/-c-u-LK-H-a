@@ -18,6 +18,7 @@ import { ScrollToTopButton } from './components/ScrollToTopButton';
 import { RealtimeTrafficTrustSection } from './components/RealtimeTrafficTrustSection';
 import { FloatingTrafficWidget } from './components/FloatingTrafficWidget';
 import { AnalyticsModal } from './components/AnalyticsModal';
+import { SeoToolkitModal } from './components/SeoToolkitModal';
 import { Product } from './types';
 import { CATEGORIES } from './data/products';
 import { FALLBACK_PRODUCTS } from './data/fallbackProducts';
@@ -82,6 +83,7 @@ export default function App() {
   const [selectedDetailProduct, setSelectedDetailProduct] = useState<Product | null>(null);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [isAnalyticsModalOpen, setIsAnalyticsModalOpen] = useState(false);
+  const [isSeoModalOpen, setIsSeoModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Admin status toggle (URL ?admin=true or double click logo)
@@ -396,6 +398,7 @@ export default function App() {
       <Header
         onOpenAdmin={() => setIsAdminOpen(true)}
         onOpenAnalyticsModal={() => setIsAnalyticsModalOpen(true)}
+        onOpenSeoModal={() => setIsSeoModalOpen(true)}
         productCount={activeProducts.length}
         showAdminButton={isAdmin}
         categories={CATEGORIES.map((c) => ({ name: c.name, slug: c.slug }))}
@@ -407,7 +410,10 @@ export default function App() {
       <main className="flex-1">{renderContent()}</main>
 
       {/* Footer */}
-      <Footer onOpenAnalyticsModal={() => setIsAnalyticsModalOpen(true)} />
+      <Footer
+        onOpenAnalyticsModal={() => setIsAnalyticsModalOpen(true)}
+        onOpenSeoModal={() => setIsSeoModalOpen(true)}
+      />
 
       {/* Persistent Floating Live Traffic Widget */}
       <FloatingTrafficWidget onOpenModal={() => setIsAnalyticsModalOpen(true)} />
@@ -416,6 +422,13 @@ export default function App() {
       <AnalyticsModal
         isOpen={isAnalyticsModalOpen}
         onClose={() => setIsAnalyticsModalOpen(false)}
+      />
+
+      {/* SEO Toolkit & Google Search Console Guide Modal */}
+      <SeoToolkitModal
+        isOpen={isSeoModalOpen}
+        onClose={() => setIsSeoModalOpen(false)}
+        productCount={activeProducts.length}
       />
 
       {/* Product Detail Modal */}
