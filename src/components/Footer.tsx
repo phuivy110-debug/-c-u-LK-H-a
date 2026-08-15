@@ -1,12 +1,11 @@
 import React from 'react';
-import { ShieldCheck, ArrowUp, Phone, MessageCircle, MapPin, Store, Share2, Activity, Zap, FileCode } from 'lucide-react';
+import { ShieldCheck, ArrowUp, Phone, MessageCircle, MapPin, Store, Share2, Activity } from 'lucide-react';
 import { LkHoaLogo } from './LkHoaLogo';
 import { SHARED_TIKTOK_URL } from '../utils/googleSheetSync';
 import { AnalyticsWidget } from './AnalyticsWidget';
 
 interface FooterProps {
   onOpenAnalyticsModal?: () => void;
-  onOpenSeoModal?: () => void;
 }
 
 const TikTokIcon: React.FC<{ className?: string }> = ({ className = 'w-3.5 h-3.5' }) => (
@@ -15,7 +14,7 @@ const TikTokIcon: React.FC<{ className?: string }> = ({ className = 'w-3.5 h-3.5
   </svg>
 );
 
-export const Footer: React.FC<FooterProps> = ({ onOpenAnalyticsModal, onOpenSeoModal }) => {
+export const Footer: React.FC<FooterProps> = ({ onOpenAnalyticsModal }) => {
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -45,16 +44,6 @@ export const Footer: React.FC<FooterProps> = ({ onOpenAnalyticsModal, onOpenSeoM
               {onOpenAnalyticsModal && (
                 <AnalyticsWidget onOpenModal={onOpenAnalyticsModal} variant="footer" />
               )}
-
-              {onOpenSeoModal && (
-                <button
-                  onClick={onOpenSeoModal}
-                  className="inline-flex items-center gap-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs px-3.5 py-1.5 rounded-full font-semibold transition-colors cursor-pointer"
-                >
-                  <Zap className="w-3.5 h-3.5 fill-current" />
-                  <span>Trung Tâm SEO & GSC</span>
-                </button>
-              )}
             </div>
           </div>
 
@@ -78,7 +67,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenAnalyticsModal, onOpenSeoM
               <div className="flex items-start gap-2">
                 <MessageCircle className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
                 <div>
-                  <span className="text-slate-500 block text-[11px]">Zalo Hỗ Trệu:</span>
+                  <span className="text-slate-500 block text-[11px]">Zalo Hỗ Trợ:</span>
                   <a
                     href="https://zalo.me/0933040999"
                     target="_blank"

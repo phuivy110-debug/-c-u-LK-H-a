@@ -11,8 +11,7 @@ import {
   ChevronRight,
   Share2,
   Search,
-  Activity,
-  Zap
+  Activity
 } from 'lucide-react';
 import { LkHoaLogo } from './LkHoaLogo';
 import { SHARED_TIKTOK_URL } from '../utils/googleSheetSync';
@@ -21,7 +20,6 @@ import { AnalyticsWidget } from './AnalyticsWidget';
 interface HeaderProps {
   onOpenAdmin: () => void;
   onOpenAnalyticsModal?: () => void;
-  onOpenSeoModal?: () => void;
   productCount: number;
   showAdminButton?: boolean;
   categories?: { name: string; slug: string }[];
@@ -38,12 +36,11 @@ const TikTokIcon: React.FC<{ className?: string }> = ({ className = 'w-3.5 h-3.5
 export const Header: React.FC<HeaderProps> = ({
   onOpenAdmin,
   onOpenAnalyticsModal,
-  onOpenSeoModal,
   productCount,
   showAdminButton = false,
   categories = [],
   onNavigate,
-  currentPath,
+  currentPath
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [categoriesOpen, setCategoriesOpen] = useState(false);
@@ -61,15 +58,6 @@ export const Header: React.FC<HeaderProps> = ({
           <span>Trang Chủ Đồ Câu LK Hòa – Mồi Câu, Cần Câu, Phụ Kiện & Kinh Nghiệm Câu Cá</span>
           {onOpenAnalyticsModal && (
             <AnalyticsWidget onOpenModal={onOpenAnalyticsModal} variant="banner-pill" />
-          )}
-          {onOpenSeoModal && (
-            <button
-              onClick={onOpenSeoModal}
-              className="inline-flex items-center gap-1 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-full text-[10px] font-extrabold transition-colors cursor-pointer"
-            >
-              <Zap className="w-2.5 h-2.5 fill-current" />
-              <span>SEO Top 1 Google</span>
-            </button>
           )}
         </div>
         
@@ -158,18 +146,6 @@ export const Header: React.FC<HeaderProps> = ({
             >
               Cẩm Nang
             </button>
-
-            {/* SEO & Search Console Toolkit */}
-            {onOpenSeoModal && (
-              <button
-                onClick={onOpenSeoModal}
-                className="flex items-center gap-1.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white px-2.5 py-1.5 rounded-xl text-xs font-black transition-all shadow-xs cursor-pointer ml-1"
-                title="Trung Tâm Triển Khai SEO Lên Top 1 Google"
-              >
-                <Zap className="w-3.5 h-3.5 fill-current" />
-                <span>SEO Top 1</span>
-              </button>
-            )}
 
             {/* Admin Button */}
             {showAdminButton && (
@@ -313,35 +289,6 @@ export const Header: React.FC<HeaderProps> = ({
                   </div>
                   <div className="text-[10px] text-emerald-300 font-medium">
                     Bấm xem chi tiết truy cập thực tế
-                  </div>
-                </div>
-              </div>
-              <ChevronRight className="w-4 h-4 text-slate-400" />
-            </div>
-          )}
-
-          {/* SEO Toolkit Mobile Card */}
-          {onOpenSeoModal && (
-            <div
-              onClick={() => {
-                setMobileMenuOpen(false);
-                onOpenSeoModal();
-              }}
-              className="bg-gradient-to-r from-amber-950 to-slate-900 text-white p-3.5 rounded-2xl border border-amber-800/40 cursor-pointer shadow-md flex items-center justify-between"
-            >
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center border border-amber-500/30">
-                  <Zap className="w-4 h-4 text-amber-400 fill-current" />
-                </div>
-                <div>
-                  <div className="text-xs font-extrabold text-white flex items-center gap-1.5">
-                    <span>SEO Top 1 Google (GSC)</span>
-                    <span className="text-[10px] bg-amber-500/20 text-amber-300 px-1.5 py-0.2 rounded font-bold border border-amber-500/30">
-                      Audit 100%
-                    </span>
-                  </div>
-                  <div className="text-[10px] text-amber-200/80 font-medium">
-                    5 bước đưa web lên top tìm kiếm & nộp Sitemap
                   </div>
                 </div>
               </div>

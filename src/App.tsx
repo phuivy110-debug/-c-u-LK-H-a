@@ -402,7 +402,6 @@ export default function App() {
       <Header
         onOpenAdmin={() => setIsAdminOpen(true)}
         onOpenAnalyticsModal={() => setIsAnalyticsModalOpen(true)}
-        onOpenSeoModal={() => setIsSeoModalOpen(true)}
         productCount={activeProducts.length}
         showAdminButton={isAdmin}
         categories={CATEGORIES.map((c) => ({ name: c.name, slug: c.slug }))}
@@ -416,7 +415,6 @@ export default function App() {
       {/* Footer */}
       <Footer
         onOpenAnalyticsModal={() => setIsAnalyticsModalOpen(true)}
-        onOpenSeoModal={() => setIsSeoModalOpen(true)}
       />
 
       {/* Persistent Floating Live Traffic Widget */}
@@ -456,6 +454,7 @@ export default function App() {
         onTriggerSync={() => handleSyncGoogleSheet(sheetUrl)}
         isSyncing={isSyncing}
         lastSyncTime={lastSyncTime}
+        onOpenSeoModal={() => setIsSeoModalOpen(true)}
       />
 
       {/* Chatbot */}

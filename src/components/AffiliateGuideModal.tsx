@@ -14,6 +14,7 @@ interface AffiliateGuideModalProps {
   onTriggerSync: () => void;
   isSyncing: boolean;
   lastSyncTime: string | null;
+  onOpenSeoModal?: () => void;
 }
 
 export const AffiliateGuideModal: React.FC<AffiliateGuideModalProps> = ({
@@ -27,6 +28,7 @@ export const AffiliateGuideModal: React.FC<AffiliateGuideModalProps> = ({
   onTriggerSync,
   isSyncing,
   lastSyncTime,
+  onOpenSeoModal,
 }) => {
   const [activeTab, setActiveTab] = useState<'sheet' | 'editor' | 'guide'>('sheet');
   const [editingProducts, setEditingProducts] = useState<Product[]>(products);
@@ -178,6 +180,16 @@ export const PRODUCTS_LIST: Product[] = ${JSON.stringify(editingProducts, null, 
             <HelpCircle className="w-4 h-4" />
             <span>Hướng Dẫn File Code</span>
           </button>
+
+          {onOpenSeoModal && (
+            <button
+              onClick={onOpenSeoModal}
+              className="ml-auto px-3.5 py-1.5 rounded-xl text-xs font-bold text-slate-700 bg-white hover:bg-orange-50 hover:text-[#EE4D2D] border border-slate-200 transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
+            >
+              <Code className="w-3.5 h-3.5 text-[#EE4D2D]" />
+              <span>Công Cụ SEO & GSC</span>
+            </button>
+          )}
         </div>
 
         {/* Tab Contents */}
