@@ -213,14 +213,14 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                 <div className="flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                   <span className="text-xs font-extrabold text-slate-700 uppercase tracking-wide">
-                    {isSale ? '⚡ Giá Sale Realtime Shopee' : 'Giá Tham Khảo Shopee'}
+                    {isSale ? '⚡ Giá Sale Ưu Đãi Shopee' : 'Giá Tham Khảo Shopee'}
                   </span>
                 </div>
                 <button
                   onClick={handleManualPriceRefresh}
                   disabled={isRefreshing}
                   className="inline-flex items-center gap-1 text-[11px] font-bold text-orange-700 hover:text-[#EE4D2D] bg-white px-2 py-1 rounded-lg border border-orange-200 shadow-2xs transition-all cursor-pointer disabled:opacity-50"
-                  title="Cập nhật lại giá sale realtime từ Shopee"
+                  title="Cập nhật lại giá khuyến mãi từ Shopee"
                 >
                   <RefreshCw className={`w-3 h-3 ${isRefreshing ? 'animate-spin text-[#EE4D2D]' : ''}`} />
                   <span>{isRefreshing ? 'Đang tải...' : refreshSuccess ? 'Đã làm mới!' : 'Làm mới giá'}</span>

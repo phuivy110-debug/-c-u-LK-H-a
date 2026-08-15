@@ -76,7 +76,7 @@ export const CatalogControls: React.FC<CatalogControlsProps> = ({
               onClick={() => onRefreshPrices()}
               disabled={isRefreshingPrices}
               className="p-2.5 bg-orange-50 hover:bg-orange-100 text-[#EE4D2D] rounded-2xl border border-orange-200/80 transition-all cursor-pointer disabled:opacity-50"
-              title="Đồng bộ lại giá sale Shopee realtime"
+              title="Cập nhật giá khuyến mãi mới nhất"
             >
               <RefreshCw className={`w-4 h-4 ${isRefreshingPrices ? 'animate-spin' : ''}`} />
             </button>

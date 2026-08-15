@@ -22,9 +22,10 @@ interface HomeGuidesSectionProps {
 
 const TOPIC_FILTERS = [
   { id: 'all', name: 'Tất cả bài viết' },
-  { id: 'can-cau', name: 'Chọn cần câu', icon: Fish },
-  { id: 'moi-cau', name: 'Bí quyết mồi câu', icon: Feather },
-  { id: 'day-cau', name: 'Dây & Phụ kiện', icon: Waves }
+  { id: 'cam-nang', name: 'Cẩm nang câu cá', icon: Compass },
+  { id: 'kinh-nghiem-cau-ca', name: 'Kinh nghiệm câu lure & suối', icon: Fish },
+  { id: 'kien-thuc-loai-ca', name: 'Kiến thức loài cá', icon: Feather },
+  { id: 'do-cau', name: 'Kỹ thuật đồ câu', icon: Waves }
 ];
 
 export const HomeGuidesSection: React.FC<HomeGuidesSectionProps> = ({ onNavigate }) => {
@@ -32,9 +33,10 @@ export const HomeGuidesSection: React.FC<HomeGuidesSectionProps> = ({ onNavigate
 
   const filteredArticles = GUIDE_ARTICLES.filter((art) => {
     if (selectedTopic === 'all') return true;
-    if (selectedTopic === 'can-cau') return art.categorySlug === 'can-cau';
-    if (selectedTopic === 'moi-cau') return art.categorySlug === 'moi-cau';
-    if (selectedTopic === 'day-cau') return art.categorySlug === 'day-cau' || art.categorySlug === 'phao-luoi' || art.categorySlug === 'phu-kien';
+    if (selectedTopic === 'cam-nang') return art.categorySlug === 'cam-nang';
+    if (selectedTopic === 'kinh-nghiem-cau-ca') return art.categorySlug === 'kinh-nghiem-cau-ca';
+    if (selectedTopic === 'kien-thuc-loai-ca') return art.categorySlug === 'kien-thuc-loai-ca';
+    if (selectedTopic === 'do-cau') return ['can-cau', 'moi-cau', 'day-cau', 'phao-luoi', 'phu-kien'].includes(art.categorySlug);
     return true;
   });
 

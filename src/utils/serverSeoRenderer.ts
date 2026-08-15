@@ -251,6 +251,7 @@ export function renderSeoPage(
 
   let title = 'Đồ Câu LK Hòa – Cần Câu, Mồi Câu, Phụ Kiện & Kinh Nghiệm Câu Cá';
   let description = 'Đồ câu LK Hòa chính hãng: Cần câu lure, cần đài 5H/6H, mồi chép, mồi chuột trơn, dây dù X8 và phụ kiện câu cá chất lượng cao. Kiểm tra giá & mua Shopee Mall, TikTok Shop.';
+  let keywords = 'đồ câu lk hòa, cần câu cá, máy câu cá, mồi câu, dây pe x8, cần câu đài, cần lure';
   let canonicalUrl = `${DOMAIN}${reqPath.split('?')[0]}`;
   let robotsMeta = 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1';
   let ogType = 'website';
@@ -433,15 +434,18 @@ export function renderSeoPage(
     ];
   }
 
-  // ROUTE 5: Guide Article Detail (/cam-nang/:guideSlug)
-  else if (reqPath.startsWith('/cam-nang/')) {
-    const slug = reqPath.replace('/cam-nang/', '').trim();
+  // ROUTE 5: Guide Article Detail (/cam-nang/:guideSlug or /:guideSlug)
+  else if (reqPath.startsWith('/cam-nang/') || GUIDE_ARTICLES.some(g => `/${g.slug}` === reqPath)) {
+    const slug = reqPath.startsWith('/cam-nang/') ? reqPath.replace('/cam-nang/', '').trim() : reqPath.replace('/', '').trim();
     const guide = GUIDE_ARTICLES.find(g => g.slug === slug);
 
     if (guide) {
-      title = `${guide.title} – Cẩm Nang Đồ Câu LK Hòa`;
-      description = guide.summary;
+      title = guide.metaTitle || `${guide.title} | Đồ Câu LK Hòa`;
+      description = guide.metaDescription || guide.summary;
       ogType = 'article';
+      if (guide.keywords && guide.keywords.length > 0) {
+        keywords = guide.keywords.join(', ') + ', đồ câu lk hòa, hướng dẫn câu cá';
+      }
 
       jsonLdData = [
         {
@@ -457,7 +461,7 @@ export function renderSeoPage(
           '@context': 'https://schema.org',
           '@type': 'Article',
           'headline': guide.title,
-          'description': guide.summary,
+          'description': guide.metaDescription || guide.summary,
           'author': {
             '@type': 'Person',
             'name': guide.author || 'LK Hòa - Chuyên gia Đồ Câu'
@@ -533,6 +537,7 @@ export function renderSeoPage(
     <title>${title}</title>
     <meta name="title" content="${title}" />
     <meta name="description" content="${description}" />
+    ${keywords ? `<meta name="keywords" content="${keywords}" />` : ''}
     <meta name="robots" content="${robotsMeta}" />
     <link rel="canonical" href="${canonicalUrl}" />
     <link rel="alternate" type="application/rss+xml" title="Đồ Câu LK Hòa RSS Feed" href="${DOMAIN}/feed.xml" />

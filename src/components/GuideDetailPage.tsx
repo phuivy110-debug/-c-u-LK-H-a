@@ -1,6 +1,8 @@
 import React from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { GUIDE_ARTICLES, GuideArticle } from '../data/guides';
-import { Home, ChevronRight, Clock, User, Calendar, BookOpen, ExternalLink, ArrowLeft } from 'lucide-react';
+import { Home, ChevronRight, Clock, User, Calendar, BookOpen, ArrowLeft, Tag } from 'lucide-react';
 import { Product } from '../types';
 
 interface GuideDetailPageProps {
@@ -17,11 +19,6 @@ export const GuideDetailPage: React.FC<GuideDetailPageProps> = ({
   onOpenDetail,
 }) => {
   const article = GUIDE_ARTICLES.find((a) => a.slug === guideSlug) || GUIDE_ARTICLES[0];
-
-  // Find related products in the category if available
-  const relatedProducts = products
-    .filter((p) => p.status === 'active')
-    .slice(0, 4);
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
@@ -60,16 +57,24 @@ export const GuideDetailPage: React.FC<GuideDetailPageProps> = ({
         className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-[#EE4D2D] transition-colors cursor-pointer"
       >
         <ArrowLeft className="w-4 h-4" />
-        <span>Quay lại danh sách bài viết</span>
+        <span>Quay lại danh sách cẩm nang</span>
       </button>
 
       {/* Article Header */}
       <header className="space-y-4 border-b border-slate-200 pb-6">
-        <div className="inline-block bg-orange-100 text-[#EE4D2D] text-xs font-black px-3 py-1 rounded-lg uppercase tracking-wider">
-          {article.category}
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="bg-orange-100 text-[#EE4D2D] text-xs font-black px-3 py-1 rounded-lg uppercase tracking-wider">
+            {article.category}
+          </span>
+          {article.keywords && article.keywords.slice(0, 3).map((kw, i) => (
+            <span key={i} className="bg-slate-100 text-slate-600 text-xs font-bold px-2.5 py-0.5 rounded-md flex items-center gap-1">
+              <Tag className="w-3 h-3 text-slate-400" />
+              <span>#{kw}</span>
+            </span>
+          ))}
         </div>
 
-        <h1 className="text-2xl sm:text-4xl font-black text-slate-900 tracking-tight leading-tight">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight leading-tight">
           {article.title}
         </h1>
 
@@ -77,7 +82,7 @@ export const GuideDetailPage: React.FC<GuideDetailPageProps> = ({
           {article.summary}
         </p>
 
-        <div className="flex items-center gap-4 text-xs font-semibold text-slate-500 pt-2 flex-wrap">
+        <div className="flex items-center gap-4 text-xs font-semibold text-slate-500 pt-2 flex-wrap border-t border-slate-100 mt-3">
           <span className="flex items-center gap-1.5 text-slate-700 font-bold">
             <User className="w-4 h-4 text-[#EE4D2D]" />
             {article.author}
@@ -93,14 +98,126 @@ export const GuideDetailPage: React.FC<GuideDetailPageProps> = ({
         </div>
       </header>
 
-      {/* Article Main HTML Body */}
-      <div
-        className="prose prose-slate max-w-none prose-headings:font-black prose-headings:text-slate-900 prose-h2:text-xl prose-h2:sm:text-2xl prose-h2:mt-8 prose-h2:mb-3 prose-p:text-slate-700 prose-p:leading-relaxed prose-li:text-slate-700 prose-strong:text-slate-900"
-        dangerouslySetInnerHTML={{ __html: article.contentHtml }}
-      />
+      {/* Article Markdown Body */}
+      <div className="guide-markdown-content bg-white rounded-3xl p-6 sm:p-10 border border-slate-200/80 shadow-xs space-y-6 text-slate-800 leading-relaxed text-base">
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+          components={{
+            h1: ({ children }) => (
+              <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mt-6 mb-4 pb-2 border-b border-slate-200">
+                {children}
+              </h1>
+            ),
+            h2: ({ children }) => (
+              <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight mt-8 mb-3 pt-3 border-t border-slate-100 flex items-center gap-2">
+                <span className="w-2 h-5 bg-[#EE4D2D] rounded-full inline-block"></span>
+                <span>{children}</span>
+              </h2>
+            ),
+            h3: ({ children }) => (
+              <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 mt-6 mb-2">
+                {children}
+              </h3>
+            ),
+            p: ({ children }) => (
+              <p className="text-slate-700 text-sm sm:text-base leading-relaxed my-3">
+                {children}
+              </p>
+            ),
+            strong: ({ children }) => (
+              <strong className="font-extrabold text-slate-900">{children}</strong>
+            ),
+            ul: ({ children }) => (
+              <ul className="list-disc pl-6 space-y-2 my-3 text-sm sm:text-base text-slate-700">
+                {children}
+              </ul>
+            ),
+            ol: ({ children }) => (
+              <ol className="list-decimal pl-6 space-y-2 my-3 text-sm sm:text-base text-slate-700">
+                {children}
+              </ol>
+            ),
+            li: ({ children }) => <li className="leading-relaxed">{children}</li>,
+            blockquote: ({ children }) => (
+              <blockquote className="border-l-4 border-amber-500 bg-amber-50/80 rounded-r-2xl p-4 my-4 text-xs sm:text-sm text-slate-700 italic">
+                {children}
+              </blockquote>
+            ),
+            table: ({ children }) => (
+              <div className="overflow-x-auto my-6 rounded-2xl border border-slate-200 shadow-2xs">
+                <table className="w-full text-left text-xs sm:text-sm text-slate-700 divide-y divide-slate-200">
+                  {children}
+                </table>
+              </div>
+            ),
+            thead: ({ children }) => (
+              <thead className="bg-slate-100 font-black text-slate-900">{children}</thead>
+            ),
+            tbody: ({ children }) => (
+              <tbody className="divide-y divide-slate-100 bg-white">{children}</tbody>
+            ),
+            tr: ({ children }) => <tr className="hover:bg-slate-50/80 transition-colors">{children}</tr>,
+            th: ({ children }) => <th className="px-4 py-3 font-extrabold">{children}</th>,
+            td: ({ children }) => <td className="px-4 py-3 align-top">{children}</td>,
+            hr: () => <hr className="my-6 border-slate-200" />,
+            a: ({ href, children }) => {
+              const isInternal = href && href.startsWith('/');
+              return (
+                <a
+                  href={href}
+                  onClick={(e) => {
+                    if (isInternal && href) {
+                      e.preventDefault();
+                      const target = href.startsWith('/cam-nang/') ? href : `/cam-nang${href}`;
+                      onNavigate(target);
+                    }
+                  }}
+                  className="font-bold text-[#EE4D2D] hover:underline inline-flex items-center gap-0.5"
+                >
+                  {children}
+                </a>
+              );
+            },
+          }}
+        >
+          {article.contentMarkdown}
+        </ReactMarkdown>
+      </div>
+
+      {/* Other Related Guides */}
+      <div className="pt-6 border-t border-slate-200 space-y-4">
+        <h3 className="text-lg font-black text-slate-900">
+          Bài Viết Cùng Chủ Đề
+        </h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {GUIDE_ARTICLES.filter((a) => a.slug !== article.slug).slice(0, 4).map((related) => (
+            <div
+              key={related.slug}
+              onClick={() => onNavigate(`/cam-nang/${related.slug}`)}
+              className="bg-white p-4 rounded-2xl border border-slate-200 hover:border-orange-300 hover:shadow-xs transition-all cursor-pointer space-y-1.5"
+            >
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-[#EE4D2D] font-bold text-[11px] bg-orange-50 px-2 py-0.5 rounded">
+                  {related.category}
+                </span>
+                <span className="text-slate-400 text-[11px] flex items-center gap-1">
+                  <Clock className="w-3 h-3" />
+                  {related.readTime}
+                </span>
+              </div>
+              <h4 className="text-sm font-extrabold text-slate-900 line-clamp-2 hover:text-[#EE4D2D] transition-colors">
+                {related.title}
+              </h4>
+              <p className="text-xs text-slate-500 line-clamp-2">
+                {related.summary}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
 
       {/* Internal Links to Recommended Categories / Products */}
-      <div className="mt-12 bg-orange-50/80 border border-orange-200/80 rounded-3xl p-6 sm:p-8 space-y-4">
+      <div className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200/80 rounded-3xl p-6 sm:p-8 space-y-4">
         <div className="flex items-center gap-2 text-[#EE4D2D] font-black text-sm uppercase tracking-wider">
           <BookOpen className="w-4 h-4" />
           <span>Sản Phẩm Đề Xuất Từ LK Hòa</span>

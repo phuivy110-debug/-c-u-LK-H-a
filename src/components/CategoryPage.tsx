@@ -19,7 +19,7 @@ export const CategoryPage: React.FC<CategoryPageProps> = ({
   onOpenDetail,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState<'default' | 'price-asc' | 'price-desc' | 'name-asc'>('default');
+  const [sortBy, setSortBy] = useState<'default' | 'discount-desc' | 'price-asc' | 'price-desc' | 'name-asc'>('default');
 
   const currentCategory = useMemo(() => {
     return CATEGORIES.find((c) => c.slug === categorySlug);

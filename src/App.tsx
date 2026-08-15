@@ -20,6 +20,7 @@ import { FloatingTrafficWidget } from './components/FloatingTrafficWidget';
 import { AnalyticsModal } from './components/AnalyticsModal';
 import { SeoToolkitModal } from './components/SeoToolkitModal';
 import { HomeGuidesSection } from './components/HomeGuidesSection';
+import { GUIDE_ARTICLES } from './data/guides';
 import { Product } from './types';
 import { CATEGORIES } from './data/products';
 import { FALLBACK_PRODUCTS } from './data/fallbackProducts';
@@ -250,6 +251,19 @@ export default function App() {
       return <GuidePage onNavigate={navigate} />;
     }
 
+    // Direct Guide Slug route (e.g., /cach-cau-ca-loc-bang-lure)
+    const directGuide = GUIDE_ARTICLES.find((g) => `/${g.slug}` === currentPath);
+    if (directGuide) {
+      return (
+        <GuideDetailPage
+          guideSlug={directGuide.slug}
+          products={products}
+          onNavigate={navigate}
+          onOpenDetail={handleOpenDetailModal}
+        />
+      );
+    }
+
     // 5. Route: /san-pham
     if (currentPath === '/san-pham') {
       return (
@@ -283,7 +297,7 @@ export default function App() {
         />
 
         {/* Realtime Traffic & Community Trust Section */}
-        <RealtimeTrafficTrustSection onOpenModal={() => setIsAnalyticsModalOpen(true)} />
+        <RealtimeTrafficTrustSection onScrollToCatalog={() => navigate('/san-pham')} />
 
         {/* Featured Category Section */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
@@ -401,7 +415,6 @@ export default function App() {
       {/* Header */}
       <Header
         onOpenAdmin={() => setIsAdminOpen(true)}
-        onOpenAnalyticsModal={() => setIsAnalyticsModalOpen(true)}
         productCount={activeProducts.length}
         showAdminButton={isAdmin}
         categories={CATEGORIES.map((c) => ({ name: c.name, slug: c.slug }))}
@@ -413,12 +426,7 @@ export default function App() {
       <main className="flex-1">{renderContent()}</main>
 
       {/* Footer */}
-      <Footer
-        onOpenAnalyticsModal={() => setIsAnalyticsModalOpen(true)}
-      />
-
-      {/* Persistent Floating Live Traffic Widget */}
-      <FloatingTrafficWidget onOpenModal={() => setIsAnalyticsModalOpen(true)} />
+      <Footer />
 
       {/* Realtime Traffic & Trust Dashboard Modal */}
       <AnalyticsModal

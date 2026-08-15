@@ -1,12 +1,9 @@
 import React from 'react';
-import { ShieldCheck, ArrowUp, Phone, MessageCircle, MapPin, Store, Share2, Activity } from 'lucide-react';
+import { ShieldCheck, ArrowUp, Phone, MessageCircle, MapPin, Store, Share2 } from 'lucide-react';
 import { LkHoaLogo } from './LkHoaLogo';
 import { SHARED_TIKTOK_URL } from '../utils/googleSheetSync';
-import { AnalyticsWidget } from './AnalyticsWidget';
 
-interface FooterProps {
-  onOpenAnalyticsModal?: () => void;
-}
+interface FooterProps {}
 
 const TikTokIcon: React.FC<{ className?: string }> = ({ className = 'w-3.5 h-3.5' }) => (
   <svg className={className} viewBox="0 0 24 24" fill="currentColor">
@@ -14,7 +11,7 @@ const TikTokIcon: React.FC<{ className?: string }> = ({ className = 'w-3.5 h-3.5
   </svg>
 );
 
-export const Footer: React.FC<FooterProps> = ({ onOpenAnalyticsModal }) => {
+export const Footer: React.FC<FooterProps> = () => {
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -40,10 +37,6 @@ export const Footer: React.FC<FooterProps> = ({ onOpenAnalyticsModal }) => {
                 <ShieldCheck className="w-4 h-4 text-emerald-400" />
                 <span>Cửa Hàng Chính Thức Đồ Câu LK Hòa</span>
               </div>
-
-              {onOpenAnalyticsModal && (
-                <AnalyticsWidget onOpenModal={onOpenAnalyticsModal} variant="footer" />
-              )}
             </div>
           </div>
 
@@ -118,21 +111,6 @@ export const Footer: React.FC<FooterProps> = ({ onOpenAnalyticsModal }) => {
                 <TikTokIcon className="w-4 h-4 fill-current text-white shrink-0" />
                 <span>Xem gian hàng TikTok</span>
               </a>
-
-              {/* Sitemap and RSS for crawlers */}
-              <div className="pt-2 flex items-center gap-3 text-[11px] text-slate-500">
-                <a href="/sitemap.xml" target="_blank" rel="noreferrer" className="hover:text-slate-300 underline">
-                  Sitemap XML
-                </a>
-                <span>·</span>
-                <a href="/feed.xml" target="_blank" rel="noreferrer" className="hover:text-slate-300 underline">
-                  RSS Feed
-                </a>
-                <span>·</span>
-                <a href="/robots.txt" target="_blank" rel="noreferrer" className="hover:text-slate-300 underline">
-                  Robots.txt
-                </a>
-              </div>
             </div>
           </div>
 
