@@ -1,3 +1,7 @@
+import { PRODUCT_GUIDES_BATCH_1 } from './productGuidesBatch1';
+import { PRODUCT_GUIDES_BATCH_2 } from './productGuidesBatch2';
+import { PRODUCT_GUIDES_BATCH_3 } from './productGuidesBatch3';
+
 export interface GuideArticle {
   slug: string;
   title: string;
@@ -16,7 +20,7 @@ export interface GuideArticle {
   relatedCategorySlug?: string;
 }
 
-export const GUIDE_ARTICLES: GuideArticle[] = [
+const BASE_GUIDE_ARTICLES: GuideArticle[] = [
   // BÀI 0 — CẨM NANG CÂU CÁ NƯỚC NGỌT (BÀI TRỤ)
   {
     slug: 'cam-nang-cau-ca-nuoc-ngot',
@@ -555,4 +559,11 @@ Dây PE X8 được bện từ 8 sợi dệt siêu mịn, bề mặt tròn mịn
 ## 2. Chọn cỡ dây PE chuẩn
 Nên chọn dây PE X8 LK Hòa size #1.5 đến #2.0 cho cá lóc sông/hồ, vừa chống sờn ma sát vừa bảo vệ khoen cần.`
   }
+];
+
+export const GUIDE_ARTICLES: GuideArticle[] = [
+  ...BASE_GUIDE_ARTICLES,
+  ...PRODUCT_GUIDES_BATCH_1,
+  ...PRODUCT_GUIDES_BATCH_2,
+  ...PRODUCT_GUIDES_BATCH_3
 ];
