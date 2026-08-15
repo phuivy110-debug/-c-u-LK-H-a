@@ -443,6 +443,13 @@ export function renderSeoPage(
       title = guide.metaTitle || `${guide.title} | Đồ Câu LK Hòa`;
       description = guide.metaDescription || guide.summary;
       ogType = 'article';
+      
+      const imgMatch = guide.contentMarkdown.match(/!\[.*?\]\((.*?)\)/);
+      if (imgMatch && imgMatch[1]) {
+        const rawImg = imgMatch[1];
+        ogImage = rawImg.startsWith('http') ? rawImg : `${DOMAIN}${rawImg.startsWith('/') ? '' : '/'}${rawImg}`;
+      }
+
       if (guide.keywords && guide.keywords.length > 0) {
         keywords = guide.keywords.join(', ') + ', đồ câu lk hòa, hướng dẫn câu cá';
       }
@@ -461,6 +468,7 @@ export function renderSeoPage(
           '@context': 'https://schema.org',
           '@type': 'Article',
           'headline': guide.title,
+          'image': [ogImage],
           'description': guide.metaDescription || guide.summary,
           'author': {
             '@type': 'Person',

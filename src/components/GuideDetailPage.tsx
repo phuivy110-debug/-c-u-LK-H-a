@@ -20,6 +20,29 @@ export const GuideDetailPage: React.FC<GuideDetailPageProps> = ({
 }) => {
   const article = GUIDE_ARTICLES.find((a) => a.slug === guideSlug) || GUIDE_ARTICLES[0];
 
+  React.useEffect(() => {
+    if (article) {
+      document.title = article.metaTitle || `${article.title} | Đồ Câu LK Hòa`;
+      let metaDesc = document.querySelector('meta[name="description"]');
+      if (!metaDesc) {
+        metaDesc = document.createElement('meta');
+        metaDesc.setAttribute('name', 'description');
+        document.head.appendChild(metaDesc);
+      }
+      metaDesc.setAttribute('content', article.metaDescription || article.summary);
+
+      if (article.keywords && article.keywords.length > 0) {
+        let metaKw = document.querySelector('meta[name="keywords"]');
+        if (!metaKw) {
+          metaKw = document.createElement('meta');
+          metaKw.setAttribute('name', 'keywords');
+          document.head.appendChild(metaKw);
+        }
+        metaKw.setAttribute('content', article.keywords.join(', '));
+      }
+    }
+  }, [article]);
+
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       {/* Breadcrumbs */}
@@ -160,6 +183,22 @@ export const GuideDetailPage: React.FC<GuideDetailPageProps> = ({
             th: ({ children }) => <th className="px-4 py-3 font-extrabold">{children}</th>,
             td: ({ children }) => <td className="px-4 py-3 align-top">{children}</td>,
             hr: () => <hr className="my-6 border-slate-200" />,
+            img: ({ src, alt }) => (
+              <figure className="my-6 text-center">
+                <img
+                  src={src}
+                  alt={alt || ''}
+                  className="mx-auto max-w-full rounded-2xl border border-slate-200 shadow-md max-h-[500px] object-cover"
+                  referrerPolicy="no-referrer"
+                  loading="lazy"
+                />
+              </figure>
+            ),
+            em: ({ children }) => (
+              <em className="text-slate-500 text-xs sm:text-sm block text-center mt-1.5 mb-4 italic font-normal">
+                {children}
+              </em>
+            ),
             a: ({ href, children }) => {
               const isInternal = href && href.startsWith('/');
               return (

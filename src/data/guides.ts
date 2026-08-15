@@ -1,6 +1,7 @@
 import { PRODUCT_GUIDES_BATCH_1 } from './productGuidesBatch1';
 import { PRODUCT_GUIDES_BATCH_2 } from './productGuidesBatch2';
 import { PRODUCT_GUIDES_BATCH_3 } from './productGuidesBatch3';
+import { NEW_GUIDES_WITH_IMAGES } from './newGuidesWithImages';
 
 export interface GuideArticle {
   slug: string;
@@ -562,6 +563,7 @@ Nên chọn dây PE X8 LK Hòa size #1.5 đến #2.0 cho cá lóc sông/hồ, v�
 ];
 
 export const GUIDE_ARTICLES: GuideArticle[] = [
+  ...NEW_GUIDES_WITH_IMAGES,
   ...BASE_GUIDE_ARTICLES,
   ...PRODUCT_GUIDES_BATCH_1,
   ...PRODUCT_GUIDES_BATCH_2,
