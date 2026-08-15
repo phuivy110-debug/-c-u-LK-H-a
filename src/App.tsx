@@ -19,6 +19,7 @@ import { RealtimeTrafficTrustSection } from './components/RealtimeTrafficTrustSe
 import { FloatingTrafficWidget } from './components/FloatingTrafficWidget';
 import { AnalyticsModal } from './components/AnalyticsModal';
 import { SeoToolkitModal } from './components/SeoToolkitModal';
+import { HomeGuidesSection } from './components/HomeGuidesSection';
 import { Product } from './types';
 import { CATEGORIES } from './data/products';
 import { FALLBACK_PRODUCTS } from './data/fallbackProducts';
@@ -382,6 +383,9 @@ export default function App() {
             </div>
           )}
         </section>
+
+        {/* Fishing Guides & Knowledge Section */}
+        <HomeGuidesSection onNavigate={navigate} />
 
         {/* FAQ Section */}
         <FaqSection />
