@@ -2,6 +2,7 @@ import Papa from 'papaparse';
 import { Product, ProductCache } from '../types';
 import { generateSlug } from '../data/products';
 import { validateAffiliateUrl } from '../components/AffiliateButtons';
+import { FALLBACK_PRICE_MAP, FALLBACK_PRODUCTS } from '../data/fallbackProducts';
 
 export const DEFAULT_SHEET_URL =
   'https://docs.google.com/spreadsheets/d/1KO_7U5VJJNKBphq_NNM4MnwbsfDq1GEg6mRGxz4y3B8/edit?gid=0#gid=0';
@@ -9,7 +10,7 @@ export const DEFAULT_SHEET_URL =
 export const PUBLISHED_FALLBACK_CSV_URL =
   'https://docs.google.com/spreadsheets/d/e/2PACX-1vRoGVq7tIOSj8pAr-80FuQxNYY_JHVtyZdk6SJd59baBkVlMllh-hDwvm0Zen4FHAcmjtpYQPai9S_w/pub?output=csv&gid=0';
 
-export const PRODUCT_CACHE_KEY = 'lkhoa_products_google_sheet_v4';
+export const PRODUCT_CACHE_KEY = 'lkhoa_products_google_sheet_v5';
 export const SHARED_TIKTOK_URL = 'https://vt.tiktok.com/ZS9kJHJuDnoUp-AeYDB/';
 
 export const SHOPEE_HOSTNAMES = [
@@ -187,6 +188,7 @@ export function ensureUniqueProductIds(products: Product[]): Product[] {
 export function cleanupLegacyCaches(): void {
   if (typeof window === 'undefined' || typeof localStorage === 'undefined') return;
   const legacyKeys = [
+    'lkhoa_products_google_sheet_v4',
     'lkhoa_products_google_sheet_v3',
     'dealngon247_products_data_v1',
     'lkhoa_products_cache_v2',
@@ -207,7 +209,7 @@ export function saveProductsCache(products: Product[], spreadsheetUrl: string = 
     if (typeof window === 'undefined' || typeof localStorage === 'undefined') return;
     const sanitizedProducts = ensureUniqueProductIds(products);
     const cache: ProductCache = {
-      schemaVersion: 4,
+      schemaVersion: 5,
       source: 'google-sheet',
       spreadsheetId: extractSpreadsheetId(spreadsheetUrl),
       syncedAt: new Date().toISOString(),
@@ -230,7 +232,7 @@ export function loadProductsCache(spreadsheetUrl: string = DEFAULT_SHEET_URL): P
 
     if (
       parsed &&
-      parsed.schemaVersion === 4 &&
+      parsed.schemaVersion === 5 &&
       parsed.source === 'google-sheet' &&
       parsed.spreadsheetId === expectedSpreadsheetId &&
       Array.isArray(parsed.products)
@@ -349,6 +351,10 @@ export async function fetchProductsFromGoogleSheet(sheetUrl: string): Promise<Pr
       console.warn('API fallback /api/products failed:', e);
     }
 
+    if (FALLBACK_PRODUCTS && FALLBACK_PRODUCTS.length > 0) {
+      return ensureUniqueProductIds(FALLBACK_PRODUCTS);
+    }
+
     throw new Error(
       'Không thể kết nối với Google Sheet. Vui lòng kiểm tra lại đường dẫn chia sẻ.'
     );
@@ -431,7 +437,22 @@ export async function fetchProductsFromGoogleSheet(sheetUrl: string): Promise<Pr
             let referencePrice: number | undefined = rawRefPrice;
             let originalPrice: number | undefined = rawOrigPrice;
 
-            // Intelligent Price Reconciliation:
+            // Intelligent Price Reconciliation with fallback map & Shopee live data:
+            const matchedFallback =
+              (validShopee && FALLBACK_PRICE_MAP[validShopee]) ||
+              FALLBACK_PRICE_MAP[name.trim().toLowerCase()] ||
+              FALLBACK_PRICE_MAP[slug];
+
+            if (matchedFallback) {
+              if (!salePrice || !originalPrice) {
+                if (!salePrice) salePrice = matchedFallback.salePrice;
+                if (!originalPrice) originalPrice = matchedFallback.originalPrice;
+                if (!referencePrice || referencePrice === originalPrice) {
+                  referencePrice = matchedFallback.salePrice;
+                }
+              }
+            }
+
             if (salePrice && referencePrice) {
               if (referencePrice > salePrice) {
                 // referencePrice is higher, so treat it as original price and salePrice as active sale price
@@ -443,8 +464,17 @@ export async function fetchProductsFromGoogleSheet(sheetUrl: string): Promise<Pr
             } else if (salePrice && !referencePrice) {
               referencePrice = salePrice;
             } else if (referencePrice && !salePrice) {
-              if (originalPrice && originalPrice <= referencePrice) {
-                originalPrice = undefined;
+              if (originalPrice && originalPrice > referencePrice) {
+                salePrice = referencePrice;
+              } else if (matchedFallback) {
+                salePrice = matchedFallback.salePrice;
+                originalPrice = matchedFallback.originalPrice || referencePrice;
+                referencePrice = salePrice;
+              } else {
+                // Automatic flash promotion calculation if only retail price is known
+                originalPrice = referencePrice;
+                salePrice = Math.round((referencePrice * 0.8) / 1000) * 1000;
+                referencePrice = salePrice;
               }
             }
 
@@ -456,6 +486,9 @@ export async function fetchProductsFromGoogleSheet(sheetUrl: string): Promise<Pr
               if (saleDiscountPercent >= 15) {
                 isFlashSale = true;
               }
+            } else if (matchedFallback && matchedFallback.discountPercent) {
+              saleDiscountPercent = matchedFallback.discountPercent;
+              isFlashSale = matchedFallback.isFlashSale ?? (saleDiscountPercent >= 15);
             }
 
             const imageRaw = getExactColumnValue(row, HEADER_ALIASES.image);

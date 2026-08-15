@@ -20,6 +20,7 @@ import { FloatingTrafficWidget } from './components/FloatingTrafficWidget';
 import { AnalyticsModal } from './components/AnalyticsModal';
 import { Product } from './types';
 import { CATEGORIES } from './data/products';
+import { FALLBACK_PRODUCTS } from './data/fallbackProducts';
 import { Flame, ArrowRight, RefreshCw, FileSpreadsheet, ChevronRight, ShieldCheck, Fish, Compass, Feather, Waves, Anchor } from 'lucide-react';
 import { fetchProductsFromGoogleSheet, DEFAULT_SHEET_URL, loadProductsCache, saveProductsCache, ensureUniqueProductIds } from './utils/googleSheetSync';
 import { fetchLiveShopeePrices, mergeRealtimeShopeePrices, triggerShopeePriceSync } from './utils/shopeePriceSync';
@@ -27,10 +28,16 @@ import { fetchLiveShopeePrices, mergeRealtimeShopeePrices, triggerShopeePriceSyn
 const SHEET_URL_KEY = 'lkhoa_sheet_url_v2';
 
 export default function App() {
-  // Products state (defaults to cached or empty array until synced)
+  // Products state (defaults to cached or fallback products with active discounts)
   const [products, setProductsState] = useState<Product[]>(() => {
     const cached = loadProductsCache(DEFAULT_SHEET_URL);
-    return cached && cached.products ? ensureUniqueProductIds(cached.products) : [];
+    if (cached && cached.products && cached.products.length > 0) {
+      const hasValidDiscounts = cached.products.some((p) => (p.saleDiscountPercent || 0) > 0);
+      if (hasValidDiscounts) {
+        return ensureUniqueProductIds(cached.products);
+      }
+    }
+    return ensureUniqueProductIds(FALLBACK_PRODUCTS);
   });
 
   const setProducts = useCallback((newProds: Product[] | ((prev: Product[]) => Product[])) => {
