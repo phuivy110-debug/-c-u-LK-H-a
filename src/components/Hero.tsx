@@ -130,81 +130,57 @@ export const Hero: React.FC<HeroProps> = ({
           </div>
         </div>
 
-        {/* E-Commerce Stores Navigation Card */}
-        <div className="bg-white rounded-[2rem] p-6 sm:p-8 border border-slate-200/90 shadow-sm space-y-6">
-          <div className="text-center max-w-2xl mx-auto space-y-2">
-            <div className="inline-flex items-center gap-2 bg-slate-100 text-slate-800 px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider">
-              <ShoppingBag className="w-3.5 h-3.5 text-[#EE4D2D]" />
-              <span>Gian Hàng Chính Thức LK Hòa</span>
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-              Gian Hàng Trên Sàn Thương Mại Điện Tử
-            </h2>
-            <p className="text-slate-600 text-xs sm:text-sm font-medium">
-              Kiểm tra thông tin cuối cùng và giá chính thức trên ứng dụng bán hàng
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-            {/* Shopee Card */}
-            <div className="bg-gradient-to-br from-orange-500 to-[#EE4D2D] text-white p-6 rounded-2xl shadow-md border border-orange-400/40 relative overflow-hidden flex flex-col justify-between">
-              <div className="space-y-3 relative z-10">
-                <div className="flex items-center justify-between">
-                  <span className="bg-white text-[#EE4D2D] font-black text-xs px-3 py-1 rounded-full uppercase tracking-wider shadow-xs">
-                    SHOPEE
+        {/* Compact E-Commerce Stores Navigation Card */}
+        <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-slate-200/90 shadow-xs">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            
+            {/* Title / Subtitle Compact */}
+            <div className="flex items-center gap-3 text-center md:text-left">
+              <div className="w-10 h-10 rounded-xl bg-orange-50 text-[#EE4D2D] flex items-center justify-center shrink-0 border border-orange-100">
+                <ShoppingBag className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="flex items-center justify-center md:justify-start gap-2">
+                  <h2 className="text-sm sm:text-base font-extrabold text-slate-900 tracking-tight">
+                    Gian Hàng Thương Mại Điện Tử LK Hòa
+                  </h2>
+                  <span className="hidden sm:inline-flex bg-orange-100 text-[#EE4D2D] text-[10px] font-extrabold px-2 py-0.5 rounded-md uppercase">
+                    Chính Hãng
                   </span>
                 </div>
-                <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-                  Gian Hàng Shopee LK Hòa
-                </h3>
-                <p className="text-orange-100 text-xs sm:text-sm font-medium leading-relaxed">
-                  Xem toàn bộ danh mục sản phẩm đồ câu cá và đặt mua trực tiếp trên Shopee.
+                <p className="text-xs text-slate-500 font-medium mt-0.5">
+                  Đặt mua trực tiếp và áp mã voucher ưu đãi trên ứng dụng Shopee & TikTok Shop
                 </p>
-              </div>
-
-              <div className="pt-6 relative z-10">
-                <a
-                  href="https://s.shopee.vn/7fYvAFHqaP"
-                  target="_blank"
-                  rel="sponsored nofollow noopener noreferrer"
-                  className="w-full bg-white hover:bg-orange-50 text-[#EE4D2D] font-extrabold py-3 px-5 rounded-xl text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  <span>Xem gian hàng Shopee</span>
-                  <ExternalLink className="w-4 h-4 text-[#EE4D2D]" />
-                </a>
               </div>
             </div>
 
-            {/* TikTok Shop Card */}
-            <div className="bg-gradient-to-br from-slate-900 via-slate-950 to-black text-white p-6 rounded-2xl shadow-md border border-slate-800 relative overflow-hidden flex flex-col justify-between">
-              <div className="space-y-3 relative z-10">
-                <div className="flex items-center justify-between">
-                  <span className="bg-white text-black font-black text-xs px-3 py-1 rounded-full uppercase tracking-wider shadow-xs flex items-center gap-1.5">
-                    <TikTokIcon className="w-3.5 h-3.5 fill-current text-black" />
-                    TIKTOK SHOP
-                  </span>
-                </div>
-                <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-                  Gian Hàng TikTok LK Hòa
-                </h3>
-                <p className="text-slate-300 text-xs sm:text-sm font-medium leading-relaxed">
-                  Ghé gian hàng chung TikTok Shop chính thức của LK Hòa để theo dõi video trải nghiệm và mua hàng.
-                </p>
-              </div>
+            {/* Compact Action Buttons */}
+            <div className="grid grid-cols-2 gap-2.5 w-full md:w-auto shrink-0">
+              {/* Compact Shopee Button */}
+              <a
+                href="https://s.shopee.vn/7fYvAFHqaP"
+                target="_blank"
+                rel="sponsored nofollow noopener noreferrer"
+                className="bg-gradient-to-r from-orange-500 to-[#EE4D2D] hover:from-orange-600 hover:to-[#d73f21] text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-xs hover:shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer group"
+              >
+                <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
+                <span className="font-extrabold">Shopee LK Hòa</span>
+                <ExternalLink className="w-3.5 h-3.5 opacity-80 group-hover:translate-x-0.5 transition-transform" />
+              </a>
 
-              <div className="pt-6 relative z-10">
-                <a
-                  href={SHARED_TIKTOK_URL}
-                  target="_blank"
-                  rel="sponsored nofollow noopener noreferrer"
-                  className="w-full bg-white hover:bg-slate-100 text-slate-950 font-extrabold py-3 px-5 rounded-xl text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  <TikTokIcon className="w-4 h-4 fill-current text-slate-950" />
-                  <span>Xem gian hàng TikTok</span>
-                  <ExternalLink className="w-4 h-4 text-slate-950" />
-                </a>
-              </div>
+              {/* Compact TikTok Shop Button */}
+              <a
+                href={SHARED_TIKTOK_URL}
+                target="_blank"
+                rel="sponsored nofollow noopener noreferrer"
+                className="bg-slate-900 hover:bg-black text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-xs hover:shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer border border-slate-800 group"
+              >
+                <TikTokIcon className="w-3.5 h-3.5 fill-current text-white" />
+                <span className="font-extrabold">TikTok Shop LK</span>
+                <ExternalLink className="w-3.5 h-3.5 opacity-80 group-hover:translate-x-0.5 transition-transform" />
+              </a>
             </div>
+
           </div>
         </div>
 

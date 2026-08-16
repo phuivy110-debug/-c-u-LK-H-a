@@ -15,7 +15,6 @@ import { Footer } from './components/Footer';
 import { Toast } from './components/Toast';
 import { ChatBot } from './components/ChatBot';
 import { ScrollToTopButton } from './components/ScrollToTopButton';
-import { RealtimeTrafficTrustSection } from './components/RealtimeTrafficTrustSection';
 import { FloatingTrafficWidget } from './components/FloatingTrafficWidget';
 import { AnalyticsModal } from './components/AnalyticsModal';
 import { SeoToolkitModal } from './components/SeoToolkitModal';
@@ -295,9 +294,6 @@ export default function App() {
           }}
           activeCount={activeProducts.length}
         />
-
-        {/* Realtime Traffic & Community Trust Section */}
-        <RealtimeTrafficTrustSection onScrollToCatalog={() => navigate('/san-pham')} />
 
         {/* Featured Category Section */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
