@@ -1,6 +1,6 @@
 import React from 'react';
 import { ExternalLink } from 'lucide-react';
-import { trackUserAction } from '../utils/analyticsService';
+import { trackAffiliateClick, trackUserAction } from '../utils/analyticsService';
 import { SHARED_TIKTOK_URL, SHOPEE_HOSTNAMES } from '../utils/googleSheetSync';
 
 export const TIKTOK_HOSTNAMES = ['tiktok.com', 'vt.tiktok.com', 'shop.tiktok.com', 'www.tiktok.com', 'm.tiktok.com'];
@@ -60,16 +60,20 @@ export const AffiliateButtons: React.FC<AffiliateButtonsProps> = ({
   const handleShopeeClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     trackUserAction(`Bấm Shopee [${productId}]: ${productName.slice(0, 25)}`);
+    if (validShopee) {
+      trackAffiliateClick('shopee', validShopee, productId, productName);
+    }
   };
 
   const handleTikTokClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     trackUserAction(`Bấm TikTok [${productId}]: ${productName.slice(0, 25)}`);
+    trackAffiliateClick('tiktok', validTikTok, productId, productName);
   };
 
   if (compact) {
     return (
-      <div className="grid grid-cols-2 gap-1.5 pt-0.5">
+      <div data-affiliate-tracked="true" className="grid grid-cols-2 gap-1.5 pt-0.5">
         {validShopee ? (
           <a
             href={validShopee}
@@ -105,7 +109,7 @@ export const AffiliateButtons: React.FC<AffiliateButtonsProps> = ({
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full">
+    <div data-affiliate-tracked="true" className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full">
       {validShopee ? (
         <a
           href={validShopee}
