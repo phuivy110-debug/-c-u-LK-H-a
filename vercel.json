@@ -8,6 +8,22 @@
       "destination": "/api/chat"
     },
     {
+      "source": "/sitemap.xml",
+      "destination": "/api/sitemap"
+    },
+    {
+      "source": "/robots.txt",
+      "destination": "/api/robots"
+    },
+    {
+      "source": "/feed.xml",
+      "destination": "/api/rss"
+    },
+    {
+      "source": "/rss.xml",
+      "destination": "/api/rss"
+    },
+    {
       "source": "/((?!api/).*)",
       "destination": "/index.html"
     }
