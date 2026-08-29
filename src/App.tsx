@@ -26,6 +26,7 @@ import { FALLBACK_PRODUCTS } from './data/fallbackProducts';
 import { Flame, ArrowRight, RefreshCw, FileSpreadsheet, ChevronRight, ShieldCheck, Fish, Compass, Feather, Waves, Anchor } from 'lucide-react';
 import { fetchProductsFromGoogleSheet, DEFAULT_SHEET_URL, loadProductsCache, saveProductsCache, ensureUniqueProductIds } from './utils/googleSheetSync';
 import { fetchLiveShopeePrices, mergeRealtimeShopeePrices, triggerShopeePriceSync } from './utils/shopeePriceSync';
+import { trackAffiliateClick, trackPageView } from './utils/analyticsService';
 
 const SHEET_URL_KEY = 'lkhoa_sheet_url_v2';
 
@@ -61,6 +62,34 @@ export default function App() {
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  // Track every SPA route once, including browser back/forward navigation.
+  useEffect(() => {
+    trackPageView(currentPath);
+  }, [currentPath]);
+
+  // Track affiliate links rendered inside editorial content.
+  useEffect(() => {
+    const handleAffiliateLink = (event: MouseEvent) => {
+      const target = event.target as Element | null;
+      const anchor = target?.closest('a[href]') as HTMLAnchorElement | null;
+      if (!anchor || anchor.closest('[data-affiliate-tracked="true"]')) return;
+
+      try {
+        const hostname = new URL(anchor.href).hostname.toLowerCase();
+        if (hostname === 'shopee.vn' || hostname.endsWith('.shopee.vn')) {
+          trackAffiliateClick('shopee', anchor.href);
+        } else if (hostname === 'tiktok.com' || hostname.endsWith('.tiktok.com')) {
+          trackAffiliateClick('tiktok', anchor.href);
+        }
+      } catch {
+        // Ignore malformed or relative URLs.
+      }
+    };
+
+    document.addEventListener('click', handleAffiliateLink);
+    return () => document.removeEventListener('click', handleAffiliateLink);
   }, []);
 
   const navigate = useCallback((path: string) => {
