@@ -1,5 +1,5 @@
 {
-  "buildCommand": "vite build",
+  "buildCommand": "tsx scripts/generate-seo-files.ts && vite build",
   "outputDirectory": "dist",
   "framework": "vite",
   "rewrites": [
@@ -9,19 +9,19 @@
     },
     {
       "source": "/sitemap.xml",
-      "destination": "/api/sitemap"
+      "destination": "/seo/sitemap.xml"
     },
     {
       "source": "/robots.txt",
-      "destination": "/api/robots"
+      "destination": "/seo/robots.txt"
     },
     {
       "source": "/feed.xml",
-      "destination": "/api/rss"
+      "destination": "/seo/rss.xml"
     },
     {
       "source": "/rss.xml",
-      "destination": "/api/rss"
+      "destination": "/seo/rss.xml"
     },
     {
       "source": "/((?!api/).*)",
