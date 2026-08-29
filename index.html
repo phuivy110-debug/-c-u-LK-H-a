@@ -27,7 +27,8 @@
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
 
-      gtag('config', 'G-1JRLR76R0H');
+      // Page views are sent by the React router so SPA navigation is measured once.
+      gtag('config', 'G-1JRLR76R0H', { send_page_view: false });
     </script>
 
     <!-- Google Fonts -->
