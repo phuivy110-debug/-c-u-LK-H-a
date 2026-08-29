@@ -2,6 +2,19 @@
   "buildCommand": "tsx scripts/generate-seo-files.ts && vite build",
   "outputDirectory": "dist",
   "framework": "vite",
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.docaulkhoa.vn"
+        }
+      ],
+      "destination": "https://docaulkhoa.vn/:path*",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     {
       "source": "/api/chat",
@@ -22,10 +35,6 @@
     {
       "source": "/rss.xml",
       "destination": "/seo/rss.xml"
-    },
-    {
-      "source": "/((?!api/).*)",
-      "destination": "/index.html"
     }
   ]
 }
