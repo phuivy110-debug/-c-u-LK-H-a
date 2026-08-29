@@ -257,6 +257,14 @@ export function renderSeoPage(
   let ogType = 'website';
   let ogImage = `${DOMAIN}/favicon.svg`;
   let jsonLdData: any = null;
+  let seoBodyHtml = '';
+
+  const escapeHtml = (value: unknown) => String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 
   const hasQuery = Object.keys(reqQuery).length > 0;
   if (hasQuery) {
@@ -306,9 +314,7 @@ export function renderSeoPage(
       description = `Mua ${product.name} chính hãng LK Hòa thuộc danh mục ${product.category}. Xem thông số kỹ thuật, giá sale ${priceFormatted} và mua trực tiếp trên Shopee Mall & TikTok Shop.`;
       ogType = 'product';
       if (product.imageUrl) ogImage = product.imageUrl;
-
-      const priceVal = product.referencePrice || product.salePrice || 500000;
-      const originalPriceVal = product.originalPrice || Math.round(priceVal * 1.25);
+      seoBodyHtml = `<main><article><h1>${escapeHtml(product.name)}</h1><p>${escapeHtml(product.description || description)}</p><p>Danh mục: ${escapeHtml(product.category)}. Giá tham khảo: ${escapeHtml(priceFormatted)}.</p><p><strong>Công bố affiliate:</strong> Trang có liên kết tiếp thị tới Shopee hoặc TikTok Shop. Giá của người mua không tăng khi sử dụng liên kết.</p><p><a href="${DOMAIN}/danh-muc/${CATEGORIES.find(c => c.name === product.category)?.slug || 'can-cau'}">Xem thêm sản phẩm ${escapeHtml(product.category)}</a></p></article></main>`;
 
       jsonLdData = [
         {
@@ -334,26 +340,7 @@ export function renderSeoPage(
             'name': 'LK Hòa',
             'logo': `${DOMAIN}/favicon.svg`
           },
-          'offers': {
-            '@type': 'Offer',
-            'url': canonicalUrl,
-            'priceCurrency': 'VND',
-            'price': priceVal,
-            'priceValidUntil': '2027-12-31',
-            'itemCondition': 'https://schema.org/NewCondition',
-            'availability': 'https://schema.org/InStock',
-            'seller': {
-              '@type': 'Organization',
-              'name': 'Đồ Câu LK Hòa Official Store'
-            }
-          },
-          'aggregateRating': {
-            '@type': 'AggregateRating',
-            'ratingValue': '4.9',
-            'reviewCount': '189',
-            'bestRating': '5',
-            'worstRating': '1'
-          }
+          'url': canonicalUrl
         }
       ];
     }
@@ -368,6 +355,7 @@ export function renderSeoPage(
 
     title = `${catName} LK Hòa – Bảng Giá Cập Nhật & Mua Chính Hãng | Shopee Mall`;
     description = `Tổng hợp các mẫu ${catName} chính hãng LK Hòa tốt nhất: cần câu lure, cần đài 5H/6H, phao nano, mồi câu nhạy bén. Cam kết bảo hành chính hãng, săn mã giảm giá Shopee & TikTok.`;
+    seoBodyHtml = `<main><h1>${escapeHtml(catName)} LK Hòa</h1><p>${escapeHtml(description)}</p><ul>${catProducts.slice(0, 12).map(p => `<li><a href="${DOMAIN}/san-pham/${escapeHtml(p.slug)}">${escapeHtml(p.name)}</a></li>`).join('')}</ul></main>`;
 
     jsonLdData = [
       {
@@ -403,6 +391,7 @@ export function renderSeoPage(
   else if (reqPath === '/san-pham') {
     title = 'Tất Cả Sản Phẩm Đồ Câu LK Hòa – Cần Câu, Mồi Câu, Phụ Kiện Giá Tốt';
     description = 'Bảng giá toàn bộ 66+ sản phẩm đồ câu cá giải trí chính hãng LK Hòa. Tra cứu thông số, so sánh giá và liên kết mua Shopee Mall & TikTok Shop chính hãng.';
+    seoBodyHtml = `<main><h1>Tất cả sản phẩm Đồ Câu LK Hòa</h1><p>${escapeHtml(description)}</p><ul>${activeProducts.slice(0, 20).map(p => `<li><a href="${DOMAIN}/san-pham/${escapeHtml(p.slug)}">${escapeHtml(p.name)}</a></li>`).join('')}</ul></main>`;
 
     jsonLdData = [
       {
@@ -420,6 +409,7 @@ export function renderSeoPage(
   else if (reqPath === '/cam-nang') {
     title = 'Cẩm Nang Câu Cá LK Hòa – Hướng Dẫn Chọn Cần, Pha Mồi & Kỹ Thuật Câu';
     description = 'Kho tàng kiến thức câu cá từ chuyên gia LK Hòa: cách chọn cần câu lure, cần đài 4H 5H 6H 8H, công thức pha mồi câu chép rô phi, kinh nghiệm săn hàng hồ tự nhiên.';
+    seoBodyHtml = `<main><h1>Cẩm nang câu cá và review đồ câu LK Hòa</h1><p>${escapeHtml(description)}</p><ul>${GUIDE_ARTICLES.slice(0, 24).map(g => `<li><a href="${DOMAIN}/cam-nang/${escapeHtml(g.slug)}">${escapeHtml(g.title)}</a></li>`).join('')}</ul></main>`;
 
     jsonLdData = [
       {
@@ -453,6 +443,14 @@ export function renderSeoPage(
       if (guide.keywords && guide.keywords.length > 0) {
         keywords = guide.keywords.join(', ') + ', đồ câu lk hòa, hướng dẫn câu cá';
       }
+      const readableExcerpt = guide.contentMarkdown
+        .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
+        .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
+        .replace(/[#>*_`|~-]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .slice(0, 1800);
+      seoBodyHtml = `<main><article><h1>${escapeHtml(guide.title)}</h1><p>${escapeHtml(guide.summary)}</p><p>Tác giả: ${escapeHtml(guide.author)} · Cập nhật: ${escapeHtml(guide.date)} · ${escapeHtml(guide.readTime)}</p><p>${escapeHtml(readableExcerpt)}</p><p><strong>Công bố affiliate:</strong> Bài có thể chứa liên kết tiếp thị. Nội dung đánh giá độc lập với mức hoa hồng.</p><p><a href="${DOMAIN}/cam-nang">Xem thêm cẩm nang và bài so sánh</a></p></article></main>`;
 
       jsonLdData = [
         {
@@ -492,6 +490,7 @@ export function renderSeoPage(
 
   // DEFAULT / HOMEPAGE (/)
   else {
+    seoBodyHtml = `<main><h1>Đồ Câu LK Hòa – Cần câu, mồi câu và phụ kiện</h1><p>${escapeHtml(description)}</p><p><a href="${DOMAIN}/san-pham">Xem danh mục sản phẩm</a> · <a href="${DOMAIN}/cam-nang">Đọc cẩm nang và bài review</a></p></main>`;
     jsonLdData = [
       {
         '@context': 'https://schema.org',
@@ -567,6 +566,10 @@ export function renderSeoPage(
     resultHtml = resultHtml.replace(/<!-- SEO_META_START -->[\s\S]*?<!-- SEO_META_END -->/gi, headExtra);
   } else {
     resultHtml = resultHtml.replace('</head>', `${headExtra}\n</head>`);
+  }
+
+  if (seoBodyHtml) {
+    resultHtml = resultHtml.replace('<div id="root"></div>', `<div id="root">${seoBodyHtml}</div>`);
   }
 
   return resultHtml;
