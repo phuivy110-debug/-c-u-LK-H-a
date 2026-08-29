@@ -121,6 +121,12 @@ export const GuideDetailPage: React.FC<GuideDetailPageProps> = ({
         </div>
       </header>
 
+      <aside className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs sm:text-sm text-amber-950 leading-relaxed">
+        <strong>Minh bạch nội dung:</strong> Một số liên kết trong bài là liên kết tiếp thị liên kết.
+        Website có thể nhận hoa hồng nếu bạn mua qua liên kết, nhưng giá thanh toán của bạn không tăng.
+        Nhận định trong bài được tách biệt với mức hoa hồng.
+      </aside>
+
       {/* Article Markdown Body */}
       <div className="guide-markdown-content bg-white rounded-3xl p-6 sm:p-10 border border-slate-200/80 shadow-xs space-y-6 text-slate-800 leading-relaxed text-base">
         <ReactMarkdown
@@ -201,9 +207,12 @@ export const GuideDetailPage: React.FC<GuideDetailPageProps> = ({
             ),
             a: ({ href, children }) => {
               const isInternal = href && href.startsWith('/');
+              const isAffiliate = Boolean(href && /(shopee\.|s\.shopee\.|tiktok\.|vt\.tiktok\.)/i.test(href));
               return (
                 <a
                   href={href}
+                  target={isInternal ? undefined : '_blank'}
+                  rel={isAffiliate ? 'sponsored nofollow noopener noreferrer' : (isInternal ? undefined : 'noopener noreferrer')}
                   onClick={(e) => {
                     if (isInternal && href) {
                       e.preventDefault();
