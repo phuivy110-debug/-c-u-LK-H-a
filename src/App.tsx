@@ -8,6 +8,7 @@ import { CatalogPage } from './components/CatalogPage';
 import { CategoryPage } from './components/CategoryPage';
 import { GuidePage } from './components/GuidePage';
 import { GuideDetailPage } from './components/GuideDetailPage';
+import { AboutReviewPage, PrivacyPage } from './components/TrustPages';
 import { WhyUsSection } from './components/WhyUsSection';
 import { FaqSection } from './components/FaqSection';
 import { AffiliateGuideModal } from './components/AffiliateGuideModal';
@@ -234,6 +235,14 @@ export default function App() {
 
   // Handle route matching
   const renderContent = () => {
+    if (currentPath === '/gioi-thieu-phuong-phap-danh-gia') {
+      return <AboutReviewPage />;
+    }
+
+    if (currentPath === '/quyen-rieng-tu') {
+      return <PrivacyPage />;
+    }
+
     // 1. Route: /san-pham/:productSlug
     if (currentPath.startsWith('/san-pham/')) {
       const productSlug = currentPath.replace('/san-pham/', '').trim();

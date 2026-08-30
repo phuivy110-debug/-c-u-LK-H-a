@@ -4,6 +4,7 @@ import remarkGfm from 'remark-gfm';
 import { GUIDE_ARTICLES, GuideArticle } from '../data/guides';
 import { Home, ChevronRight, Clock, User, Calendar, BookOpen, ArrowLeft, Tag } from 'lucide-react';
 import { Product } from '../types';
+import { sanitizeGuideMarkdown } from '../utils/guideContent';
 
 interface GuideDetailPageProps {
   guideSlug: string;
@@ -19,6 +20,10 @@ export const GuideDetailPage: React.FC<GuideDetailPageProps> = ({
   onOpenDetail,
 }) => {
   const article = GUIDE_ARTICLES.find((a) => a.slug === guideSlug) || GUIDE_ARTICLES[0];
+  const articleContent = React.useMemo(
+    () => sanitizeGuideMarkdown(article.contentMarkdown),
+    [article.contentMarkdown],
+  );
 
   React.useEffect(() => {
     if (article) {
@@ -106,10 +111,18 @@ export const GuideDetailPage: React.FC<GuideDetailPageProps> = ({
         </p>
 
         <div className="flex items-center gap-4 text-xs font-semibold text-slate-500 pt-2 flex-wrap border-t border-slate-100 mt-3">
-          <span className="flex items-center gap-1.5 text-slate-700 font-bold">
+          <a
+            href="/gioi-thieu-phuong-phap-danh-gia"
+            onClick={(event) => {
+              event.preventDefault();
+              onNavigate('/gioi-thieu-phuong-phap-danh-gia');
+            }}
+            className="flex items-center gap-1.5 font-bold text-slate-700 transition-colors hover:text-[#EE4D2D]"
+            rel="author"
+          >
             <User className="w-4 h-4 text-[#EE4D2D]" />
             {article.author}
-          </span>
+          </a>
           <span className="flex items-center gap-1">
             <Calendar className="w-4 h-4 text-slate-400" />
             {article.date}
@@ -228,7 +241,7 @@ export const GuideDetailPage: React.FC<GuideDetailPageProps> = ({
             },
           }}
         >
-          {article.contentMarkdown}
+          {articleContent}
         </ReactMarkdown>
       </div>
 

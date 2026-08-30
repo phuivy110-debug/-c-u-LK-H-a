@@ -570,4 +570,7 @@ export const GUIDE_ARTICLES: GuideArticle[] = [
   ...PRODUCT_GUIDES_BATCH_1,
   ...PRODUCT_GUIDES_BATCH_2,
   ...PRODUCT_GUIDES_BATCH_3
-];
+].map((article) => ({
+  ...article,
+  author: 'LK Hòa',
+}));

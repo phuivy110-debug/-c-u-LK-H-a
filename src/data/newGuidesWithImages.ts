@@ -11,7 +11,7 @@ export const NEW_GUIDES_WITH_IMAGES: GuideArticle[] = [
     category: 'Cẩm Nang',
     categorySlug: 'cam-nang',
     summary: 'Hướng dẫn pha mồi cám chép LK Hòa (cám đỏ lên men + cám đen Series 2): tỷ lệ pha nước 1:0.4 – 1:1, cách làm mồi xả, mồi vê, mồi kéo và mẹo giữ ổ câu hiệu quả.',
-    author: 'Đồ Câu LK Hòa',
+    author: 'LK Hòa',
     date: '2026-08-16',
     readTime: '4 phút đọc',
     relatedCategorySlug: 'moi-cau',
@@ -82,7 +82,7 @@ Trả lời: Theo nhà sản xuất, cám đỏ hiệu quả quanh năm, đặc 
 
 ---
 
-*Nguồn: Hướng dẫn sử dụng sản phẩm Cám chép đỏ LK và Cám chép đen LK Series 2 trên docaulkhoa.com (shop đồ câu LK Hòa). Tỷ lệ pha là hướng dẫn của nhà bán, hiệu quả thực tế có thể khác theo điều kiện hồ câu.*`
+*Nguồn dữ liệu: hình ảnh và hướng dẫn sản phẩm trong kho nội dung LK Hòa tại docaulkhoa.vn. Tỷ lệ pha là thông tin hướng dẫn, hiệu quả thực tế có thể khác theo điều kiện hồ câu.*`
   },
 
   // 2. ky-thuat-cau-ca-loc-bang-moi-mem-nff
@@ -95,7 +95,7 @@ Trả lời: Theo nhà sản xuất, cám đỏ hiệu quả quanh năm, đặc 
     category: 'Cẩm Nang',
     categorySlug: 'cam-nang',
     summary: 'Hướng dẫn câu cá lóc bằng mồi mềm NFF LK Hòa: cách lắp lưỡi AR-15 giấu lưỡi chống vướng, kỹ thuật thu dây, chọn điểm câu ao bèo đầm sen và mẹo giữ mồi bền.',
-    author: 'Đồ Câu LK Hòa',
+    author: 'LK Hòa',
     date: '2026-08-16',
     readTime: '4 phút đọc',
     relatedCategorySlug: 'moi-cau',
@@ -161,7 +161,7 @@ Trả lời: Để mồi lướt qua bèo cỏ không bị mắc. Khi cá táp, 
 
 ---
 
-*Nguồn: Hướng dẫn sử dụng Mồi mềm NFF LK Hòa (docaulkhoa.com) kết hợp kinh nghiệm câu lure cá lóc từ video thực tế của LK Hòa.*`
+*Nguồn dữ liệu: hướng dẫn sản phẩm trong danh mục LK Hòa kết hợp nội dung video câu lure cá lóc của LK Hòa.*`
   },
 
   // 3. cach-cau-ca-tram-den-bang-hat-xa-lk
@@ -174,7 +174,7 @@ Trả lời: Để mồi lướt qua bèo cỏ không bị mắc. Khi cá táp, 
     category: 'Cẩm Nang',
     categorySlug: 'cam-nang',
     summary: 'Hướng dẫn câu cá trắm đen, trắm cỏ bằng hạt xả LK Hòa: kỹ thuật xả ổ trực tiếp, kết hợp móc ốc câu đài, phối mồi mộc khi câu lục và mẹo giữ ổ lâu.',
-    author: 'Đồ Câu LK Hòa',
+    author: 'LK Hòa',
     date: '2026-08-16',
     readTime: '4 phút đọc',
     relatedCategorySlug: 'moi-cau',
@@ -241,7 +241,7 @@ Trả lời: Hạt được ép công nghệ cao, lâu tan và bám đáy — ph
 
 ---
 
-*Nguồn: Hướng dẫn sử dụng Hạt xả trắm đen LK Hòa (docaulkhoa.com).*`
+*Nguồn dữ liệu: hướng dẫn sản phẩm Hạt xả trắm đen trong danh mục LK Hòa tại docaulkhoa.vn.*`
   },
 
   // 4. cach-pha-moi-ro-phi-lk
@@ -254,7 +254,7 @@ Trả lời: Hạt được ép công nghệ cao, lâu tan và bám đáy — ph
     category: 'Cẩm Nang',
     categorySlug: 'cam-nang',
     summary: 'Hướng dẫn pha mồi rô phi LK Hòa: tỷ lệ mồi nước 1:1, ngấm 5 phút, thêm tơ nhện tăng độ kết dính cho hồ dịch vụ, mẹo dùng mùa lạnh và chọn kiểu câu.',
-    author: 'Đồ Câu LK Hòa',
+    author: 'LK Hòa',
     date: '2026-08-16',
     readTime: '3 phút đọc',
     relatedCategorySlug: 'moi-cau',
@@ -316,7 +316,7 @@ Trả lời: Thêm tơ nhện để tăng độ kết dính, mồi bám lưỡi 
 
 ---
 
-*Nguồn: Hướng dẫn sử dụng Mồi Rô Phi LK Hòa (docaulkhoa.com).*`
+*Nguồn dữ liệu: hướng dẫn sản phẩm Mồi Rô Phi trong danh mục LK Hòa tại docaulkhoa.vn.*`
   },
 
   // 5. cach-chon-moi-lure-chuot-lk
@@ -329,7 +329,7 @@ Trả lời: Thêm tơ nhện để tăng độ kết dính, mồi bám lưỡi 
     category: 'Cẩm Nang',
     categorySlug: 'cam-nang',
     summary: 'Hướng dẫn chọn mồi lure chuột LK Hòa: size S/M/L, action nổi 5-10g hay lửng 12g, lưỡi BKK chống rỉ, kỹ thuật thu dây 2 thìa tạo âm thanh và mẹo câu bèo rậm.',
-    author: 'Đồ Câu LK Hòa',
+    author: 'LK Hòa',
     date: '2026-08-16',
     readTime: '4 phút đọc',
     relatedCategorySlug: 'moi-cau',
@@ -391,7 +391,7 @@ Trả lời: Cá lóc hoạt động tầng mặt → chọn action nổi (S/M);
 
 ---
 
-*Nguồn: Hướng dẫn sử dụng Mồi câu lure chuột LK Hòa (docaulkhoa.com) kết hợp kinh nghiệm câu lure cá lóc từ video LK Hòa.*`
+*Nguồn dữ liệu: hướng dẫn sản phẩm Mồi lure chuột trong danh mục LK Hòa kết hợp nội dung video câu lure cá lóc của LK Hòa.*`
   },
 
   // 6. cam-nang-cau-ca-suoi-can-ul
@@ -404,7 +404,7 @@ Trả lời: Cá lóc hoạt động tầng mặt → chọn action nổi (S/M);
     category: 'Cẩm Nang',
     categorySlug: 'cam-nang',
     summary: 'Cẩm nang câu cá suối với cần UL LK Hòa: vì sao chọn cần siêu nhẹ, mồi phù hợp (spinner, minnow, mồi thìa), chọn điểm câu gần vực và kỹ thuật câu nước chảy.',
-    author: 'Đồ Câu LK Hòa',
+    author: 'LK Hòa',
     date: '2026-08-16',
     readTime: '5 phút đọc',
     relatedCategorySlug: 'can-cau',

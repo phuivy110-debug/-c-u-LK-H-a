@@ -11,7 +11,7 @@ export const PRODUCT_GUIDES_BATCH_3: GuideArticle[] = [
     category: 'Mồi Câu',
     categorySlug: 'moi-cau',
     summary: 'Mồi lure cá sắt LK Hòa dòng mồi kim loại, mua 5 tặng 1. Review, giá và link mua.',
-    author: 'Đồ Câu LK Hòa',
+    author: 'LK Hòa',
     date: '2026-08-15',
     readTime: '3 phút đọc',
     relatedCategorySlug: 'moi-cau',
@@ -92,7 +92,7 @@ Trả lời: Chính sách đổi trả, bảo hành do shop quyết định. Vui
     category: 'Mồi Câu',
     categorySlug: 'moi-cau',
     summary: 'Mồi cám chép LK Hòa các phiên bản: cám chép 250g trộn sẵn, series 2, cám chép rẻ. Review, giá và link mua.',
-    author: 'Đồ Câu LK Hòa',
+    author: 'LK Hòa',
     date: '2026-08-15',
     readTime: '3 phút đọc',
     relatedCategorySlug: 'moi-cau',
@@ -116,7 +116,7 @@ Dữ liệu dưới đây lấy từ bảng sản phẩm affiliate LK Hòa (cậ
 | 2 | [LK HÒA] CÁM CHÉP LK SERIES 2, MỒI CÂU CHÉP THẾ HỆ MỚI | 250.000đ | [Xem & Mua](https://s.shopee.vn/3LPvBKG8n6) |
 | 3 | [LK HÒA] MỒI CÁM CHÉP RẺ LK, MỒI CHUYÊN CHÉP RẺ LK | 105.000đ | [Xem & Mua](https://s.shopee.vn/qiaCjPert) |
 | 4 | Mồi Câu Cám Chép LK Hoà 250g Chính Hãng Trộn Sẵn Câu Cá Chép- Mồi Câu Cá Chép Siêu Nhạy | 40.000đ | [Xem & Mua](https://s.shopee.vn/6fgN9S3S2b) |
-| 5 | Mồi Câu Cám Chép LK Hoà 250g Chính Hãng Trộn Sẵn Câu Cá Chép- Mồi Câu Cá Chép Siêu Nhạy nakgaczvkog abxbjaxx | 40.000đ | [Xem & Mua](https://s.shopee.vn/2gAEO6Ig9x) |
+| 5 | Mồi Câu Cám Chép LK Hoà 250g Chính Hãng Trộn Sẵn Câu Cá Chép - Mồi Câu Cá Chép Siêu Nhạy | 40.000đ | [Xem & Mua](https://s.shopee.vn/2gAEO6Ig9x) |
 | 6 | Mồi Câu Cám Chép LK Hoà 250g Chính Hãng Trộn Sẵn Câu Cá Chép | 44.000đ | [Xem & Mua](https://s.shopee.vn/3LPvBKG8o9) |
 
 ## Đặc điểm nổi bật
@@ -178,7 +178,7 @@ Trả lời: Chính sách đổi trả, bảo hành do shop quyết định. Vui
     category: 'Mồi Câu',
     categorySlug: 'moi-cau',
     summary: 'Mồi câu đài LK Hòa chuyên dùng câu rô phi, chép, trắm cỏ. Review, cách dùng, giá và link mua.',
-    author: 'Đồ Câu LK Hòa',
+    author: 'LK Hòa',
     date: '2026-08-15',
     readTime: '3 phút đọc',
     relatedCategorySlug: 'moi-cau',
@@ -198,7 +198,7 @@ Dữ liệu dưới đây lấy từ bảng sản phẩm affiliate LK Hòa (cậ
 
 | # | Tên sản phẩm | Giá tham khảo | Link mua |
 |---|---|---|---|
-| 1 | [LK HÒA] MỒI CÂU ĐÀI LK, MỒI CHUYÊN DÙNG CHO CÂU RÔ PHI, CHÉP, TRẮM CỎ | 42.000đ | [Xem & Mua](https://s.shopee.vn/5VUPlJ7tOD) |
+| 1 | [LK HÒA] MỒI CÂU ĐÀI LK, MỒI CHUYÊN DÙNG CHO CÂU RÔ PHI, CHÉP, TRẮM CỎ | 42.000đ | [Xem & Mua](https://s.shopee.vn/2LXsTn5x8T) |
 
 ## Đặc điểm nổi bật
 
@@ -259,7 +259,7 @@ Trả lời: Chính sách đổi trả, bảo hành do shop quyết định. Vui
     category: 'Mồi Câu',
     categorySlug: 'moi-cau',
     summary: 'Mồi câu rùa LK Hòa có size S và size L, mẫu mới. Review, giá và link mua.',
-    author: 'Đồ Câu LK Hòa',
+    author: 'LK Hòa',
     date: '2026-08-15',
     readTime: '3 phút đọc',
     relatedCategorySlug: 'moi-cau',
@@ -341,7 +341,7 @@ Trả lời: Chính sách đổi trả, bảo hành do shop quyết định. Vui
     category: 'Mồi Câu',
     categorySlug: 'moi-cau',
     summary: 'Mồi lure LK Hòa 10g size to, 5 màu: xám, xanh, nâu, vàng nghệ, đồng. Review, giá và link mua.',
-    author: 'Đồ Câu LK Hòa',
+    author: 'LK Hòa',
     date: '2026-08-15',
     readTime: '3 phút đọc',
     relatedCategorySlug: 'moi-cau',
@@ -422,7 +422,7 @@ Trả lời: Chính sách đổi trả, bảo hành do shop quyết định. Vui
     category: 'Mồi Câu',
     categorySlug: 'moi-cau',
     summary: 'Mồi câu chuyên lure bọ LK Hòa: mồi giả dạng bọ nước, kích thích cá săn mồi. Review, giá và link mua.',
-    author: 'Đồ Câu LK Hòa',
+    author: 'LK Hòa',
     date: '2026-08-15',
     readTime: '3 phút đọc',
     relatedCategorySlug: 'moi-cau',
@@ -503,7 +503,7 @@ Trả lời: Chính sách đổi trả, bảo hành do shop quyết định. Vui
     category: 'Mồi Câu',
     categorySlug: 'moi-cau',
     summary: 'Mồi lure chuột LK Hòa đầy đủ phiên bản: chuột action nổi/lửng 7g 8g 10g 12g, chuột hơi, chuột tiểu 5g, chuột trơn. Review, giá và link mua.',
-    author: 'Đồ Câu LK Hòa',
+    author: 'LK Hòa',
     date: '2026-08-15',
     readTime: '4 phút đọc',
     relatedCategorySlug: 'moi-cau',
@@ -532,7 +532,7 @@ Dữ liệu dưới đây lấy từ bảng sản phẩm affiliate LK Hòa (cậ
 | 7 | (HOT) Chuột Lk Hoà phiên bản 2 nặng 8g action nổi | 100.000đ | [Xem & Mua](https://s.shopee.vn/9fJyixs1wx) |
 | 8 | Mồi Câu Lure Chuột LK Hòa Series 2 Action Nổi 10G | 95.000đ | [Xem & Mua](https://s.shopee.vn/AAGFJsq7w4) |
 | 9 | Chuột LK Hoà mồi câu chuộtr trơn lk , chuột trơn phiên bản mới nhất chuyên câu lure | 85.000đ | [Xem & Mua](https://s.shopee.vn/AUt5iUorGA) |
-| 10 | Mồi Câu Lure Chuột LK Hoà bản nổi 7g mini, 8g mập và bản lửng 12g nao656ljkhd456 | 88.000đ | [Xem & Mua](https://s.shopee.vn/9pdOvGrOby) |
+| 10 | Mồi Câu Lure Chuột LK Hoà bản nổi 7g mini, 8g mập và bản lửng 12g | 88.000đ | [Xem & Mua](https://s.shopee.vn/9pdOvGrOby) |
 | 11 | Chuột Tiểu LK hòa nặng 5g dài 3cm action: nổi | 90.000đ | [Xem & Mua](https://s.shopee.vn/5q7G9v6cjK) |
 | 12 | Chuột hơi LK HOÀ chuyên câu lure cao su cao cấp nặng 7g- | 100.000đ | [Xem & Mua](https://s.shopee.vn/7AcdkN1Y1i) |
 | 13 | Chuột hơi LK HOÀ chuyên câu lure cao su cao cấp nặng 7g, 8g- | 100.000đ | [Xem & Mua](https://s.shopee.vn/3B6Uz1Gm94) |
@@ -597,7 +597,7 @@ Trả lời: Chính sách đổi trả, bảo hành do shop quyết định. Vui
     category: 'Mồi Câu',
     categorySlug: 'moi-cau',
     summary: 'Mồi lure nhái hơi LK Hòa: phiên bản mới 2 thìa xoay, trọng lượng 7g 8g 12g, 4 màu. Review, giá và link mua.',
-    author: 'Đồ Câu LK Hòa',
+    author: 'LK Hòa',
     date: '2026-08-15',
     readTime: '3 phút đọc',
     relatedCategorySlug: 'moi-cau',
@@ -682,7 +682,7 @@ Trả lời: Chính sách đổi trả, bảo hành do shop quyết định. Vui
     category: 'Mồi Câu',
     categorySlug: 'moi-cau',
     summary: 'Mồi câu rô phi LK Hòa với các vị tanh gan, dứa, bột tôm nam cực. Review, giá và link mua.',
-    author: 'Đồ Câu LK Hòa',
+    author: 'LK Hòa',
     date: '2026-08-15',
     readTime: '3 phút đọc',
     relatedCategorySlug: 'moi-cau',
@@ -702,7 +702,7 @@ Dữ liệu dưới đây lấy từ bảng sản phẩm affiliate LK Hòa (cậ
 
 | # | Tên sản phẩm | Giá tham khảo | Link mua |
 |---|---|---|---|
-| 1 | [LK HÒA] MỒI CÂU RÔ PHI LK HÒA, MỒI CÂU ĐÀI CHUYÊN RÔ PHI LK | 42.000đ | [Xem & Mua](https://s.shopee.vn/4qEiy5AQkX) |
+| 1 | [LK HÒA] MỒI CÂU RÔ PHI LK HÒA, MỒI CÂU ĐÀI CHUYÊN RÔ PHI LK | 42.000đ | [Xem & Mua](https://s.shopee.vn/3g3G4F0sR7) |
 | 2 | Mồi câu cá Rô Phi LK Hoà vị tanh gan,gan,dứa, bột tôm nam cực | 58.000đ | [Xem & Mua](https://s.shopee.vn/8pkrjQvCdg) |
 
 ## Đặc điểm nổi bật
@@ -764,7 +764,7 @@ Trả lời: Chính sách đổi trả, bảo hành do shop quyết định. Vui
     category: 'Mồi Câu',
     categorySlug: 'moi-cau',
     summary: 'Mồi lure Snake mini LK Hòa 3cm nặng 6g: mồi giả dạng rắn nhỏ, hiệu quả câu cá lóc. Review, giá và link mua.',
-    author: 'Đồ Câu LK Hòa',
+    author: 'LK Hòa',
     date: '2026-08-15',
     readTime: '3 phút đọc',
     relatedCategorySlug: 'moi-cau',
@@ -784,7 +784,7 @@ Dữ liệu dưới đây lấy từ bảng sản phẩm affiliate LK Hòa (cậ
 
 | # | Tên sản phẩm | Giá tham khảo | Link mua |
 |---|---|---|---|
-| 1 | mồi câu Lure SNAKE mini LK Hoà 3cm nặng 6Gr juagcvtt | 120.000đ | [Xem & Mua](https://s.shopee.vn/8V81KowTJa) |
+| 1 | Mồi câu Lure SNAKE mini LK Hoà 3cm nặng 6g | 120.000đ | [Xem & Mua](https://s.shopee.vn/8V81KowTJa) |
 
 ## Đặc điểm nổi bật
 
@@ -845,7 +845,7 @@ Trả lời: Chính sách đổi trả, bảo hành do shop quyết định. Vui
     category: 'Mồi Câu',
     categorySlug: 'moi-cau',
     summary: 'Nhái hơi LK Hòa gắn lưỡi BKK chính hãng, có tem dự thưởng, đủ màu 7g 8g 10g. Review, giá và link mua.',
-    author: 'Đồ Câu LK Hòa',
+    author: 'LK Hòa',
     date: '2026-08-15',
     readTime: '3 phút đọc',
     relatedCategorySlug: 'moi-cau',
@@ -923,7 +923,7 @@ Trả lời: Chính sách đổi trả, bảo hành do shop quyết định. Vui
     category: 'Phao & Lưỡi',
     categorySlug: 'phao-luoi',
     summary: 'Phao câu lục độc quyền LK Hòa, vẩy sơn và cuốn chỉ thủ công. Review, giá và link mua.',
-    author: 'Đồ Câu LK Hòa',
+    author: 'LK Hòa',
     date: '2026-08-15',
     readTime: '3 phút đọc',
     relatedCategorySlug: 'phao-luoi',
@@ -1001,7 +1001,7 @@ Trả lời: Chính sách đổi trả, bảo hành do shop quyết định. Vui
     category: 'Phụ Kiện',
     categorySlug: 'phu-kien',
     summary: 'Rọng đựng cá LK Hòa dòng săn hàng: chắc chắn, giữ cá tươi lâu. Review, giá và link mua.',
-    author: 'Đồ Câu LK Hòa',
+    author: 'LK Hòa',
     date: '2026-08-15',
     readTime: '3 phút đọc',
     relatedCategorySlug: 'phu-kien',
@@ -1079,7 +1079,7 @@ Trả lời: Chính sách đổi trả, bảo hành do shop quyết định. Vui
     category: 'Dây Câu',
     categorySlug: 'day-cau',
     summary: 'Thẻo câu đài buộc sẵn LK Hòa chuyên rô chép, dùng ngay không cần tự buộc. Review, giá và link mua.',
-    author: 'Đồ Câu LK Hòa',
+    author: 'LK Hòa',
     date: '2026-08-15',
     readTime: '3 phút đọc',
     relatedCategorySlug: 'day-cau',
@@ -1157,7 +1157,7 @@ Trả lời: Chính sách đổi trả, bảo hành do shop quyết định. Vui
     category: 'Mồi Câu',
     categorySlug: 'moi-cau',
     summary: 'Thính câu cá LK Hòa: dùng đánh ổ, dụ cá tập trung trước khi câu. Review, giá và link mua.',
-    author: 'Đồ Câu LK Hòa',
+    author: 'LK Hòa',
     date: '2026-08-15',
     readTime: '3 phút đọc',
     relatedCategorySlug: 'moi-cau',
@@ -1238,7 +1238,7 @@ Trả lời: Chính sách đổi trả, bảo hành do shop quyết định. Vui
     category: 'Dây Câu',
     categorySlug: 'day-cau',
     summary: 'Trục câu đài LK Hòa chuyên rô chép: phụ kiện câu đài hỗ trợ câu nhạy. Review, giá và link mua.',
-    author: 'Đồ Câu LK Hòa',
+    author: 'LK Hòa',
     date: '2026-08-15',
     readTime: '3 phút đọc',
     relatedCategorySlug: 'day-cau',
@@ -1316,7 +1316,7 @@ Trả lời: Chính sách đổi trả, bảo hành do shop quyết định. Vui
     category: 'Phụ Kiện',
     categorySlug: 'phu-kien',
     summary: 'Túi đựng cá LK Hòa: dùng đựng cá hoặc phụ kiện đi câu. Review, giá và link mua.',
-    author: 'Đồ Câu LK Hòa',
+    author: 'LK Hòa',
     date: '2026-08-15',
     readTime: '3 phút đọc',
     relatedCategorySlug: 'phu-kien',

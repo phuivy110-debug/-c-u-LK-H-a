@@ -125,6 +125,20 @@ export const Footer: React.FC<FooterProps> = () => {
             <p className="text-[11px] mt-0.5">
               Mọi liên kết mua hàng được chuyển hướng trực tiếp tới trang sản phẩm / gian hàng chính thức trên Shopee & TikTok Shop.
             </p>
+            <nav aria-label="Thông tin website" className="mt-3 flex flex-wrap justify-center gap-x-4 gap-y-2 md:justify-start">
+              <a
+                href="/gioi-thieu-phuong-phap-danh-gia"
+                className="font-bold text-slate-300 transition-colors hover:text-white"
+              >
+                Giới thiệu & phương pháp đánh giá
+              </a>
+              <a
+                href="/quyen-rieng-tu"
+                className="font-bold text-slate-300 transition-colors hover:text-white"
+              >
+                Quyền riêng tư
+              </a>
+            </nav>
           </div>
 
           <button

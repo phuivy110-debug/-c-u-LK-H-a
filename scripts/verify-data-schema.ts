@@ -123,7 +123,7 @@ async function runTests() {
     saveProductsCache(products, DEFAULT_SHEET_URL);
     const cache = loadProductsCache(DEFAULT_SHEET_URL);
     assert(cache !== null, 'Product cache loaded successfully');
-    assert(cache?.schemaVersion === 3, 'Cache schemaVersion is 3');
+    assert(cache?.schemaVersion === 5, 'Cache schemaVersion is 5');
     assert(cache?.source === 'google-sheet', 'Cache source is "google-sheet"');
     assert(
       cache?.spreadsheetId === '1KO_7U5VJJNKBphq_NNM4MnwbsfDq1GEg6mRGxz4y3B8',

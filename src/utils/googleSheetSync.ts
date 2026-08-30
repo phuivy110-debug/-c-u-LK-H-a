@@ -13,6 +13,25 @@ export const PUBLISHED_FALLBACK_CSV_URL =
 export const PRODUCT_CACHE_KEY = 'lkhoa_products_google_sheet_v5';
 export const SHARED_TIKTOK_URL = 'https://vt.tiktok.com/ZS9kJHJuDnoUp-AeYDB/';
 
+const VERIFIED_SHOPEE_LINK_CORRECTIONS: Array<{ pattern: RegExp; url: string }> = [
+  {
+    pattern: /MÁY CÂU CHUYÊN LURE DAIWA MG/i,
+    url: 'https://s.shopee.vn/5LBU3IuX2k',
+  },
+  {
+    pattern: /^\[LK HÒA\].*MỒI CÂU ĐÀI LK.*RÔ PHI,?\s*CHÉP,?\s*TRẮM CỎ/i,
+    url: 'https://s.shopee.vn/2LXsTn5x8T',
+  },
+  {
+    pattern: /MỒI CÂU RÔ PHI LK HÒA/i,
+    url: 'https://s.shopee.vn/3g3G4F0sR7',
+  },
+];
+
+export function getVerifiedShopeeCorrection(productName: string): string | undefined {
+  return VERIFIED_SHOPEE_LINK_CORRECTIONS.find(({ pattern }) => pattern.test(productName))?.url;
+}
+
 export const SHOPEE_HOSTNAMES = [
   's.shopee.vn',
   'shopee.vn',
@@ -390,7 +409,8 @@ export async function fetchProductsFromGoogleSheet(sheetUrl: string): Promise<Pr
               rawTikTok = '';
             }
 
-            const validShopee = isValidShopeeUrl(rawShopee) ? rawShopee.trim() : undefined;
+            const verifiedShopeeCorrection = getVerifiedShopeeCorrection(name);
+            const validShopee = verifiedShopeeCorrection || (isValidShopeeUrl(rawShopee) ? rawShopee.trim() : undefined);
             let validTikTok = validateAffiliateUrl(rawTikTok, 'tiktok');
 
             let tiktokLinkStatus: 'verified-product' | 'shared-unverified' | 'none' = 'none';

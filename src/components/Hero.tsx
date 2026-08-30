@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldCheck, ArrowRight, Search, Check, ExternalLink, ShoppingBag } from 'lucide-react';
+import { ShieldCheck, ArrowRight, Search, ExternalLink, ShoppingBag } from 'lucide-react';
 import { SHARED_TIKTOK_URL } from '../utils/googleSheetSync';
 
 const TikTokIcon: React.FC<{ className?: string }> = ({ className = 'w-5 h-5' }) => (
@@ -26,8 +26,8 @@ export const Hero: React.FC<HeroProps> = ({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
         
         {/* Main Banner */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <div className="lg:col-span-8 bg-[#EE4D2D] p-6 sm:p-10 rounded-[2rem] text-white shadow-xl shadow-orange-500/15 relative overflow-hidden flex flex-col justify-between min-h-[360px]">
+        <div className="grid grid-cols-1 gap-6">
+          <div className="bg-[#EE4D2D] p-6 sm:p-10 rounded-[2rem] text-white shadow-xl shadow-orange-500/15 relative overflow-hidden flex flex-col justify-between min-h-[360px]">
             <div className="absolute -right-12 -bottom-12 w-64 h-64 bg-white/10 rounded-full blur-3xl pointer-events-none" />
             <div className="absolute top-0 right-0 w-80 h-80 bg-amber-400/15 rounded-full blur-2xl pointer-events-none" />
 
@@ -78,56 +78,6 @@ export const Hero: React.FC<HeroProps> = ({
             </div>
           </div>
 
-          {/* Side Promises */}
-          <div className="lg:col-span-4 bg-white p-6 sm:p-8 rounded-[2rem] shadow-xs border border-slate-200/80 flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-extrabold text-lg text-slate-900 tracking-tight">
-                  Thông Tin Sản Phẩm LK Hòa
-                </h3>
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-              </div>
-
-              <div className="space-y-3.5 mb-6">
-                <div className="flex items-start gap-3 p-3 rounded-2xl bg-emerald-50/60 border border-emerald-100">
-                  <div className="w-7 h-7 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0 text-xs font-bold mt-0.5">
-                    <Check className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <div className="text-xs font-extrabold text-slate-900">Liên Kết Trực Tiếp</div>
-                    <div className="text-[11px] text-slate-500">Dẫn trực tiếp tới gian hàng chính hãng</div>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3 p-3 rounded-2xl bg-blue-50/60 border border-blue-100">
-                  <div className="w-7 h-7 rounded-full bg-blue-500 text-white flex items-center justify-center shrink-0 text-xs font-bold mt-0.5">
-                    <Check className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <div className="text-xs font-extrabold text-slate-900">An Toàn & Bảo Mật</div>
-                    <div className="text-[11px] text-slate-500">Mở trực tiếp ứng dụng Shopee / TikTok Shop</div>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3 p-3 rounded-2xl bg-orange-50/60 border border-orange-100">
-                  <div className="w-7 h-7 rounded-full bg-[#EE4D2D] text-white flex items-center justify-center shrink-0 text-xs font-bold mt-0.5">
-                    <Check className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <div className="text-xs font-extrabold text-slate-900">Thông Số Thực Tế</div>
-                    <div className="text-[11px] text-slate-500">Nội dung sản phẩm được đồng bộ chính xác</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500 font-semibold">
-              <span className="flex items-center gap-1.5 text-slate-700">
-                <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                Đồ câu giải trí LK Hòa
-              </span>
-            </div>
-          </div>
         </div>
 
         {/* Compact E-Commerce Stores Navigation Card */}

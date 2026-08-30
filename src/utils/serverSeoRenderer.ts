@@ -4,6 +4,7 @@ import { Product } from '../types';
 import { CATEGORIES } from '../data/products';
 import { GUIDE_ARTICLES } from '../data/guides';
 import { FALLBACK_PRODUCTS } from '../data/fallbackProducts';
+import { sanitizeGuideMarkdown } from './guideContent';
 
 export const DOMAIN = 'https://docaulkhoa.vn';
 
@@ -152,6 +153,9 @@ export function generateSitemapXml(products: Product[]): string {
 
   // 4. Guides & Fishing Tips Hub (/cam-nang)
   xml += `  <url>\n    <loc>${DOMAIN}/cam-nang</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.8</priority>\n  </url>\n`;
+
+  xml += `  <url>\n    <loc>${DOMAIN}/gioi-thieu-phuong-phap-danh-gia</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.6</priority>\n  </url>\n`;
+  xml += `  <url>\n    <loc>${DOMAIN}/quyen-rieng-tu</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>yearly</changefreq>\n    <priority>0.3</priority>\n  </url>\n`;
 
   for (const guide of GUIDE_ARTICLES) {
     xml += `  <url>\n    <loc>${DOMAIN}/cam-nang/${guide.slug}</loc>\n    <lastmod>${guide.date || today}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.75</priority>\n  </url>\n`;
@@ -405,7 +409,62 @@ export function renderSeoPage(
     ];
   }
 
-  // ROUTE 4: Fishing Guides & Tips Hub (/cam-nang)
+  // ROUTE 4: About, author and editorial method
+  else if (reqPath === '/gioi-thieu-phuong-phap-danh-gia') {
+    title = 'Giới thiệu LK Hòa & phương pháp đánh giá | docaulkhoa.vn';
+    description = 'Tìm hiểu người chịu trách nhiệm nội dung, nguyên tắc kiểm chứng, phương pháp review sản phẩm và chính sách affiliate của docaulkhoa.vn.';
+    keywords = 'LK Hòa, giới thiệu LK Hòa, phương pháp đánh giá đồ câu, chính sách affiliate';
+    seoBodyHtml = `<main><article><h1>Giới thiệu LK Hòa và phương pháp đánh giá</h1><p><strong>Người viết và chịu trách nhiệm nội dung: LK Hòa.</strong></p><p>docaulkhoa.vn tập trung vào đồ câu, hướng dẫn chọn dụng cụ và bài so sánh. Tên miền chính thức của website này là docaulkhoa.vn.</p><h2>Phương pháp review</h2><p>Nội dung đối chiếu tên sản phẩm, biến thể, ảnh và liên kết trong danh mục. Thông số công bố được tách khỏi kết quả thử nghiệm thực tế; website chỉ gọi là đã thử khi có ảnh, video, điều kiện thử hoặc ghi chép đủ để kiểm tra lại.</p><h2>Minh bạch affiliate</h2><p>Website có thể nhận hoa hồng từ liên kết mua hàng nhưng mức hoa hồng không quyết định thứ tự khuyến nghị.</p><p><a href="${DOMAIN}/cam-nang">Đọc cẩm nang và bài so sánh</a> · <a href="${DOMAIN}/quyen-rieng-tu">Chính sách quyền riêng tư</a></p></article></main>`;
+    jsonLdData = [
+      {
+        '@context': 'https://schema.org',
+        '@type': 'AboutPage',
+        'name': 'Giới thiệu LK Hòa và phương pháp đánh giá',
+        'description': description,
+        'url': canonicalUrl,
+        'mainEntity': {
+          '@type': 'Person',
+          'name': 'LK Hòa',
+          'url': canonicalUrl,
+          'worksFor': {
+            '@type': 'Organization',
+            'name': 'Đồ Câu LK Hòa',
+            'url': DOMAIN
+          }
+        }
+      },
+      {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        'itemListElement': [
+          { '@type': 'ListItem', 'position': 1, 'name': 'Trang chủ', 'item': DOMAIN },
+          { '@type': 'ListItem', 'position': 2, 'name': 'Giới thiệu và phương pháp đánh giá', 'item': canonicalUrl }
+        ]
+      }
+    ];
+  }
+
+  // ROUTE 5: Privacy policy
+  else if (reqPath === '/quyen-rieng-tu') {
+    title = 'Chính sách quyền riêng tư | Đồ Câu LK Hòa';
+    description = 'Chính sách quyền riêng tư của docaulkhoa.vn về Google Analytics 4, cookie, liên kết ngoài và dữ liệu người dùng.';
+    keywords = 'chính sách quyền riêng tư docaulkhoa.vn, Google Analytics 4, cookie';
+    seoBodyHtml = `<main><article><h1>Chính sách quyền riêng tư</h1><p>docaulkhoa.vn sử dụng Google Analytics 4 để thống kê trang đã xem, nguồn truy cập, loại thiết bị và sự kiện bấm liên kết affiliate.</p><p>Website không yêu cầu hoặc lưu thông tin thẻ thanh toán. Việc mua hàng diễn ra trên Shopee hoặc TikTok theo chính sách riêng của các nền tảng đó.</p><h2>Cookie và liên kết ngoài</h2><p>Người dùng có thể chặn cookie trong trình duyệt. Khi rời website qua liên kết mua hàng, chính sách của nền tảng đích sẽ được áp dụng.</p><p>Liên hệ về dữ liệu: <a href="tel:0933040999">0933 040 999</a>.</p></article></main>`;
+    jsonLdData = {
+      '@context': 'https://schema.org',
+      '@type': 'WebPage',
+      'name': 'Chính sách quyền riêng tư',
+      'description': description,
+      'url': canonicalUrl,
+      'isPartOf': {
+        '@type': 'WebSite',
+        'name': 'Đồ Câu LK Hòa',
+        'url': DOMAIN
+      }
+    };
+  }
+
+  // ROUTE 6: Fishing Guides & Tips Hub (/cam-nang)
   else if (reqPath === '/cam-nang') {
     title = 'Cẩm Nang Câu Cá LK Hòa – Hướng Dẫn Chọn Cần, Pha Mồi & Kỹ Thuật Câu';
     description = 'Kho tàng kiến thức câu cá từ chuyên gia LK Hòa: cách chọn cần câu lure, cần đài 4H 5H 6H 8H, công thức pha mồi câu chép rô phi, kinh nghiệm săn hàng hồ tự nhiên.';
@@ -443,7 +502,8 @@ export function renderSeoPage(
       if (guide.keywords && guide.keywords.length > 0) {
         keywords = guide.keywords.join(', ') + ', đồ câu lk hòa, hướng dẫn câu cá';
       }
-      const readableExcerpt = guide.contentMarkdown
+      const cleanGuideMarkdown = sanitizeGuideMarkdown(guide.contentMarkdown);
+      const readableExcerpt = cleanGuideMarkdown
         .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
         .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
         .replace(/[#>*_`|~-]/g, ' ')
@@ -470,7 +530,8 @@ export function renderSeoPage(
           'description': guide.metaDescription || guide.summary,
           'author': {
             '@type': 'Person',
-            'name': guide.author || 'LK Hòa - Chuyên gia Đồ Câu'
+            'name': guide.author || 'LK Hòa',
+            'url': `${DOMAIN}/gioi-thieu-phuong-phap-danh-gia`
           },
           'publisher': {
             '@type': 'Organization',

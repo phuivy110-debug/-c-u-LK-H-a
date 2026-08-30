@@ -12,6 +12,8 @@ type ReviewInput = {
   criteria: Array<[string, string]>;
   recommendations: string[];
   cautions: string[];
+  contentMarkdown?: string;
+  readTime?: string;
 };
 
 const buildReview = (item: ReviewInput): GuideArticle => ({
@@ -23,11 +25,11 @@ const buildReview = (item: ReviewInput): GuideArticle => ({
   category: item.category,
   categorySlug: item.categorySlug,
   summary: item.description,
-  author: 'Ban biên tập Đồ Câu LK Hòa',
+  author: 'LK Hòa',
   date: '2026-08-29',
-  readTime: '7 phút đọc',
+  readTime: item.readTime || '7 phút đọc',
   relatedCategorySlug: item.categorySlug,
-  contentMarkdown: `# ${item.title}
+  contentMarkdown: item.contentMarkdown || `# ${item.title}
 
 > **Minh bạch đánh giá:** Bài viết phân tích dữ liệu danh mục LK Hòa, thông số công bố và tình huống sử dụng được ghi nhận trong nội dung thực tế của thương hiệu. Chúng tôi không tuyên bố đã kiểm thử độc lập những đặc tính chưa có số đo. Giá và ưu đãi có thể thay đổi tại Shopee/TikTok Shop.
 
@@ -75,6 +77,76 @@ export const AFFILIATE_REVIEW_GUIDES: GuideArticle[] = [
     criteria: [['Độ cứng', '5H < 6H < 8H; con số cao hơn không đồng nghĩa tốt hơn cho mọi người'], ['Cảm giác', '5H thường dễ cảm nhận cá hơn, 8H thiên về ghì và đưa cá nhanh'], ['Người mới', 'Nên bắt đầu với 5H hoặc bản tổng hợp có thông số rõ'], ['Điểm câu', 'Hồ dịch vụ và mật độ chướng ngại ảnh hưởng lựa chọn nhiều hơn tên phiên bản']],
     recommendations: ['Chọn 5H nếu cần một cây đa dụng và chưa xác định rõ hồ câu.', 'Chọn 6H khi thường câu cá vừa/lớn và cần kiểm soát nhanh.', 'Chọn 8H khi đã hiểu tải dây, thẻo và kỹ thuật ghì cá.'],
     cautions: ['Độ cứng H không phải chuẩn tuyệt đối giữa mọi dòng cần.', 'Không suy ra tải cá chỉ từ nhãn 5H/6H/8H.', 'Cần đối chiếu đúng chiều dài và phiên bản trên sàn.'],
+    readTime: '11 phút đọc',
+    contentMarkdown: `# So sánh cần câu đài LK Hòa 5H, 6H và 8H: chọn độ cứng nào?
+
+> **Phạm vi kiểm chứng:** Bảng sản phẩm LK Hòa được đối chiếu ngày 29/08/2026 hiện có các mẫu ghi rõ **5H**, chưa có SKU 6H hoặc 8H tách biệt. Vì vậy phần 6H/8H dưới đây giải thích cách chọn độ cứng, không giả định website đang bán một mẫu chưa có trong danh mục và không thay thế thông số của từng cây cần.
+
+## Kết luận nhanh
+
+- **5H:** điểm bắt đầu hợp lý khi cần một cây câu đài đa dụng, vẫn muốn cảm nhận cá và chưa cần tốc độ đưa cá quá cao.
+- **6H:** chỉ đáng cân nhắc khi điểm câu, cỡ cá và cách đánh thực sự đòi hỏi thân cần cứng hơn.
+- **8H:** là lựa chọn chuyên biệt; không nên mua chỉ vì nghĩ con số lớn hơn chắc chắn tốt hơn.
+
+Nếu chưa biết chọn gì, hãy bắt đầu từ **5H đúng chiều dài**, rồi ghép dây trục, thẻo và phao theo cỡ cá thực tế của hồ.
+
+## Đừng xem chữ H như một chuẩn đo tuyệt đối
+
+Chữ H mô tả xu hướng độ cứng trong cùng một hệ sản phẩm, nhưng không phải chuẩn đo thống nhất giữa mọi hãng hoặc mọi đời cần. Hai cây cùng ghi 5H vẫn có thể khác nhau ở độ nảy, phân bố lực, trọng lượng và cảm giác đầu cần. Bởi vậy, nhãn 5H/6H/8H chỉ là bước lọc đầu tiên.
+
+| Lựa chọn | Cảm giác sử dụng thường gặp | Tình huống nên cân nhắc | Trường hợp nên tránh |
+|---|---|---|---|
+| 5H | Cân bằng giữa độ nảy và khả năng kiểm soát | Người mới, câu rô–chép, hồ dịch vụ thông thường | Khi bắt buộc phải đưa cá rất nhanh khỏi chướng ngại |
+| 6H | Thân cứng hơn, phản hồi nhanh hơn | Người đã quen ghì cá, hồ có mật độ cá/cường độ câu cao | Khi ưu tiên cảm giác cá nhỏ hoặc dùng bộ dây quá nhẹ |
+| 8H | Thiên về tốc độ và lực kiểm soát | Tình huống chuyên biệt, người đã biết rõ bộ dây và kỹ thuật | Người mới, câu giải trí nhẹ, mua chỉ vì “H cao hơn” |
+
+## Bốn biến quan trọng hơn việc tăng từ 5H lên 8H
+
+### 1. Cỡ cá phổ biến, không phải con cá lớn nhất từng xuất hiện
+
+Chọn cần theo nhóm cá gặp thường xuyên. Nếu phần lớn buổi câu là cá vừa, một cây quá cứng có thể làm bộ câu mất cân bằng và khó đọc tín hiệu hơn.
+
+### 2. Chiều dài cần và khoảng cách điểm câu
+
+Cùng độ cứng nhưng chiều dài khác nhau sẽ cho đòn bẩy và cảm giác khác nhau. Chốt chiều dài thực sự dùng được trước, sau đó mới so độ cứng.
+
+### 3. Dây trục, thẻo và lưỡi
+
+Cần cứng không bù được một bộ dây ghép sai. Thẻo phải là điểm bảo vệ có chủ đích; không tăng đồng loạt mọi thông số chỉ để “chắc hơn”.
+
+### 4. Chướng ngại và quy định của hồ
+
+Hồ thoáng cho phép xử lý cá mềm hơn. Điểm có bèo, cọc hoặc bờ dốc có thể cần kiểm soát nhanh, nhưng vẫn phải tuân theo cỡ dây và giới hạn của cây cần.
+
+## Mẫu 5H đang có trong danh mục LK Hòa
+
+Giá dưới đây là ảnh chụp dữ liệu ngày 29/08/2026 và có thể thay đổi theo voucher.
+
+| Sản phẩm đã đối chiếu | Giá sale trong danh mục | Điều cần kiểm tra trên sàn |
+|---|---:|---|
+| [Cần câu đài 5H LK Tổng Hợp 2026](https://s.shopee.vn/5LB1Lgzjtf) | 1.050.000đ | Chiều dài, phụ kiện đi kèm, chính sách lóng |
+| [Cần LK Hòa phiên bản Tổng Hợp 5H](https://s.shopee.vn/3qMDYyviHy) | 990.000đ | Đúng biến thể, quà tặng, giá cuối sau voucher |
+
+Hai listing cùng ghi 5H nhưng không nên mặc định là một sản phẩm giống hệt nhau. Hãy đối chiếu ảnh, biến thể và mô tả ở trang thanh toán.
+
+## Quy trình chọn trong ba phút
+
+1. Ghi lại loại cá và cỡ cá thường gặp ở hồ.
+2. Chốt chiều dài cần theo khoảng cách đánh.
+3. Xác định bộ dây trục–thẻo đang dùng.
+4. Nếu vẫn chưa có lý do rõ để lên 6H/8H, giữ lựa chọn 5H.
+5. Nhắn shop xác nhận biến thể và bảo hành trước khi đặt.
+
+## Ai không nên chọn 8H?
+
+- Người mới chưa quen nhấc và dẫn cá.
+- Người chủ yếu câu cá nhỏ hoặc câu thư giãn.
+- Người đang dùng thẻo nhẹ nhưng chưa kiểm soát lực giật.
+- Người chỉ dựa vào quảng cáo tải tĩnh mà chưa xem cấu hình thực tế.
+
+## Minh bạch nội dung
+
+Bài viết do **LK Hòa** biên soạn từ dữ liệu danh mục hiện có và nguyên tắc ghép bộ câu. Bài không tuyên bố đã thử độc lập một mẫu 6H/8H chưa xuất hiện trong danh mục. Liên kết Shopee là liên kết affiliate; giá người mua không tăng khi sử dụng liên kết.`,
   }),
   buildReview({
     slug: 'so-sanh-can-lk-tong-hop-va-lk-ro-chep',
@@ -99,6 +171,81 @@ export const AFFILIATE_REVIEW_GUIDES: GuideArticle[] = [
     criteria: [['Loại máy', 'Máy đứng dễ làm quen hơn máy ngang'], ['Độ cứng', 'M/MH thường linh hoạt cho người mới'], ['Chiều dài', 'Phải phù hợp bờ hẹp, thuyền hoặc không gian quăng'], ['Tổng chi phí', 'Tính cả máy, dây PE, leader và mồi chứ không chỉ giá cần']],
     recommendations: ['Chọn combo máy đứng nếu chưa có thiết bị.', 'Chọn cần rời nếu đã có máy và hiểu cỡ dây.', 'Ưu tiên sản phẩm có biến thể, phụ kiện và chính sách rõ.'],
     cautions: ['Không dùng tải tĩnh làm tải cá thực tế.', 'Máy ngang cần thời gian học chống rối dây.', 'Kiểm tra chuẩn khoen và loại cán trước khi đặt.'],
+    readTime: '12 phút đọc',
+    contentMarkdown: `# Top cần lure LK Hòa cho người mới: chọn theo ngân sách và điểm câu
+
+> **Cách đánh giá:** Bài này so sánh các listing đang có trong danh mục LK Hòa ngày 29/08/2026. Ảnh bên dưới là ảnh sản phẩm trong danh mục, không được trình bày như ảnh kiểm thử độc lập. Những thông số chưa xuất hiện rõ trong tên/biến thể phải được xác nhận lại trên sàn.
+
+## Kết luận nhanh theo ngân sách
+
+- **Ngân sách thấp nhất:** Cần Lure Tiểu Học LK, giá danh mục 319.000đ.
+- **Muốn cần đứng một khúc:** so sánh Tiểu LK và STAR LK, kiểm tra lại chiều dài và độ cứng của đúng biến thể.
+- **Muốn hai ngọn để đổi tình huống:** Cần TWO LK là listing duy nhất trong nhóm ghi rõ hai ngọn.
+- **Chưa có máy:** cân nhắc combo CHEAP LK + Daiwa RS thay vì mua từng món mà chưa hiểu tương thích.
+
+Không có cây “tốt nhất cho mọi người”. Người mới nên chọn cây phù hợp điểm câu và loại mồi trước khi chọn theo tên phiên bản.
+
+## Bảng đối chiếu năm lựa chọn đang bán
+
+Giá là dữ liệu danh mục tại thời điểm cập nhật, có thể thay đổi sau voucher và phí vận chuyển.
+
+| Lựa chọn | Giá sale | Điều tên listing xác nhận | Phải hỏi thêm trước khi mua |
+|---|---:|---|---|
+| [Cần Lure Tiểu Học LK](https://s.shopee.vn/2qTgN58yOH) | 319.000đ | Phân khúc giá thấp, cần chuyên lure | Chiều dài, power, tải mồi, máy đứng/ngang |
+| [Cần Lure Đứng 1 Khúc Tiểu LK](https://s.shopee.vn/7psMKARxov) | 450.000đ | Máy đứng, một khúc | Chiều dài vận chuyển, độ cứng, tải mồi |
+| [Cần STAR LK 1 Khúc](https://s.shopee.vn/80BmWjcStk) | 459.000đ | Một khúc | Loại máy, power, khoen và tải mồi |
+| [Cần Lure CHEAP LK](https://s.shopee.vn/5Arb9PvItR) | 590.000đ | Dòng giá học sinh–sinh viên | Cấu hình từng biến thể và phụ kiện |
+| [Cần TWO LK 2 Ngọn](https://s.shopee.vn/6Ak8LVJsZR) | 620.000đ | Có hai ngọn | Power của từng ngọn, loại máy, tải mồi |
+
+![Cần Lure Tiểu Học LK trong danh mục](https://i.postimg.cc/pr7n3GMc/vn-11134207-81ztc-mqifhmyoyeww59.webp)
+
+*Ảnh listing Cần Lure Tiểu Học LK dùng để nhận diện sản phẩm; không phải ảnh test thực địa.*
+
+## Chọn theo điểm câu, không chọn theo quảng cáo tải lớn
+
+### Bờ hẹp, nhiều cây hoặc cần di chuyển nhiều
+
+Ưu tiên cây dễ xoay trở và dễ vận chuyển. Cần một khúc có lợi về cấu trúc nhưng bất tiện khi chở; hãy đo cốp xe hoặc cách mang cần trước khi chốt.
+
+### Bờ thoáng, cần ném xa
+
+Chiều dài cần, tải mồi, cỡ dây và cách quấn máy cùng quyết định khoảng ném. Không thể kết luận ném xa chỉ từ tên sản phẩm.
+
+### Bèo, cỏ và chướng ngại
+
+Bạn cần một bộ cân bằng giữa độ cứng cần, dây PE, leader và kiểu lưỡi. Tăng riêng độ cứng của cần không giải quyết được mọi tình huống chống vướng.
+
+### Câu suối hoặc cá nhỏ
+
+Ưu tiên cảm giác và tải mồi nhỏ. Dòng cần lure suối là một nhóm riêng; không nên dùng bảng xếp hạng cá lóc để chọn cần UL.
+
+## Máy đứng hay máy ngang cho buổi đầu?
+
+Máy đứng thường có đường học ngắn hơn vì ít yêu cầu xử lý spool khi quăng. Máy ngang cho khả năng kiểm soát tốt khi đã quen, nhưng người mới có thể mất nhiều thời gian xử lý rối dây. Nếu mục tiêu là ra hồ và tập action sớm, bắt đầu bằng máy đứng là lựa chọn ít rủi ro hơn.
+
+## Khi nào nên mua combo?
+
+Nếu chưa có máy và dây, listing [Cần CHEAP LK + máy Daiwa RS](https://s.shopee.vn/8V837aM9xd) có giá danh mục 1.290.000đ. Combo giảm nguy cơ mua sai chân máy hoặc size máy, nhưng phải đọc danh sách thành phần thay vì suy đoán từ ảnh bìa.
+
+Mua cần rời hợp hơn khi bạn đã có máy, biết cỡ dây và muốn kiểm soát từng món trong bộ.
+
+## Kiểm tra tại nhà ngay khi nhận cần
+
+1. Quay video mở kiện và đối chiếu đúng biến thể.
+2. Nhìn dọc thân cần để kiểm tra khoen có thẳng hàng hay không.
+3. Kiểm tra chân máy, tay cầm, khớp nối hoặc hai ngọn nếu có.
+4. Không thử quá tải bằng cách treo vật nặng ngoài hướng dẫn.
+5. Lắp máy và luồn dây, thử thao tác ở không gian an toàn trước khi ra hồ.
+
+## Lựa chọn của LK Hòa cho ba kiểu người mới
+
+- **Muốn bắt đầu rẻ và tự ghép bộ:** Tiểu Học LK, nhưng phải xác nhận power/tải mồi.
+- **Muốn cần một khúc, máy đứng:** Tiểu LK là listing mô tả rõ nhất về kiểu máy và kết cấu.
+- **Muốn linh hoạt hai ngọn:** TWO LK đáng xem, với điều kiện hai ngọn có thông số phù hợp loại mồi bạn dùng.
+
+## Minh bạch nội dung
+
+Bài do **LK Hòa** biên soạn từ danh mục sản phẩm và tiêu chí tương thích bộ lure. Bài không gán kết quả quăng xa, độ bền hoặc tải cá khi chưa có log test chuẩn hoá. Liên kết mua là affiliate; thứ tự so sánh không dựa trên mức hoa hồng.`,
   }),
   buildReview({
     slug: 'combo-can-may-lure-lk-hoa-duoi-2-trieu',
@@ -135,6 +282,93 @@ export const AFFILIATE_REVIEW_GUIDES: GuideArticle[] = [
     criteria: [['Điều kiện hồ', 'Nước, thời tiết và thức ăn sẵn có làm thay đổi phản ứng cá'], ['Cách thử', 'Pha hai mẻ nhỏ cùng độ ẩm để so sánh'], ['Độ kết dính', 'Điều chỉnh theo dòng nước và cách câu'], ['Chi phí', 'Tính số buổi dùng được thay vì chỉ giá một gói']],
     recommendations: ['Bắt đầu với công thức đơn giản theo hướng dẫn bao bì.', 'Chỉ đổi một biến mỗi lần thử.', 'Ghi nhật ký hồ, thời tiết và thời gian cá ăn.'],
     cautions: ['Không khẳng định hiệu quả tuyệt đối chỉ từ một buổi câu.', 'Tránh trộn nhiều tinh mùi ngay lần đầu.', 'Bảo quản kín và kiểm tra hạn dùng.'],
+    readTime: '10 phút đọc',
+    contentMarkdown: `# Mồi chép đỏ và chép đen LK Hòa: dùng loại nào theo điều kiện hồ?
+
+> **Phạm vi dữ liệu:** Danh mục affiliate được đối chiếu ngày 29/08/2026 chưa có hai SKU tách biệt mang đúng tên “mồi chép đỏ” và “mồi chép đen”. Bài này không tạo link mua thay thế và không khẳng định một màu mồi hiệu quả hơn khi chưa có nhật ký thử tại cùng điều kiện hồ.
+
+## Kết luận nhanh
+
+Không thể chọn mồi chép chỉ bằng màu bao bì. Cách chắc chắn nhất là pha hai mẻ nhỏ, giữ nguyên lượng nước và bộ câu, rồi ghi lại phản ứng cá. Nếu thay cả mồi, phụ gia, điểm đánh và thẻo cùng lúc, kết quả không còn cho biết yếu tố nào tạo khác biệt.
+
+![Mồi chép đỏ LK Hòa](/images/cam-chep-do.webp)
+
+*Ảnh nhận diện mồi chép đỏ trong kho nội dung docaulkhoa.vn.*
+
+![Mồi chép đen LK Hòa](/images/cam-chep-den.webp)
+
+*Ảnh nhận diện mồi chép đen trong kho nội dung docaulkhoa.vn.*
+
+## Những gì có thể và chưa thể kết luận
+
+| Có thể kiểm tra | Không nên suy đoán |
+|---|---|
+| Đúng bao bì, khối lượng, hạn dùng và hướng dẫn pha | Màu đỏ hoặc đen tự động hợp một loại hồ |
+| Độ ẩm, độ tơi và thời gian tan của mẻ đã pha | Hiệu quả tuyệt đối chỉ từ một buổi câu |
+| Thời gian đến tín hiệu đầu tiên trong cùng buổi | Công thức thành phần khi nhãn không công bố rõ |
+| Số tín hiệu, số cá lên trong cùng khoảng thời gian | Một loại luôn thắng trong mọi mùa và mọi nguồn nước |
+
+## Cách thử hai loại mồi có kiểm soát
+
+### Bước 1: Chia mẻ nhỏ
+
+Cân hoặc đong hai phần mồi bằng nhau. Không pha cả gói ngay trong lần thử đầu để tránh lãng phí và còn khả năng điều chỉnh.
+
+### Bước 2: Giữ nguyên lượng nước ban đầu
+
+Dùng cùng dụng cụ đong và ghi lượng nước thực tế. Sau thời gian ngấm, chỉ bổ sung từng ít nước nếu cần. Đừng dùng cảm giác “ước chừng” nếu mục tiêu là so sánh.
+
+### Bước 3: Không thêm phụ gia trong vòng đầu
+
+Tinh mùi, tơ nhện hoặc mồi nền khác có thể che mất sự khác biệt giữa hai mẻ. Chỉ thêm sau khi đã có một vòng thử cơ sở.
+
+### Bước 4: Luân phiên có thời gian
+
+Cho mỗi mẻ cùng một khoảng thời gian đánh. Nếu đổi điểm câu, hãy ghi rõ vì vị trí và ổ cá có thể ảnh hưởng mạnh hơn loại mồi.
+
+### Bước 5: Ghi số liệu tối thiểu
+
+| Dữ liệu cần ghi | Mẻ đỏ | Mẻ đen |
+|---|---:|---:|
+| Lượng mồi khô |  |  |
+| Lượng nước |  |  |
+| Thời gian ngấm |  |  |
+| Thời gian đến tín hiệu đầu |  |  |
+| Số tín hiệu rõ |  |  |
+| Số cá lên bờ |  |  |
+| Gió, nhiệt độ, màu nước |  |  |
+
+Sau ít nhất vài buổi ở cùng hồ, bảng này có giá trị hơn một nhận xét “mồi nào nhạy hơn” không kèm điều kiện.
+
+## Điều chỉnh theo kiểu câu
+
+### Cần mồi xả nhanh
+
+Giữ mẻ tơi hơn và kiểm tra tốc độ bung trong chậu nước trước. Không tăng nước quá nhanh vì rất khó đưa mồi đã nhão về trạng thái ban đầu.
+
+### Cần mồi bám lưỡi lâu
+
+Tăng độ kết dính từng bước nhỏ. Chỉ thêm phụ gia sau khi mồi cơ sở đã đạt độ ẩm ổn định.
+
+### Hồ có cá dè hoặc nhiều người đánh
+
+Giảm số biến thay đổi. Đánh mẻ nhỏ, theo dõi tín hiệu và tránh liên tục đổi mùi khiến bạn không đọc được phản ứng cá.
+
+## Khi nào nên bỏ một mẻ mồi?
+
+- Bao bì hở, mùi bất thường hoặc quá hạn.
+- Mồi bị ẩm trước khi pha hoặc có dấu hiệu nấm mốc.
+- Sau khi pha không thể đạt độ tơi/kết dính phù hợp dù đã làm đúng hướng dẫn.
+- Kết quả kém lặp lại qua nhiều buổi trong cùng điều kiện, trong khi mẻ đối chứng ổn định hơn.
+
+## Liên kết nội bộ hữu ích
+
+- [Cách pha mồi cám chép LK Hòa: tỷ lệ nước, mồi vê, mồi xả](/cam-nang/cach-pha-moi-cam-chep-lk)
+- [Xem nhóm mồi câu đang có trong danh mục](/danh-muc/moi-cau)
+
+## Minh bạch nội dung
+
+Bài do **LK Hòa** biên soạn theo phương pháp thử đối chứng. Hai ảnh dùng để nhận diện sản phẩm; chúng không phải bằng chứng một loại đã thắng loại còn lại. Khi danh mục có SKU và link tách biệt đã được xác nhận, website mới bổ sung liên kết mua tương ứng.`,
   }),
   buildReview({
     slug: 'top-moi-lure-ca-loc-lk-hoa',
