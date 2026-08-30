@@ -7,10 +7,13 @@ import {
   loadServerProducts,
   renderSeoPage,
 } from '../src/utils/serverSeoRenderer';
-import { CATEGORIES } from '../src/data/products';
-import { GUIDE_ARTICLES } from '../src/data/guides';
+import React from 'react';
+import { renderToString } from 'react-dom/server';
+import App from '../src/App';
+import { publicRoutes } from '../src/utils/routes';
 
-const outputDirectory = path.join(process.cwd(), 'public', 'seo');
+const buildDirectory = path.join(process.cwd(), 'dist');
+const outputDirectory = path.join(buildDirectory, 'seo');
 const products = loadServerProducts();
 
 fs.mkdirSync(outputDirectory, { recursive: true });
@@ -18,26 +21,22 @@ fs.writeFileSync(path.join(outputDirectory, 'robots.txt'), generateRobotsTxt(), 
 fs.writeFileSync(path.join(outputDirectory, 'sitemap.xml'), generateSitemapXml(products), 'utf8');
 fs.writeFileSync(path.join(outputDirectory, 'rss.xml'), generateRssXml(products), 'utf8');
 
-const templateHtml = fs.readFileSync(path.join(process.cwd(), 'index.html'), 'utf8');
-const prerenderRoutes = [
-  '/',
-  '/san-pham',
-  '/cam-nang',
-  '/gioi-thieu-phuong-phap-danh-gia',
-  '/quyen-rieng-tu',
-  ...CATEGORIES.filter(category => category.slug !== 'tat-ca').map(category => `/danh-muc/${category.slug}`),
-  ...products.filter(product => product.status === 'active').map(product => `/san-pham/${product.slug}`),
-  ...GUIDE_ARTICLES.map(guide => `/cam-nang/${guide.slug}`),
-];
+// Use Vite's compiled template so every route references the actual hashed JS/CSS.
+const templateHtml = fs.readFileSync(path.join(buildDirectory, 'index.html'), 'utf8');
+if (!templateHtml.includes('/assets/') || templateHtml.includes('/src/main.tsx')) {
+  throw new Error('Run vite build before generating route HTML.');
+}
+const prerenderRoutes = publicRoutes(products);
 
 for (const route of new Set(prerenderRoutes)) {
   const routeDirectory = route === '/'
-    ? path.join(process.cwd(), 'public')
-    : path.join(process.cwd(), 'public', ...route.split('/').filter(Boolean));
+    ? buildDirectory
+    : path.join(buildDirectory, ...route.split('/').filter(Boolean));
   fs.mkdirSync(routeDirectory, { recursive: true });
   fs.writeFileSync(
     path.join(routeDirectory, 'index.html'),
-    renderSeoPage(route, {}, templateHtml, products),
+    renderSeoPage(route, {}, templateHtml, products, renderToString(React.createElement(App, { initialPath: route, initialProducts: products }))),
     'utf8',
   );
 }
+console.log(`Generated ${prerenderRoutes.length} full HTML pages using compiled assets.`);

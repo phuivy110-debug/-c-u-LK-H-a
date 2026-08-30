@@ -101,6 +101,21 @@ async function runTests() {
   assert(deduplicated.length === duplicateProductsMock.length, 'No items dropped during deduplication');
   assert(uniqueIdsSet.size === duplicateProductsMock.length, 'All product IDs are completely unique');
 
+  // Regression: a sheet with a reference price alone must not invent a sale.
+  const realFetch = globalThis.fetch;
+  try {
+    globalThis.fetch = async () => new Response(
+      'Danh mục,Tên sản phẩm,Link Shopee,Ảnh,Giá Sale,Giá tham khảo,Link TikTok\n' +
+      'Cần Câu,Sản phẩm kiểm thử giá duy nhất,https://s.shopee.vn/test-price,https://example.com/test.webp,,100000,\n',
+      { status: 200, headers: { 'content-type': 'text/csv' } },
+    );
+    const sample = await fetchProductsFromGoogleSheet('https://docs.google.com/spreadsheets/d/test-reference-price/edit');
+    assert(sample.length === 1 && sample[0].referencePrice === 100000, 'Preserve supplied reference price');
+    assert(!sample[0]?.salePrice && !sample[0]?.saleDiscountPercent, 'Never fabricate a sale or discount');
+  } finally {
+    globalThis.fetch = realFetch;
+  }
+
   // ----------------------------------------------------
   // Test Group 3: Real Fetching & Syncing 66 Products
   // ----------------------------------------------------

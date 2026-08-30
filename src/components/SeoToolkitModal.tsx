@@ -24,7 +24,7 @@ import {
   RefreshCw,
   Sliders
 } from 'lucide-react';
-import { DOMAIN } from '../utils/serverSeoRenderer';
+import { DOMAIN } from '../utils/site';
 import { CATEGORIES } from '../data/products';
 
 interface SeoToolkitModalProps {

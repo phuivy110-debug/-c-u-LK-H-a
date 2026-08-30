@@ -50,13 +50,13 @@ export const HomeGuidesSection: React.FC<HomeGuidesSectionProps> = ({ onNavigate
         <div className="space-y-1.5">
           <div className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-500/10 to-amber-500/10 text-[#EE4D2D] border border-orange-500/20 text-xs px-3 py-1 rounded-full font-extrabold uppercase tracking-wider">
             <BookOpen className="w-3.5 h-3.5" />
-            <span>Cẩm Nang & Kinh Nghiệm Thực Chiến</span>
+            <span>Cẩm Nang & Hướng Dẫn Chọn Đồ Câu</span>
           </div>
           <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
             Bí Quyết & Kỹ Thuật Câu Cá Từ LK Hòa
           </h2>
           <p className="text-xs sm:text-sm text-slate-600 max-w-2xl font-medium">
-            Tổng hợp kinh nghiệm thực chiến: từ cách chọn cần lure, cần đài 5H-8H, bí quyết pha mồi chép, chọn dây PE X8 đến kỹ thuật săn hàng khủng.
+            Hướng dẫn chọn cần, mồi và dây câu theo nhu cầu. Phạm vi dữ liệu và những điểm cần kiểm chứng được ghi rõ trong từng bài.
           </p>
         </div>
 
@@ -139,17 +139,6 @@ export const HomeGuidesSection: React.FC<HomeGuidesSectionProps> = ({ onNavigate
                   </p>
                 </div>
 
-                {/* Practical Advice Highlights */}
-                <div className="bg-white/5 backdrop-blur-xs rounded-2xl p-4 border border-white/10 space-y-2 text-xs text-slate-200">
-                  <div className="flex items-center gap-2 font-bold text-orange-300">
-                    <Award className="w-4 h-4 text-orange-400" />
-                    <span>Điểm cốt lõi cần nhớ:</span>
-                  </div>
-                  <ul className="space-y-1 text-[11px] text-slate-300 list-disc pl-4 leading-relaxed">
-                    <li>Được đúc kết từ kinh nghiệm thực chiến hàng ngàn chuyến câu của LK Hòa.</li>
-                    <li>Áp dụng chuẩn xác cho địa hình sông tự nhiên &amp; hồ câu dịch vụ tại Việt Nam.</li>
-                  </ul>
-                </div>
               </div>
 
               <div className="mt-6 pt-4 border-t border-slate-700/60 flex items-center justify-between text-xs relative z-10">

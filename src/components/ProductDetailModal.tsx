@@ -1,8 +1,7 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { Product } from '../types';
 import { X, ShieldCheck, Tag, Flame, ChevronRight, ImageOff, Zap } from 'lucide-react';
 import { AffiliateButtons } from './AffiliateButtons';
-import { LiveProductTrustBadge } from './LiveProductTrustBadge';
 
 interface ProductDetailModalProps {
   product: Product | null;
@@ -36,7 +35,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
       : 0;
 
   // Compute similar products (same category first)
-  const similarProducts = useMemo(() => {
+  const similarProducts = (() => {
     if (!product || !allProducts.length) return [];
     const sameCategory = allProducts.filter(
       (p) => p.category === product.category && p.id !== product.id
@@ -48,7 +47,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
       (p) => p.category !== product.category && p.id !== product.id
     );
     return [...sameCategory, ...others].slice(0, 4);
-  }, [product, allProducts]);
+  })();
 
   return (
     <div
@@ -69,6 +68,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
           </div>
           <button
             onClick={onClose}
+            aria-label="Đóng chi tiết sản phẩm"
             className="w-8 h-8 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-full flex items-center justify-center transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
@@ -115,12 +115,6 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 </div>
               ) : null}
 
-              {product.shopeeUrl && (
-                <div className="absolute bottom-2 left-2 bg-slate-950/75 backdrop-blur-xs text-white text-[10px] font-semibold px-2 py-0.5 rounded-md flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                  <span>Shopee Live</span>
-                </div>
-              )}
             </div>
 
             {/* Details */}
@@ -143,8 +137,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   <div className="bg-gradient-to-br from-orange-50/90 to-amber-50/60 rounded-2xl p-3 sm:p-3.5 border border-orange-200/80 mb-3 space-y-1">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1.5 text-[11px] text-slate-600 font-bold">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                        <span>{discountPercent > 0 || product.salePrice ? '⚡ Giá Sale Shopee Realtime:' : 'Giá tham khảo Shopee:'}</span>
+                        <span>Giá tham khảo:</span>
                       </div>
                       {discountPercent > 0 && (
                         <span className="text-[10px] font-extrabold text-[#EE4D2D] bg-orange-100 px-1.5 py-0.5 rounded">
@@ -173,10 +166,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                     Kiểm tra giá mới nhất trên ứng dụng Shopee / TikTok Shop
                   </div>
                 )}
-                {/* Live Social Proof Badge */}
-                <div className="mb-3">
-                  <LiveProductTrustBadge productId={product.id} variant="full" />
-                </div>
+                <p className="text-xs text-slate-500">Giá và ưu đãi cuối cùng do sàn hiển thị tại thời điểm mua.</p>
               </div>
 
               {/* Action Buttons */}

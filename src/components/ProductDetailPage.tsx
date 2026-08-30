@@ -3,8 +3,7 @@ import { Product } from '../types';
 import { ArrowLeft, ImageOff, Flame, ChevronRight, AlertCircle, ShoppingBag, ShieldCheck, CheckCircle2, Info, Zap, RefreshCw } from 'lucide-react';
 import { AffiliateButtons } from './AffiliateButtons';
 import { ProductCard } from './ProductCard';
-import { triggerShopeePriceSync } from '../utils/shopeePriceSync';
-import { LiveProductTrustBadge } from './LiveProductTrustBadge';
+
 
 interface ProductDetailPageProps {
   productSlug: string;
@@ -21,8 +20,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
   onOpenDetail,
   onRefreshPrices,
 }) => {
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [refreshSuccess, setRefreshSuccess] = useState(false);
+
 
   const product = useMemo(() => {
     return products.find((p) => p.slug === productSlug);
@@ -92,23 +90,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
   const savingsAmount = hasValidDiscount && origPrice && refPrice ? origPrice - refPrice : 0;
   const isSale = Boolean((product.salePrice && product.salePrice > 0) || discountPercent > 0 || product.isFlashSale);
 
-  const handleManualPriceRefresh = async () => {
-    setIsRefreshing(true);
-    setRefreshSuccess(false);
-    try {
-      if (onRefreshPrices) {
-        await onRefreshPrices();
-      } else {
-        await triggerShopeePriceSync();
-      }
-      setRefreshSuccess(true);
-      setTimeout(() => setRefreshSuccess(false), 3000);
-    } catch (e) {
-      console.warn('Manual refresh failed:', e);
-    } finally {
-      setIsRefreshing(false);
-    }
-  };
+
 
   // Compute related products in same category
   const relatedProducts = products.filter(
@@ -211,20 +193,11 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
             <div className="bg-gradient-to-br from-orange-50/90 via-red-50/40 to-amber-50/60 rounded-2xl p-4 sm:p-5 border border-orange-200/90 space-y-3 shadow-xs">
               <div className="flex items-center justify-between gap-2 border-b border-orange-200/60 pb-2">
                 <div className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                   <span className="text-xs font-extrabold text-slate-700 uppercase tracking-wide">
-                    {isSale ? '⚡ Giá Sale Ưu Đãi Shopee' : 'Giá Tham Khảo Shopee'}
+                    Giá tham khảo
                   </span>
                 </div>
-                <button
-                  onClick={handleManualPriceRefresh}
-                  disabled={isRefreshing}
-                  className="inline-flex items-center gap-1 text-[11px] font-bold text-orange-700 hover:text-[#EE4D2D] bg-white px-2 py-1 rounded-lg border border-orange-200 shadow-2xs transition-all cursor-pointer disabled:opacity-50"
-                  title="Cập nhật lại giá khuyến mãi từ Shopee"
-                >
-                  <RefreshCw className={`w-3 h-3 ${isRefreshing ? 'animate-spin text-[#EE4D2D]' : ''}`} />
-                  <span>{isRefreshing ? 'Đang tải...' : refreshSuccess ? 'Đã làm mới!' : 'Làm mới giá'}</span>
-                </button>
+
               </div>
 
               <div className="space-y-1">
@@ -265,7 +238,6 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
             </div>
 
             {/* Live Social Proof Badge */}
-            <LiveProductTrustBadge productId={product.id} variant="full" />
 
             {/* Product Details & Specifications */}
             <div className="bg-slate-50/80 rounded-2xl p-4 border border-slate-200/80 space-y-3 text-xs sm:text-sm text-slate-700">
@@ -296,7 +268,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
             {/* Mandatory Affiliate Disclaimer Notice */}
             <div className="text-xs text-slate-500 bg-amber-50/60 border border-amber-200/80 p-3 rounded-xl italic flex items-start gap-2">
               <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-              <span>Ghi chú: Mức giá niêm yết trên website được đồng bộ realtime theo thông tin sàn. Giá bán thực tế và các ưu đãi voucher giảm giá phụ thuộc vào chương trình áp dụng tại thời điểm mua trên gian hàng Shopee và TikTok Shop.</span>
+              <span>Giá trên website là giá tham khảo từ danh mục, không phải báo giá trực tiếp từ sàn. Kiểm tra đúng phân loại, giá, voucher và chính sách của người bán trên Shopee hoặc TikTok Shop trước khi đặt mua. Website có thể nhận hoa hồng qua liên kết tiếp thị.</span>
             </div>
           </div>
 

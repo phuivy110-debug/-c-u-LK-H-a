@@ -3,7 +3,6 @@ import { Product } from '../types';
 import { ExternalLink, Tag, Copy, Eye, ImageOff, Zap, Flame } from 'lucide-react';
 import { trackUserAction } from '../utils/analyticsService';
 import { AffiliateButtons } from './AffiliateButtons';
-import { LiveProductTrustBadge } from './LiveProductTrustBadge';
 
 interface ProductCardProps {
   product: Product;
@@ -90,13 +89,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             </div>
           ) : null}
 
-          {/* Realtime Shopee badge */}
-          {product.shopeeUrl && (
-            <div className="absolute bottom-1.5 left-1.5 bg-slate-950/70 backdrop-blur-xs text-white text-[9px] font-semibold px-1.5 py-0.5 rounded-md flex items-center gap-1 z-10">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-              <span>Shopee Live</span>
-            </div>
-          )}
 
           {/* Quick Actions */}
           <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-900/60 to-transparent p-2 flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
@@ -132,12 +124,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({
               {product.category}
             </div>
           ) : <div />}
-          <LiveProductTrustBadge productId={product.id} variant="compact" />
         </div>
 
         {/* Title */}
         <h3 className="text-xs sm:text-sm font-bold text-slate-800 group-hover:text-[#EE4D2D] transition-colors line-clamp-2 leading-snug mb-1.5 min-h-[2.25rem] sm:min-h-[2.5rem]">
-          {product.name}
+          <a href={`/san-pham/${product.slug}`} onClick={event => event.stopPropagation()}>{product.name}</a>
         </h3>
       </div>
 
@@ -151,8 +142,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                   {discountPercent > 0 ? (
                     <>
                       <Zap className="w-3 h-3 text-[#EE4D2D] fill-[#EE4D2D]" />
-                      <span>Giá Sale Shopee:</span>
-                      <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                      <span>Giá tham khảo:</span>
                     </>
                   ) : (
                     <span>Giá tham khảo:</span>

@@ -1,8 +1,13 @@
 {
-  "buildCommand": "tsx scripts/generate-seo-files.ts && vite build",
+  "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": "vite",
   "redirects": [
+    {
+      "source": "/danh-muc/tat-ca",
+      "destination": "/san-pham",
+      "permanent": true
+    },
     {
       "source": "/:path*",
       "has": [

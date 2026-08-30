@@ -10,7 +10,7 @@ export const DEFAULT_SHEET_URL =
 export const PUBLISHED_FALLBACK_CSV_URL =
   'https://docs.google.com/spreadsheets/d/e/2PACX-1vRoGVq7tIOSj8pAr-80FuQxNYY_JHVtyZdk6SJd59baBkVlMllh-hDwvm0Zen4FHAcmjtpYQPai9S_w/pub?output=csv&gid=0';
 
-export const PRODUCT_CACHE_KEY = 'lkhoa_products_google_sheet_v5';
+export const PRODUCT_CACHE_KEY = 'lkhoa_products_google_sheet_v6';
 export const SHARED_TIKTOK_URL = 'https://vt.tiktok.com/ZS9kJHJuDnoUp-AeYDB/';
 
 const VERIFIED_SHOPEE_LINK_CORRECTIONS: Array<{ pattern: RegExp; url: string }> = [
@@ -486,16 +486,8 @@ export async function fetchProductsFromGoogleSheet(sheetUrl: string): Promise<Pr
             } else if (referencePrice && !salePrice) {
               if (originalPrice && originalPrice > referencePrice) {
                 salePrice = referencePrice;
-              } else if (matchedFallback) {
-                salePrice = matchedFallback.salePrice;
-                originalPrice = matchedFallback.originalPrice || referencePrice;
-                referencePrice = salePrice;
-              } else {
-                // Automatic flash promotion calculation if only retail price is known
-                originalPrice = referencePrice;
-                salePrice = Math.round((referencePrice * 0.8) / 1000) * 1000;
-                referencePrice = salePrice;
               }
+              // A reference price alone is not evidence of a promotion.
             }
 
             let saleDiscountPercent: number | undefined = undefined;

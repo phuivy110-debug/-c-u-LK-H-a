@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { Header } from './components/Header';
 import { Hero } from './components/Hero';
 import { ProductCard } from './components/ProductCard';
@@ -16,8 +16,6 @@ import { Footer } from './components/Footer';
 import { Toast } from './components/Toast';
 import { ChatBot } from './components/ChatBot';
 import { ScrollToTopButton } from './components/ScrollToTopButton';
-import { FloatingTrafficWidget } from './components/FloatingTrafficWidget';
-import { AnalyticsModal } from './components/AnalyticsModal';
 import { SeoToolkitModal } from './components/SeoToolkitModal';
 import { HomeGuidesSection } from './components/HomeGuidesSection';
 import { GUIDE_ARTICLES } from './data/guides';
@@ -26,14 +24,17 @@ import { CATEGORIES } from './data/products';
 import { FALLBACK_PRODUCTS } from './data/fallbackProducts';
 import { Flame, ArrowRight, RefreshCw, FileSpreadsheet, ChevronRight, ShieldCheck, Fish, Compass, Feather, Waves, Anchor } from 'lucide-react';
 import { fetchProductsFromGoogleSheet, DEFAULT_SHEET_URL, loadProductsCache, saveProductsCache, ensureUniqueProductIds } from './utils/googleSheetSync';
-import { fetchLiveShopeePrices, mergeRealtimeShopeePrices, triggerShopeePriceSync } from './utils/shopeePriceSync';
 import { trackAffiliateClick, trackPageView } from './utils/analyticsService';
+import { normalizeInternalPath, publicRoutes } from './utils/routes';
+import { NotFoundPage } from './components/NotFoundPage';
+import { DOMAIN } from './utils/site';
 
 const SHEET_URL_KEY = 'lkhoa_sheet_url_v2';
 
-export default function App() {
+export default function App({ initialPath, initialProducts }: { initialPath?: string; initialProducts?: Product[] } = {}) {
   // Products state (defaults to cached or fallback products with active discounts)
   const [products, setProductsState] = useState<Product[]>(() => {
+    if (initialProducts) return ensureUniqueProductIds(initialProducts);
     const cached = loadProductsCache(DEFAULT_SHEET_URL);
     if (cached && cached.products && cached.products.length > 0) {
       const hasValidDiscounts = cached.products.some((p) => (p.saleDiscountPercent || 0) > 0);
@@ -53,17 +54,40 @@ export default function App() {
 
   // Client Routing State
   const [currentPath, setCurrentPath] = useState<string>(() => {
-    return window.location.pathname || '/';
+    return normalizeInternalPath(initialPath ?? (typeof window !== 'undefined' ? window.location.pathname : '/'));
   });
 
   // Listen to popstate (browser back/forward buttons)
   useEffect(() => {
     const handlePopState = () => {
-      setCurrentPath(window.location.pathname || '/');
+      setCurrentPath(normalizeInternalPath(window.location.pathname || '/'));
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
+
+  const metadataPath = useRef(currentPath);
+  useEffect(() => {
+    if (metadataPath.current !== currentPath) {
+      // Do not keep the previous page's structured data after an SPA navigation.
+      document.querySelectorAll('head script[type="application/ld+json"]').forEach(node => node.remove());
+      metadataPath.current = currentPath;
+    }
+    const guide = GUIDE_ARTICLES.find(item => `/cam-nang/${item.slug}` === currentPath);
+    const heading = document.querySelector('main h1')?.textContent?.trim() || 'Đồ Câu LK Hòa';
+    const title = guide?.metaTitle || `${heading}${currentPath === '/' ? '' : ' | Đồ Câu LK Hòa'}`;
+    const description = guide?.metaDescription || guide?.summary || document.querySelector('main p')?.textContent?.trim().slice(0, 180) || heading;
+    document.title = title;
+    const canonical = document.querySelector('link[rel="canonical"]') || document.head.appendChild(document.createElement('link'));
+    canonical.setAttribute('rel', 'canonical');
+    canonical.setAttribute('href', `${DOMAIN}${currentPath}`);
+    for (const [key, value] of Object.entries({ description, 'og:title': title, 'og:description': description, 'og:url': `${DOMAIN}${currentPath}`, 'twitter:title': title, 'twitter:description': description })) {
+      const attribute = key.startsWith('og:') ? 'property' : 'name';
+      const meta = document.querySelector(`meta[${attribute}="${key}"]`) || document.head.appendChild(document.createElement('meta'));
+      meta.setAttribute(attribute, key);
+      meta.setAttribute('content', value);
+    }
+  }, [currentPath]);
 
   // Track every SPA route once, including browser back/forward navigation.
   useEffect(() => {
@@ -94,14 +118,15 @@ export default function App() {
   }, []);
 
   const navigate = useCallback((path: string) => {
-    window.history.pushState({}, '', path);
-    setCurrentPath(path);
+    const target = normalizeInternalPath(path);
+    window.history.pushState({}, '', target);
+    setCurrentPath(target.split(/[?#]/)[0]);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
   // Google Sheet Sync State
   const [sheetUrl, setSheetUrl] = useState<string>(() => {
-    return localStorage.getItem(SHEET_URL_KEY) || DEFAULT_SHEET_URL;
+    return typeof localStorage !== 'undefined' ? localStorage.getItem(SHEET_URL_KEY) || DEFAULT_SHEET_URL : DEFAULT_SHEET_URL;
   });
   const [isSyncing, setIsSyncing] = useState(false);
   const [lastSyncTime, setLastSyncTime] = useState<string | null>(null);
@@ -113,7 +138,6 @@ export default function App() {
   // Modals & Feedback
   const [selectedDetailProduct, setSelectedDetailProduct] = useState<Product | null>(null);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
-  const [isAnalyticsModalOpen, setIsAnalyticsModalOpen] = useState(false);
   const [isSeoModalOpen, setIsSeoModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -141,7 +165,6 @@ export default function App() {
     }, 3500);
   };
 
-  const [isShopeePriceRefreshing, setIsShopeePriceRefreshing] = useState(false);
 
   // Sync Google Sheet Function
   const handleSyncGoogleSheet = useCallback(
@@ -152,11 +175,8 @@ export default function App() {
       try {
         const fetchedProducts = await fetchProductsFromGoogleSheet(urlToFetch);
         if (fetchedProducts.length > 0) {
-          // Fetch live Shopee prices in parallel and merge
-          const livePrices = await fetchLiveShopeePrices();
-          const merged = mergeRealtimeShopeePrices(fetchedProducts, livePrices);
-          setProducts(merged);
-          saveProductsCache(merged, urlToFetch);
+          setProducts(fetchedProducts);
+          saveProductsCache(fetchedProducts, urlToFetch);
           const timeStr = new Date().toLocaleTimeString('vi-VN', {
             hour: '2-digit',
             minute: '2-digit',
@@ -164,7 +184,7 @@ export default function App() {
           });
           setLastSyncTime(timeStr);
           if (!quiet) {
-            showToast(`Đồng bộ thành công ${fetchedProducts.length} sản phẩm & cập nhật giá Shopee realtime!`);
+            showToast(`Đồng bộ thành công ${fetchedProducts.length} sản phẩm từ danh mục!`);
           }
         } else {
           setSyncError('Google Sheet không có dữ liệu phù hợp.');
@@ -184,39 +204,9 @@ export default function App() {
     [sheetUrl]
   );
 
-  // Manual or background Shopee realtime price refresh
-  const handleRefreshShopeePrices = useCallback(async () => {
-    setIsShopeePriceRefreshing(true);
-    try {
-      // First trigger background scraping if needed
-      await triggerShopeePriceSync();
-      // Fetch latest prices store
-      const livePrices = await fetchLiveShopeePrices();
-      setProductsState((currentProds) => {
-        const updated = mergeRealtimeShopeePrices(currentProds, livePrices);
-        saveProductsCache(updated, sheetUrl);
-        return updated;
-      });
-      showToast('Đã cập nhật giá sale realtime từ Shopee!');
-    } catch (e) {
-      console.warn('Shopee price refresh failed:', e);
-    } finally {
-      setIsShopeePriceRefreshing(false);
-    }
-  }, [sheetUrl]);
-
-  // Auto sync Google Sheet on mount and fetch Shopee prices
+  // The published sheet is the data source; no simulated live-price endpoint.
   useEffect(() => {
     handleSyncGoogleSheet(sheetUrl, true);
-    // Periodic refresh of Shopee prices every 5 minutes
-    const interval = setInterval(() => {
-      fetchLiveShopeePrices().then((livePrices) => {
-        if (livePrices && Object.keys(livePrices).length > 0) {
-          setProductsState((currentProds) => mergeRealtimeShopeePrices(currentProds, livePrices));
-        }
-      });
-    }, 5 * 60 * 1000);
-    return () => clearInterval(interval);
   }, []);
 
   const handleOpenDetailModal = (product: Product) => {
@@ -235,6 +225,7 @@ export default function App() {
 
   // Handle route matching
   const renderContent = () => {
+    if (!publicRoutes(products).includes(currentPath)) return <NotFoundPage />;
     if (currentPath === '/gioi-thieu-phuong-phap-danh-gia') {
       return <AboutReviewPage />;
     }
@@ -252,7 +243,6 @@ export default function App() {
           products={products}
           onNavigate={navigate}
           onOpenDetail={handleOpenDetailModal}
-          onRefreshPrices={handleRefreshShopeePrices}
         />
       );
     }
@@ -309,8 +299,6 @@ export default function App() {
           onNavigate={navigate}
           onOpenDetail={handleOpenDetailModal}
           initialQuery={searchQuery}
-          onRefreshPrices={handleRefreshShopeePrices}
-          isRefreshingPrices={isShopeePriceRefreshing}
         />
       );
     }
@@ -401,7 +389,7 @@ export default function App() {
               <div>
                 <h2 className="text-2xl sm:text-3xl font-black text-slate-900">Sản Phẩm Mới Cập Nhật</h2>
                 <p className="text-xs sm:text-sm text-slate-500 font-medium">
-                  Đã kiểm tra liên kết Shopee Mall & TikTok Shop chính hãng
+                  Thông tin và giá tham khảo; kiểm tra phân loại và giá cuối cùng trên sàn
                 </p>
               </div>
             </div>
@@ -462,18 +450,12 @@ export default function App() {
       {/* Footer */}
       <Footer />
 
-      {/* Realtime Traffic & Trust Dashboard Modal */}
-      <AnalyticsModal
-        isOpen={isAnalyticsModalOpen}
-        onClose={() => setIsAnalyticsModalOpen(false)}
-      />
-
       {/* SEO Toolkit & Google Search Console Guide Modal */}
-      <SeoToolkitModal
+      {isSeoModalOpen && <SeoToolkitModal
         isOpen={isSeoModalOpen}
         onClose={() => setIsSeoModalOpen(false)}
         productCount={activeProducts.length}
-      />
+      />}
 
       {/* Product Detail Modal */}
       <ProductDetailModal

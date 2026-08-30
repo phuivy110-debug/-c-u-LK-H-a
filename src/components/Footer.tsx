@@ -29,13 +29,13 @@ export const Footer: React.FC<FooterProps> = () => {
             </div>
 
             <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
-              Trang chủ chính thức của Đồ Câu LK Hòa – Nơi tổng hợp thông tin sản phẩm cần câu, máy câu, mồi câu và phụ kiện chính hãng LK Hòa mua trực tiếp từ Shopee & TikTok Shop.
+              Danh mục đồ câu và nội dung hướng dẫn của docaulkhoa.vn. Website giới thiệu liên kết sản phẩm, không trực tiếp xử lý đơn hàng trên Shopee hoặc TikTok Shop.
             </p>
 
             <div className="flex flex-wrap items-center gap-2 pt-1">
               <div className="inline-flex items-center gap-2 bg-slate-900 border border-slate-800 text-slate-300 text-xs px-3.5 py-1.5 rounded-full font-semibold">
                 <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                <span>Cửa Hàng Chính Thức Đồ Câu LK Hòa</span>
+                <span>Danh mục & Cẩm nang LK Hòa</span>
               </div>
             </div>
           </div>
@@ -88,7 +88,7 @@ export const Footer: React.FC<FooterProps> = () => {
           <div className="md:col-span-3 space-y-3">
             <h4 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
               <Share2 className="w-3.5 h-3.5 text-orange-400" />
-              <span>Gian Hàng Chính Thức</span>
+              <span>Liên Kết Gian Hàng</span>
             </h4>
             
             <div className="flex flex-col gap-2 text-xs">
@@ -99,7 +99,7 @@ export const Footer: React.FC<FooterProps> = () => {
                 className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 p-2.5 rounded-xl transition-colors font-bold text-orange-400"
               >
                 <Store className="w-4 h-4 shrink-0" />
-                <span>Gian hàng Shopee Mall</span>
+                <span>Gian hàng Shopee</span>
               </a>
 
               <a
@@ -123,7 +123,7 @@ export const Footer: React.FC<FooterProps> = () => {
               Trang Chủ Danh Mục Sản Phẩm Đồ Câu LK Hòa.
             </p>
             <p className="text-[11px] mt-0.5">
-              Mọi liên kết mua hàng được chuyển hướng trực tiếp tới trang sản phẩm / gian hàng chính thức trên Shopee & TikTok Shop.
+              Một số liên kết là tiếp thị liên kết. Website có thể nhận hoa hồng nếu giao dịch được ghi nhận qua liên kết.
             </p>
             <nav aria-label="Thông tin website" className="mt-3 flex flex-wrap justify-center gap-x-4 gap-y-2 md:justify-start">
               <a

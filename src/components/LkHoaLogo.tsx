@@ -69,7 +69,7 @@ export const LkHoaLogo: React.FC<LkHoaLogoProps> = ({
             L.k. Hòa
           </span>
           <span className="text-[10px] sm:text-[11px] font-bold tracking-wider text-[#EE4D2D] uppercase mt-0.5">
-            Đồ Câu Chính Hãng
+            Đồ Câu LK Hòa
           </span>
         </div>
       )}

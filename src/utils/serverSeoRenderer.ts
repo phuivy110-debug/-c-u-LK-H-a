@@ -1,4 +1,5 @@
 import fs from 'fs';
+import { FAQS } from '../data/faqs';
 import path from 'path';
 import { Product } from '../types';
 import { CATEGORIES } from '../data/products';
@@ -6,7 +7,8 @@ import { GUIDE_ARTICLES } from '../data/guides';
 import { FALLBACK_PRODUCTS } from '../data/fallbackProducts';
 import { sanitizeGuideMarkdown } from './guideContent';
 
-export const DOMAIN = 'https://docaulkhoa.vn';
+import { DOMAIN } from './site';
+export { DOMAIN } from './site';
 
 // Fallback CSV parsing or fallback products on server side
 export function loadServerProducts(): Product[] {
@@ -65,10 +67,6 @@ export function loadServerProducts(): Product[] {
               originalPrice = salePrice;
             }
           } else if (salePrice && !referencePrice) {
-            referencePrice = salePrice;
-          } else if (referencePrice && !salePrice) {
-            originalPrice = referencePrice;
-            salePrice = Math.round((referencePrice * 0.8) / 1000) * 1000;
             referencePrice = salePrice;
           }
 
@@ -147,7 +145,7 @@ export function generateSitemapXml(products: Product[]): string {
   xml += `  <url>\n    <loc>${DOMAIN}/san-pham</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>daily</changefreq>\n    <priority>0.9</priority>\n  </url>\n`;
 
   // 3. Categories
-  for (const cat of CATEGORIES) {
+  for (const cat of CATEGORIES.filter(category => category.slug !== 'tat-ca')) {
     xml += `  <url>\n    <loc>${DOMAIN}/danh-muc/${cat.slug}</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>daily</changefreq>\n    <priority>0.85</priority>\n  </url>\n`;
   }
 
@@ -162,10 +160,13 @@ export function generateSitemapXml(products: Product[]): string {
   }
 
   // 5. Active Products (with images)
+  const emittedProductSlugs = new Set<string>();
   for (const prod of activeProducts) {
+    if (emittedProductSlugs.has(prod.slug)) continue;
+    emittedProductSlugs.add(prod.slug);
     const lastModDate = prod.updatedAt ? prod.updatedAt.split('T')[0] : today;
     const cleanName = (prod.name || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
-    
+
     xml += `  <url>\n`;
     xml += `    <loc>${DOMAIN}/san-pham/${prod.slug}</loc>\n`;
     xml += `    <lastmod>${lastModDate}</lastmod>\n`;
@@ -249,7 +250,8 @@ export function renderSeoPage(
   reqPath: string,
   reqQuery: Record<string, any>,
   templateHtml: string,
-  products: Product[]
+  products: Product[],
+  prerenderedBody?: string,
 ): string {
   const activeProducts = (products && products.length > 0 ? products : FALLBACK_PRODUCTS).filter(p => p.status === 'active');
 
@@ -275,36 +277,15 @@ export function renderSeoPage(
     robotsMeta = 'noindex, follow';
   }
 
-  // FAQ Schema Data for rich snippets
+  // Use the same factual answers in visible HTML and structured data.
   const faqSchema = {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
-    'mainEntity': [
-      {
-        '@type': 'Question',
-        'name': 'Làm thế nào để mua Đồ Câu LK Hòa chính hãng giá rẻ nhất?',
-        'acceptedAnswer': {
-          '@type': 'Answer',
-          'text': 'Truy cập website docaulkhoa.vn để tra cứu danh mục 66+ sản phẩm cần câu, máy câu, mồi câu chính hãng và bấm chuyển trực tiếp sang Shopee Mall hoặc TikTok Shop Official của LK Hòa để nhận mã giảm giá và bảo hành đầy đủ.'
-        }
-      },
-      {
-        '@type': 'Question',
-        'name': 'Cần câu LK Hòa có những loại nào phổ biến?',
-        'acceptedAnswer': {
-          '@type': 'Answer',
-          'text': 'LK Hòa nổi tiếng với các dòng cần lure máy đứng/ngang (như Cần Lure Tiểu LK, Cần Solid Đa Năng 10kg, LK Special Cá Mập) và các dòng cần câu đài độ cứng 4H, 5H, 6H, 8H bằng carbon Toray chất lượng cao.'
-        }
-      },
-      {
-        '@type': 'Question',
-        'name': 'Chính sách bảo hành lóng cần tại Đồ Câu LK Hòa như thế nào?',
-        'acceptedAnswer': {
-          '@type': 'Answer',
-          'text': 'Tất cả cần câu LK Hòa mua từ gian hàng chính thức đều được bảo hành lóng cần chính hãng, hỗ trợ thay thế lóng nhanh chóng khi xảy ra gãy ngọn hoặc sự cố trong quá trình câu.'
-        }
-      }
-    ]
+    mainEntity: FAQS.map(faq => ({
+      '@type': 'Question',
+      name: faq.question,
+      acceptedAnswer: { '@type': 'Answer', text: faq.answer },
+    })),
   };
 
   // ROUTE 1: Product Detail (/san-pham/:productSlug)
@@ -492,7 +473,7 @@ export function renderSeoPage(
       title = guide.metaTitle || `${guide.title} | Đồ Câu LK Hòa`;
       description = guide.metaDescription || guide.summary;
       ogType = 'article';
-      
+
       const imgMatch = guide.contentMarkdown.match(/!\[.*?\]\((.*?)\)/);
       if (imgMatch && imgMatch[1]) {
         const rawImg = imgMatch[1];
@@ -602,35 +583,36 @@ export function renderSeoPage(
 
   // Build Head Elements
   const headExtra = `
-    <title>${title}</title>
-    <meta name="title" content="${title}" />
-    <meta name="description" content="${description}" />
-    ${keywords ? `<meta name="keywords" content="${keywords}" />` : ''}
+    <title>${escapeHtml(title)}</title>
+    <meta name="title" content="${escapeHtml(title)}" />
+    <meta name="description" content="${escapeHtml(description)}" />
+    ${keywords ? `<meta name="keywords" content="${escapeHtml(keywords)}" />` : ''}
     <meta name="robots" content="${robotsMeta}" />
     <link rel="canonical" href="${canonicalUrl}" />
     <link rel="alternate" type="application/rss+xml" title="Đồ Câu LK Hòa RSS Feed" href="${DOMAIN}/feed.xml" />
-    <meta property="og:title" content="${title}" />
-    <meta property="og:description" content="${description}" />
+    <meta property="og:title" content="${escapeHtml(title)}" />
+    <meta property="og:description" content="${escapeHtml(description)}" />
     <meta property="og:type" content="${ogType}" />
     <meta property="og:url" content="${canonicalUrl}" />
     <meta property="og:image" content="${ogImage}" />
     <meta property="og:site_name" content="Đồ Câu LK Hòa" />
     <meta property="og:locale" content="vi_VN" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="${title}" />
-    <meta name="twitter:description" content="${description}" />
+    <meta name="twitter:title" content="${escapeHtml(title)}" />
+    <meta name="twitter:description" content="${escapeHtml(description)}" />
     <meta name="twitter:image" content="${ogImage}" />
-    ${jsonLdData ? `<script type="application/ld+json">\n${JSON.stringify(jsonLdData, null, 2)}\n</script>` : ''}
+    ${jsonLdData ? `<script type="application/ld+json">\n${JSON.stringify(jsonLdData, null, 2).replace(/</g, '\\u003c')}\n</script>` : ''}
   `;
 
   if (resultHtml.includes('<!-- SEO_META_START -->')) {
-    resultHtml = resultHtml.replace(/<!-- SEO_META_START -->[\s\S]*?<!-- SEO_META_END -->/gi, headExtra);
+    resultHtml = resultHtml.replace(/<!-- SEO_META_START -->[\s\S]*?<!-- SEO_META_END -->/gi, () => headExtra);
   } else {
     resultHtml = resultHtml.replace('</head>', `${headExtra}\n</head>`);
   }
 
+  if (prerenderedBody !== undefined) seoBodyHtml = prerenderedBody;
   if (seoBodyHtml) {
-    resultHtml = resultHtml.replace('<div id="root"></div>', `<div id="root">${seoBodyHtml}</div>`);
+    resultHtml = resultHtml.replace('<div id="root"></div>', () => `<div id="root">${seoBodyHtml}</div>`);
   }
 
   return resultHtml;

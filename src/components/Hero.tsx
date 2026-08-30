@@ -34,7 +34,7 @@ export const Hero: React.FC<HeroProps> = ({
             <div className="relative z-10 space-y-4">
               <div className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-md border border-white/25 px-3.5 py-1.5 rounded-full text-xs font-bold text-white shadow-xs flex-wrap">
                 <ShieldCheck className="w-4 h-4 text-yellow-300" />
-                <span>Trang Chủ Chính Thức Đồ Câu LK Hòa</span>
+                <span>Danh Mục Đồ Câu LK Hòa</span>
               </div>
 
               <h1 className="text-3xl sm:text-5xl font-black tracking-tight leading-[1.15]">
@@ -43,7 +43,7 @@ export const Hero: React.FC<HeroProps> = ({
               </h1>
 
               <p className="text-orange-100 text-sm sm:text-base font-medium max-w-xl leading-relaxed">
-                Nơi tổng hợp thông tin sản phẩm và liên kết mua hàng chính thức tới các gian hàng Đồ Câu LK Hòa trên Shopee & TikTok Shop. Tra cứu dễ dàng, thông tin minh bạch.
+                Tra cứu đồ câu và liên kết tới sản phẩm hoặc gian hàng trên Shopee & TikTok Shop. Kiểm tra phân loại, giá và chính sách của người bán trước khi đặt mua.
               </p>
             </div>
 
@@ -95,7 +95,7 @@ export const Hero: React.FC<HeroProps> = ({
                     Gian Hàng Thương Mại Điện Tử LK Hòa
                   </h2>
                   <span className="hidden sm:inline-flex bg-orange-100 text-[#EE4D2D] text-[10px] font-extrabold px-2 py-0.5 rounded-md uppercase">
-                    Chính Hãng
+                    Liên kết sàn
                   </span>
                 </div>
                 <p className="text-xs text-slate-500 font-medium mt-0.5">

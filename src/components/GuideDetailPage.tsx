@@ -5,6 +5,8 @@ import { GUIDE_ARTICLES, GuideArticle } from '../data/guides';
 import { Home, ChevronRight, Clock, User, Calendar, BookOpen, ArrowLeft, Tag } from 'lucide-react';
 import { Product } from '../types';
 import { sanitizeGuideMarkdown } from '../utils/guideContent';
+import { normalizeInternalPath } from '../utils/routes';
+import { NotFoundPage } from './NotFoundPage';
 
 interface GuideDetailPageProps {
   guideSlug: string;
@@ -19,10 +21,10 @@ export const GuideDetailPage: React.FC<GuideDetailPageProps> = ({
   onNavigate,
   onOpenDetail,
 }) => {
-  const article = GUIDE_ARTICLES.find((a) => a.slug === guideSlug) || GUIDE_ARTICLES[0];
+  const article = GUIDE_ARTICLES.find((a) => a.slug === guideSlug);
   const articleContent = React.useMemo(
-    () => sanitizeGuideMarkdown(article.contentMarkdown),
-    [article.contentMarkdown],
+    () => sanitizeGuideMarkdown(article?.contentMarkdown || ''),
+    [article?.contentMarkdown],
   );
 
   React.useEffect(() => {
@@ -47,6 +49,8 @@ export const GuideDetailPage: React.FC<GuideDetailPageProps> = ({
       }
     }
   }, [article]);
+
+  if (!article) return <NotFoundPage />;
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
@@ -219,18 +223,18 @@ export const GuideDetailPage: React.FC<GuideDetailPageProps> = ({
               </em>
             ),
             a: ({ href, children }) => {
-              const isInternal = href && href.startsWith('/');
+              const isInternal = Boolean(href?.startsWith('/') && !href.startsWith('//'));
+              const targetHref = isInternal && href ? normalizeInternalPath(href) : href;
               const isAffiliate = Boolean(href && /(shopee\.|s\.shopee\.|tiktok\.|vt\.tiktok\.)/i.test(href));
               return (
                 <a
-                  href={href}
+                  href={targetHref}
                   target={isInternal ? undefined : '_blank'}
                   rel={isAffiliate ? 'sponsored nofollow noopener noreferrer' : (isInternal ? undefined : 'noopener noreferrer')}
                   onClick={(e) => {
-                    if (isInternal && href) {
+                    if (isInternal && targetHref && e.button === 0 && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey) {
                       e.preventDefault();
-                      const target = href.startsWith('/cam-nang/') ? href : `/cam-nang${href}`;
-                      onNavigate(target);
+                      onNavigate(targetHref);
                     }
                   }}
                   className="font-bold text-[#EE4D2D] hover:underline inline-flex items-center gap-0.5"
