@@ -1,3 +1,5 @@
+import { selectProducts, type ProductSort } from '../utils/catalog';
+import { useHistoryState } from '../utils/useHistoryState';
 import React, { useMemo, useState } from 'react';
 import { Product } from '../types';
 import { CATEGORIES } from '../data/products';
@@ -18,8 +20,8 @@ export const CategoryPage: React.FC<CategoryPageProps> = ({
   onNavigate,
   onOpenDetail,
 }) => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState<'default' | 'discount-desc' | 'price-asc' | 'price-desc' | 'name-asc'>('default');
+  const [searchQuery, setSearchQuery] = useHistoryState('category-query', '');
+  const [sortBy, setSortBy] = useHistoryState<ProductSort>('category-sort', 'default');
 
   const currentCategory = useMemo(() => {
     return CATEGORIES.find((c) => c.slug === categorySlug);
@@ -28,61 +30,7 @@ export const CategoryPage: React.FC<CategoryPageProps> = ({
   const categoryName = currentCategory ? currentCategory.name : 'Danh Mục Sản Phẩm';
   const categoryDesc = currentCategory ? currentCategory.description : '';
 
-  // Filter products by category & active status
-  const filteredProducts = useMemo(() => {
-    let list = products.filter((p) => p.status === 'active');
-
-    if (categorySlug !== 'tat-ca') {
-      list = list.filter((p) => {
-        if (!p.category) return false;
-        const normCat = p.category
-          .toLowerCase()
-          .normalize('NFD')
-          .replace(/[\u0300-\u036f]/g, '')
-          .replace(/đ/g, 'd')
-          .replace(/[^a-z0-9]/g, '');
-
-        const normTarget = categoryName
-          .toLowerCase()
-          .normalize('NFD')
-          .replace(/[\u0300-\u036f]/g, '')
-          .replace(/đ/g, 'd')
-          .replace(/[^a-z0-9]/g, '');
-
-        const slugTarget = categorySlug.replace(/-/g, '');
-
-        return normCat.includes(normTarget) || normCat.includes(slugTarget);
-      });
-    }
-
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd');
-      list = list.filter((p) => {
-        const normName = p.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd');
-        const normDesc = (p.description || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd');
-        return normName.includes(q) || normDesc.includes(q);
-      });
-    }
-
-    // Sort
-    if (sortBy === 'price-asc') {
-      list.sort((a, b) => {
-        const pa = a.referencePrice || Number.MAX_SAFE_INTEGER;
-        const pb = b.referencePrice || Number.MAX_SAFE_INTEGER;
-        return pa - pb;
-      });
-    } else if (sortBy === 'price-desc') {
-      list.sort((a, b) => {
-        const pa = a.referencePrice || 0;
-        const pb = b.referencePrice || 0;
-        return pb - pa;
-      });
-    } else if (sortBy === 'name-asc') {
-      list.sort((a, b) => a.name.localeCompare(b.name, 'vi'));
-    }
-
-    return list;
-  }, [products, categorySlug, categoryName, searchQuery, sortBy]);
+  const filteredProducts = useMemo(() => selectProducts(products, categorySlug, searchQuery, sortBy), [products, categorySlug, searchQuery, sortBy]);
 
   // Top 3 real products for comparison table
   const sampleComparisonProducts = useMemo(() => {
@@ -118,17 +66,7 @@ export const CategoryPage: React.FC<CategoryPageProps> = ({
         <span className="text-slate-900 font-bold">{categoryName}</span>
       </nav>
 
-      {/* Header Banner */}
-      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-orange-950 text-white p-6 sm:p-8 rounded-3xl shadow-md border border-slate-800 space-y-3">
-        <div className="inline-block bg-[#EE4D2D] text-white font-extrabold text-[10px] sm:text-xs px-2.5 py-1 rounded-md uppercase tracking-wider">
-          Danh Mục Đồ Câu
-        </div>
-        <h1 className="text-2xl sm:text-4xl font-black">{categoryName} LK Hòa</h1>
-        {categoryDesc && <p className="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">{categoryDesc}</p>}
-        <div className="text-xs text-orange-400 font-semibold pt-1">
-          Đồng bộ đầy đủ <strong>{filteredProducts.length}</strong> sản phẩm chính hãng với liên kết mua trên Shopee Mall & TikTok Shop
-        </div>
-      </div>
+      <header className="space-y-2"><h1 className="text-2xl sm:text-3xl font-black">{categoryName} LK Hòa</h1>{categoryDesc && <p className="text-sm text-slate-600">{categoryDesc}</p>}</header>
 
       {/* Controls */}
       <CatalogControls
@@ -149,6 +87,7 @@ export const CategoryPage: React.FC<CategoryPageProps> = ({
               key={product.id}
               product={product}
               onOpenDetail={onOpenDetail}
+              placement="category"
             />
           ))}
         </div>
@@ -159,7 +98,7 @@ export const CategoryPage: React.FC<CategoryPageProps> = ({
           </div>
           <h3 className="text-lg font-bold text-slate-800">Không có sản phẩm nào</h3>
           <p className="text-xs text-slate-500 max-w-sm mx-auto">
-            Hiện chưa có sản phẩm active phù hợp với bộ lọc trong danh mục này.
+            Hiện chưa có sản phẩm phù hợp với bộ lọc trong danh mục này.
           </p>
           <button
             onClick={() => {

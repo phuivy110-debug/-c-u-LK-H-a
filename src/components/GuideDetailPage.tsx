@@ -1,3 +1,6 @@
+import { ProductCard } from './ProductCard';
+import { InternalLink } from './InternalLink';
+import { recommendedProducts, relatedGuides, guideSections } from '../utils/guideRecommendations';
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -51,6 +54,10 @@ export const GuideDetailPage: React.FC<GuideDetailPageProps> = ({
   }, [article]);
 
   if (!article) return <NotFoundPage />;
+  const suggestions = recommendedProducts(article, products);
+  const readingNext = relatedGuides(article, GUIDE_ARTICLES, products);
+  const sections = guideSections(articleContent);
+
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
@@ -98,12 +105,6 @@ export const GuideDetailPage: React.FC<GuideDetailPageProps> = ({
           <span className="bg-orange-100 text-[#EE4D2D] text-xs font-black px-3 py-1 rounded-lg uppercase tracking-wider">
             {article.category}
           </span>
-          {article.keywords && article.keywords.slice(0, 3).map((kw, i) => (
-            <span key={i} className="bg-slate-100 text-slate-600 text-xs font-bold px-2.5 py-0.5 rounded-md flex items-center gap-1">
-              <Tag className="w-3 h-3 text-slate-400" />
-              <span>#{kw}</span>
-            </span>
-          ))}
         </div>
 
         <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight leading-tight">
@@ -144,8 +145,13 @@ export const GuideDetailPage: React.FC<GuideDetailPageProps> = ({
         Nhận định trong bài được tách biệt với mức hoa hồng.
       </aside>
 
+      {sections.length >= 5 && <details className="rounded-xl border border-slate-200 bg-white p-4">
+        <summary className="min-h-11 flex items-center cursor-pointer font-bold">Mục lục bài viết</summary>
+        <nav aria-label="Mục lục"><ol className="list-decimal pl-5">{sections.map(section => <li key={section.id}><a href={`#${section.id}`} className="block py-2 text-sm text-[#EE4D2D] hover:underline">{section.title}</a></li>)}</ol></nav>
+      </details>}
+
       {/* Article Markdown Body */}
-      <div className="guide-markdown-content bg-white rounded-3xl p-6 sm:p-10 border border-slate-200/80 shadow-xs space-y-6 text-slate-800 leading-relaxed text-base">
+      <div className="guide-markdown-content bg-white rounded-3xl p-4 sm:p-8 border border-slate-200/80 shadow-xs space-y-6 text-slate-800 leading-relaxed text-base">
         <ReactMarkdown
           remarkPlugins={[remarkGfm]}
           components={{
@@ -154,8 +160,8 @@ export const GuideDetailPage: React.FC<GuideDetailPageProps> = ({
                 {children}
               </h1>
             ),
-            h2: ({ children }) => (
-              <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight mt-8 mb-3 pt-3 border-t border-slate-100 flex items-center gap-2">
+            h2: ({ children, node }) => (
+              <h2 id={`muc-${node?.position?.start.line}`} className="scroll-mt-28 text-xl sm:text-2xl font-black text-slate-900 tracking-tight mt-8 mb-3 pt-3 border-t border-slate-100 flex items-center gap-2">
                 <span className="w-2 h-5 bg-[#EE4D2D] rounded-full inline-block"></span>
                 <span>{children}</span>
               </h2>
@@ -166,7 +172,7 @@ export const GuideDetailPage: React.FC<GuideDetailPageProps> = ({
               </h3>
             ),
             p: ({ children }) => (
-              <p className="text-slate-700 text-sm sm:text-base leading-relaxed my-3">
+              <p className="text-slate-700 text-base leading-relaxed my-3">
                 {children}
               </p>
             ),
@@ -174,12 +180,12 @@ export const GuideDetailPage: React.FC<GuideDetailPageProps> = ({
               <strong className="font-extrabold text-slate-900">{children}</strong>
             ),
             ul: ({ children }) => (
-              <ul className="list-disc pl-6 space-y-2 my-3 text-sm sm:text-base text-slate-700">
+              <ul className="list-disc pl-6 space-y-2 my-3 text-base text-slate-700">
                 {children}
               </ul>
             ),
             ol: ({ children }) => (
-              <ol className="list-decimal pl-6 space-y-2 my-3 text-sm sm:text-base text-slate-700">
+              <ol className="list-decimal pl-6 space-y-2 my-3 text-base text-slate-700">
                 {children}
               </ol>
             ),
@@ -207,7 +213,7 @@ export const GuideDetailPage: React.FC<GuideDetailPageProps> = ({
             td: ({ children }) => <td className="px-4 py-3 align-top">{children}</td>,
             hr: () => <hr className="my-6 border-slate-200" />,
             img: ({ src, alt }) => (
-              <figure className="my-6 text-center">
+              <span className="block my-6 text-center">
                 <img
                   src={src}
                   alt={alt || ''}
@@ -215,7 +221,7 @@ export const GuideDetailPage: React.FC<GuideDetailPageProps> = ({
                   referrerPolicy="no-referrer"
                   loading="lazy"
                 />
-              </figure>
+              </span>
             ),
             em: ({ children }) => (
               <em className="text-slate-500 text-xs sm:text-sm block text-center mt-1.5 mb-4 italic font-normal">
@@ -229,7 +235,7 @@ export const GuideDetailPage: React.FC<GuideDetailPageProps> = ({
               return (
                 <a
                   href={targetHref}
-                  target={isInternal ? undefined : '_blank'}
+                  target={isInternal || href?.startsWith('#') ? undefined : '_blank'}
                   rel={isAffiliate ? 'sponsored nofollow noopener noreferrer' : (isInternal ? undefined : 'noopener noreferrer')}
                   onClick={(e) => {
                     if (isInternal && targetHref && e.button === 0 && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey) {
@@ -249,94 +255,22 @@ export const GuideDetailPage: React.FC<GuideDetailPageProps> = ({
         </ReactMarkdown>
       </div>
 
-      {/* Other Related Guides */}
-      <div className="pt-6 border-t border-slate-200 space-y-4">
-        <h3 className="text-lg font-black text-slate-900">
-          Bài Viết Cùng Chủ Đề
-        </h3>
+      {suggestions.length > 0 && <section aria-labelledby="article-products" className="space-y-4 pt-6 border-t border-slate-200">
+        <h2 id="article-products" className="text-xl font-bold">Sản phẩm liên quan trong bài</h2>
+        <p className="text-sm text-slate-600">Đối chiếu thông số và phân loại trên sàn trước khi chọn mua. Giá dưới đây là giá tham khảo.</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {suggestions.map(product => <ProductCard key={product.slug} product={product} onOpenDetail={onOpenDetail || (selected => onNavigate(`/san-pham/${selected.slug}`))} placement="article_related" articleSlug={article.slug} />)}
+        </div>
+      </section>}
+      {readingNext.length > 0 && <section className="pt-6 border-t border-slate-200 space-y-4">
+        <h2 className="text-lg font-bold">Bài Viết Cùng Chủ Đề</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {GUIDE_ARTICLES.filter((a) => a.slug !== article.slug).slice(0, 4).map((related) => (
-            <div
-              key={related.slug}
-              onClick={() => onNavigate(`/cam-nang/${related.slug}`)}
-              className="bg-white p-4 rounded-2xl border border-slate-200 hover:border-orange-300 hover:shadow-xs transition-all cursor-pointer space-y-1.5"
-            >
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-[#EE4D2D] font-bold text-[11px] bg-orange-50 px-2 py-0.5 rounded">
-                  {related.category}
-                </span>
-                <span className="text-slate-400 text-[11px] flex items-center gap-1">
-                  <Clock className="w-3 h-3" />
-                  {related.readTime}
-                </span>
-              </div>
-              <h4 className="text-sm font-extrabold text-slate-900 line-clamp-2 hover:text-[#EE4D2D] transition-colors">
-                {related.title}
-              </h4>
-              <p className="text-xs text-slate-500 line-clamp-2">
-                {related.summary}
-              </p>
-            </div>
-          ))}
+          {readingNext.map(related => <InternalLink key={related.slug} href={`/cam-nang/${related.slug}`} onNavigate={onNavigate} className="block bg-white p-4 rounded-2xl border border-slate-200 hover:border-orange-400 space-y-2">
+            <h3 className="font-bold text-slate-900">{related.title}</h3>
+            <p className="text-sm text-slate-600">{related.summary}</p>
+          </InternalLink>)}
         </div>
-      </div>
-
-      {/* Internal Links to Recommended Categories / Products */}
-      <div className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200/80 rounded-3xl p-6 sm:p-8 space-y-4">
-        <div className="flex items-center gap-2 text-[#EE4D2D] font-black text-sm uppercase tracking-wider">
-          <BookOpen className="w-4 h-4" />
-          <span>Sản Phẩm Đề Xuất Từ LK Hòa</span>
-        </div>
-        <h3 className="text-xl font-black text-slate-900">
-          Khám Phá Dụng Cụ Câu Cá Phù Hợp Bài Viết
-        </h3>
-        <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-          Tra cứu thông số kỹ thuật, giá tham khảo và liên kết mua Shopee Mall chính hãng cho các dòng sản phẩm đồ câu LK Hòa.
-        </p>
-
-        <div className="pt-2 flex flex-wrap gap-2">
-          <a
-            href="/danh-muc/can-cau"
-            onClick={(e) => {
-              e.preventDefault();
-              onNavigate('/danh-muc/can-cau');
-            }}
-            className="bg-white hover:bg-orange-500 hover:text-white text-slate-800 border border-slate-200 text-xs font-bold px-3.5 py-2 rounded-xl transition-all shadow-xs"
-          >
-            Cần Câu LK Hòa
-          </a>
-          <a
-            href="/danh-muc/moi-cau"
-            onClick={(e) => {
-              e.preventDefault();
-              onNavigate('/danh-muc/moi-cau');
-            }}
-            className="bg-white hover:bg-orange-500 hover:text-white text-slate-800 border border-slate-200 text-xs font-bold px-3.5 py-2 rounded-xl transition-all shadow-xs"
-          >
-            Mồi Câu LK Hòa
-          </a>
-          <a
-            href="/danh-muc/day-cau"
-            onClick={(e) => {
-              e.preventDefault();
-              onNavigate('/danh-muc/day-cau');
-            }}
-            className="bg-white hover:bg-orange-500 hover:text-white text-slate-800 border border-slate-200 text-xs font-bold px-3.5 py-2 rounded-xl transition-all shadow-xs"
-          >
-            Dây Câu LK Hòa
-          </a>
-          <a
-            href="/san-pham"
-            onClick={(e) => {
-              e.preventDefault();
-              onNavigate('/san-pham');
-            }}
-            className="bg-[#EE4D2D] hover:bg-orange-600 text-white text-xs font-extrabold px-4 py-2 rounded-xl transition-all shadow-xs"
-          >
-            Xem Tất Cả 66 Sản Phẩm
-          </a>
-        </div>
-      </div>
+      </section>}
     </div>
   );
 };

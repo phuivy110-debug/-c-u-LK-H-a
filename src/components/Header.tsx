@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Settings,
   Menu,
@@ -41,6 +41,15 @@ export const Header: React.FC<HeaderProps> = ({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [categoriesOpen, setCategoriesOpen] = useState(false);
 
+  useEffect(() => { setMobileMenuOpen(false); }, [currentPath]);
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const close = (event: KeyboardEvent) => { if (event.key === 'Escape') { setMobileMenuOpen(false); document.getElementById('mobile-menu-toggle')?.focus(); } };
+    document.addEventListener('keydown', close);
+    return () => document.removeEventListener('keydown', close);
+  }, [mobileMenuOpen]);
+  const search = () => { setMobileMenuOpen(false); onNavigate('/san-pham#catalog-search'); };
+
   const handleCategoryClick = (slug: string) => {
     setMobileMenuOpen(false);
     onNavigate(`/danh-muc/${slug}`);
@@ -48,33 +57,6 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-100 shadow-xs">
-      {/* Top Banner Bar */}
-      <div className="bg-gradient-to-r from-orange-600 via-slate-900 to-slate-950 text-white text-xs font-semibold py-1.5 px-4 text-center flex items-center justify-between gap-2 flex-wrap">
-        <div className="flex items-center gap-2 mx-auto lg:mx-0">
-          <span>Trang Chủ Đồ Câu LK Hòa – Mồi Câu, Cần Câu, Phụ Kiện & Kinh Nghiệm Câu Cá</span>
-        </div>
-        
-        <div className="flex items-center gap-1.5 ml-auto hidden sm:flex">
-          <a
-            href="https://s.shopee.vn/7fYvAFHqaP"
-            target="_blank"
-            rel="sponsored nofollow noopener noreferrer"
-            className="bg-[#EE4D2D] hover:bg-orange-600 text-white px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider flex items-center gap-1 transition-colors"
-          >
-            <span>Shopee LK Hòa</span>
-          </a>
-          <a
-            href={SHARED_TIKTOK_URL}
-            target="_blank"
-            rel="sponsored nofollow noopener noreferrer"
-            className="bg-black hover:bg-slate-800 text-white px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider flex items-center gap-1 transition-colors border border-slate-700"
-          >
-            <TikTokIcon className="w-2.5 h-2.5 fill-current text-white" />
-            <span>TikTok Shop</span>
-          </a>
-        </div>
-      </div>
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 sm:h-20">
           {/* Logo */}
@@ -154,10 +136,10 @@ export const Header: React.FC<HeaderProps> = ({
           </nav>
 
           {/* Right Controls */}
-          <div className="hidden md:flex items-center gap-2.5">
+          <div className="hidden lg:flex items-center gap-2.5">
             <button
-              onClick={() => onNavigate('/san-pham')}
-              className="p-2 text-slate-600 hover:text-[#EE4D2D] rounded-xl hover:bg-slate-50 cursor-pointer"
+              onClick={search}
+              className="min-w-11 min-h-11 p-2 text-slate-600 hover:text-[#EE4D2D] rounded-xl hover:bg-slate-50 cursor-pointer"
               aria-label="Tìm kiếm sản phẩm"
             >
               <Search className="w-5 h-5" />
@@ -179,16 +161,19 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Mobile Toggle */}
           <div className="flex items-center gap-2 lg:hidden">
             <button
-              onClick={() => onNavigate('/san-pham')}
-              className="p-2 text-slate-700 rounded-xl hover:bg-slate-100"
+              onClick={search}
+              className="min-w-11 min-h-11 p-2 text-slate-700 rounded-xl hover:bg-slate-100"
               aria-label="Tìm kiếm sản phẩm"
             >
               <Search className="w-5 h-5" />
             </button>
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 text-slate-700 rounded-xl hover:bg-slate-100 focus:outline-hidden cursor-pointer"
-              aria-label="Mở menu"
+              className="min-w-11 min-h-11 p-2 text-slate-700 rounded-xl hover:bg-slate-100 cursor-pointer"
+              id="mobile-menu-toggle"
+              aria-label={mobileMenuOpen ? 'Đóng menu' : 'Mở menu'}
+              aria-expanded={mobileMenuOpen}
+              aria-controls="mobile-menu"
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
@@ -198,7 +183,7 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* Mobile Menu Drawer */}
       {mobileMenuOpen && (
-        <div className="lg:hidden border-t border-slate-100 bg-white px-4 pt-3 pb-6 space-y-4 shadow-xl max-h-[88vh] overflow-y-auto">
+        <div id="mobile-menu" className="lg:hidden border-t border-slate-100 bg-white px-4 pt-3 pb-6 space-y-4 shadow-xl max-h-[88vh] overflow-y-auto">
           <div className="space-y-1">
             <button
               onClick={() => {
@@ -223,9 +208,13 @@ export const Header: React.FC<HeaderProps> = ({
               </span>
             </button>
 
+            <button onClick={() => { setMobileMenuOpen(false); onNavigate('/cam-nang'); }} className="w-full min-h-11 text-left px-3 py-3 text-sm font-bold rounded-xl hover:bg-slate-50">Cẩm Nang</button>
+
             {/* Categories Accordion */}
             <div className="rounded-2xl border border-slate-200/80 bg-slate-50/50 overflow-hidden">
               <button
+                aria-expanded={categoriesOpen}
+                aria-controls="mobile-categories"
                 onClick={() => setCategoriesOpen(!categoriesOpen)}
                 className="w-full flex items-center justify-between p-3 text-sm font-extrabold text-slate-800 hover:bg-slate-100/60 transition-colors cursor-pointer"
               >
@@ -238,7 +227,7 @@ export const Header: React.FC<HeaderProps> = ({
               </button>
 
               {categoriesOpen && (
-                <div className="px-2 pb-2.5 space-y-1 pt-1 border-t border-slate-200/60 bg-white">
+                <div id="mobile-categories" className="px-2 pb-2.5 space-y-1 pt-1 border-t border-slate-200/60 bg-white">
                   {categories.map((cat) => (
                     <button
                       key={cat.slug}

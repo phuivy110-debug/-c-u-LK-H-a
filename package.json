@@ -10,7 +10,8 @@
     "start": "node dist/server.cjs",
     "clean": "rm -rf dist server.js",
     "lint": "tsc --noEmit",
-    "test:schema": "tsx scripts/verify-data-schema.ts"
+    "test:schema": "tsx scripts/verify-data-schema.ts",
+    "test:ux": "node scripts/verify-ui-ux.mjs"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",

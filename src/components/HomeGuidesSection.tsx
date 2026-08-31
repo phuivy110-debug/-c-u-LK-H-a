@@ -1,3 +1,5 @@
+import { InternalLink } from './InternalLink';
+import { useHistoryState } from '../utils/useHistoryState';
 import React, { useState } from 'react';
 import {
   BookOpen,
@@ -29,7 +31,7 @@ const TOPIC_FILTERS = [
 ];
 
 export const HomeGuidesSection: React.FC<HomeGuidesSectionProps> = ({ onNavigate }) => {
-  const [selectedTopic, setSelectedTopic] = useState<string>('all');
+  const [selectedTopic, setSelectedTopic] = useHistoryState<string>('home-topic', 'all');
 
   const filteredArticles = GUIDE_ARTICLES.filter((art) => {
     if (selectedTopic === 'all') return true;
@@ -96,8 +98,8 @@ export const HomeGuidesSection: React.FC<HomeGuidesSectionProps> = ({ onNavigate
         {/* Left: Featured Spotlight Article (5 columns on large screen) */}
         {featuredArticle && (
           <div className="lg:col-span-5 flex flex-col">
-            <article
-              onClick={() => onNavigate(`/cam-nang/${featuredArticle.slug}`)}
+            <InternalLink
+              href={`/cam-nang/${featuredArticle.slug}`} onNavigate={onNavigate}
               className="bg-gradient-to-br from-slate-900 via-slate-800 to-orange-950 text-white rounded-3xl p-6 sm:p-7 shadow-lg border border-slate-800 hover:border-orange-500/50 transition-all cursor-pointer flex-1 flex flex-col justify-between group relative overflow-hidden"
             >
               {/* Background watermark */}
@@ -123,16 +125,7 @@ export const HomeGuidesSection: React.FC<HomeGuidesSectionProps> = ({ onNavigate
                     {featuredArticle.category}
                   </span>
                   <h3 className="text-xl sm:text-2xl font-black text-white group-hover:text-orange-300 transition-colors leading-snug">
-                    <a
-                      href={`/cam-nang/${featuredArticle.slug}`}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        onNavigate(`/cam-nang/${featuredArticle.slug}`);
-                      }}
-                      className="hover:underline"
-                    >
-                      {featuredArticle.title}
-                    </a>
+                    {featuredArticle.title}
                   </h3>
                   <p className="text-xs sm:text-sm text-slate-300 line-clamp-3 leading-relaxed font-normal">
                     {featuredArticle.summary}
@@ -152,16 +145,16 @@ export const HomeGuidesSection: React.FC<HomeGuidesSectionProps> = ({ onNavigate
                   <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                 </span>
               </div>
-            </article>
+            </InternalLink>
           </div>
         )}
 
         {/* Right: Grid of 4 compact articles (7 columns on large screen) */}
         <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
           {sideArticles.map((article) => (
-            <article
+            <InternalLink
               key={article.slug}
-              onClick={() => onNavigate(`/cam-nang/${article.slug}`)}
+              href={`/cam-nang/${article.slug}`} onNavigate={onNavigate}
               className="bg-white rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-orange-300 transition-all cursor-pointer p-4 sm:p-5 flex flex-col justify-between group"
             >
               <div className="space-y-2.5">
@@ -176,16 +169,7 @@ export const HomeGuidesSection: React.FC<HomeGuidesSectionProps> = ({ onNavigate
                 </div>
 
                 <h4 className="text-sm sm:text-base font-extrabold text-slate-900 group-hover:text-[#EE4D2D] transition-colors leading-snug line-clamp-2">
-                  <a
-                    href={`/cam-nang/${article.slug}`}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      onNavigate(`/cam-nang/${article.slug}`);
-                    }}
-                    className="hover:underline"
-                  >
-                    {article.title}
-                  </a>
+                  {article.title}
                 </h4>
 
                 <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
@@ -202,7 +186,7 @@ export const HomeGuidesSection: React.FC<HomeGuidesSectionProps> = ({ onNavigate
                   <ChevronRight className="w-3.5 h-3.5" />
                 </span>
               </div>
-            </article>
+            </InternalLink>
           ))}
         </div>
       </div>

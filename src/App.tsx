@@ -3,7 +3,6 @@ import { Header } from './components/Header';
 import { Hero } from './components/Hero';
 import { ProductCard } from './components/ProductCard';
 import { ProductDetailPage } from './components/ProductDetailPage';
-import { ProductDetailModal } from './components/ProductDetailModal';
 import { CatalogPage } from './components/CatalogPage';
 import { CategoryPage } from './components/CategoryPage';
 import { GuidePage } from './components/GuidePage';
@@ -56,15 +55,43 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
   const [currentPath, setCurrentPath] = useState<string>(() => {
     return normalizeInternalPath(initialPath ?? (typeof window !== 'undefined' ? window.location.pathname : '/'));
   });
+  const [routeVersion, setRouteVersion] = useState(0);
+  const restoreScroll = useRef<number | null>(null);
+  const activeLocation = useRef(typeof window === 'undefined' ? initialPath || '/' : window.location.pathname + window.location.search);
 
   // Listen to popstate (browser back/forward buttons)
   useEffect(() => {
+    const previousRestoration = window.history.scrollRestoration;
+    window.history.scrollRestoration = 'manual';
     const handlePopState = () => {
+      const location = window.location.pathname + window.location.search;
+      if (location === activeLocation.current) return; // Native in-page anchors keep their own scroll/history.
+      activeLocation.current = location;
+      restoreScroll.current = window.history.state?.scrollY ?? 0;
       setCurrentPath(normalizeInternalPath(window.location.pathname || '/'));
+      setRouteVersion(value => value + 1);
     };
     window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+      window.history.scrollRestoration = previousRestoration;
+    };
   }, []);
+
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => {
+      if (restoreScroll.current !== null) {
+        window.scrollTo({ top: restoreScroll.current, behavior: 'instant' });
+        restoreScroll.current = null;
+      } else if (window.location.hash === '#catalog-search') {
+        document.getElementById('catalog-search')?.focus();
+      } else if (routeVersion > 0) {
+        document.querySelector<HTMLElement>('main')?.focus({ preventScroll: true });
+        window.scrollTo({ top: 0, behavior: 'instant' });
+      }
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [currentPath, routeVersion]);
 
   const metadataPath = useRef(currentPath);
   useEffect(() => {
@@ -119,9 +146,15 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
 
   const navigate = useCallback((path: string) => {
     const target = normalizeInternalPath(path);
+    if (target === `${window.location.pathname}${window.location.search}${window.location.hash}`) {
+      if (target.endsWith('#catalog-search')) document.getElementById('catalog-search')?.focus();
+      return;
+    }
+    window.history.replaceState({ ...window.history.state, scrollY: window.scrollY }, '');
     window.history.pushState({}, '', target);
+    activeLocation.current = window.location.pathname + window.location.search;
     setCurrentPath(target.split(/[?#]/)[0]);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setRouteVersion(value => value + 1);
   }, []);
 
   // Google Sheet Sync State
@@ -136,7 +169,6 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
   const [searchQuery, setSearchQuery] = useState('');
 
   // Modals & Feedback
-  const [selectedDetailProduct, setSelectedDetailProduct] = useState<Product | null>(null);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [isSeoModalOpen, setIsSeoModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -209,8 +241,8 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
     handleSyncGoogleSheet(sheetUrl, true);
   }, []);
 
-  const handleOpenDetailModal = (product: Product) => {
-    setSelectedDetailProduct(product);
+  const handleOpenDetail = (product: Product) => {
+    navigate(`/san-pham/${product.slug}`);
   };
 
   // Filter active products
@@ -242,7 +274,7 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
           productSlug={productSlug}
           products={products}
           onNavigate={navigate}
-          onOpenDetail={handleOpenDetailModal}
+          onOpenDetail={handleOpenDetail}
         />
       );
     }
@@ -255,7 +287,7 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
           categorySlug={categorySlug}
           products={products}
           onNavigate={navigate}
-          onOpenDetail={handleOpenDetailModal}
+          onOpenDetail={handleOpenDetail}
         />
       );
     }
@@ -268,7 +300,7 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
           guideSlug={guideSlug}
           products={products}
           onNavigate={navigate}
-          onOpenDetail={handleOpenDetailModal}
+          onOpenDetail={handleOpenDetail}
         />
       );
     }
@@ -286,7 +318,7 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
           guideSlug={directGuide.slug}
           products={products}
           onNavigate={navigate}
-          onOpenDetail={handleOpenDetailModal}
+          onOpenDetail={handleOpenDetail}
         />
       );
     }
@@ -297,8 +329,8 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
         <CatalogPage
           products={products}
           onNavigate={navigate}
-          onOpenDetail={handleOpenDetailModal}
-          initialQuery={searchQuery}
+          onOpenDetail={handleOpenDetail}
+          initialQuery={typeof window === 'undefined' ? '' : new URLSearchParams(window.location.search).get('q') || ''}
         />
       );
     }
@@ -311,13 +343,9 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
           onScrollToCatalog={() => {
             navigate('/san-pham');
           }}
+          onSearch={() => navigate(`/san-pham?q=${encodeURIComponent(searchQuery.trim())}#catalog-search`)}
           searchQuery={searchQuery}
-          onSearchChange={(q) => {
-            setSearchQuery(q);
-            if (q.trim()) {
-              navigate('/san-pham');
-            }
-          }}
+          onSearchChange={setSearchQuery}
           activeCount={activeProducts.length}
         />
 
@@ -409,7 +437,7 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
                 <ProductCard
                   key={product.id}
                   product={product}
-                  onOpenDetail={handleOpenDetailModal}
+                  onOpenDetail={handleOpenDetail}
                 />
               ))}
             </div>
@@ -445,7 +473,7 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
       />
 
       {/* Main Content Area */}
-      <main className="flex-1">{renderContent()}</main>
+      <main key={`${currentPath}:${routeVersion}`} tabIndex={-1} className="flex-1 outline-none">{renderContent()}</main>
 
       {/* Footer */}
       <Footer />
@@ -456,15 +484,6 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
         onClose={() => setIsSeoModalOpen(false)}
         productCount={activeProducts.length}
       />}
-
-      {/* Product Detail Modal */}
-      <ProductDetailModal
-        product={selectedDetailProduct}
-        allProducts={products}
-        onClose={() => setSelectedDetailProduct(null)}
-        onCopyLink={() => {}}
-        onSelectProduct={(p) => setSelectedDetailProduct(p)}
-      />
 
       {/* Admin Google Sheet Configuration Modal */}
       <AffiliateGuideModal

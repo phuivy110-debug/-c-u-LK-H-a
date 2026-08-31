@@ -42,7 +42,6 @@ const MODEL_OPTIONS = [
 
 export const ChatBot: React.FC<ChatBotProps> = ({ products }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [showWelcomeToast, setShowWelcomeToast] = useState(true);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [selectedModel, setSelectedModel] = useState('gemini-3.6-flash');
@@ -61,20 +60,12 @@ export const ChatBot: React.FC<ChatBotProps> = ({ products }) => {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowWelcomeToast(true);
-    }, 1200);
-    return () => clearTimeout(timer);
-  }, []);
-
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   useEffect(() => {
     if (isOpen) {
-      setShowWelcomeToast(false);
       scrollToBottom();
     }
   }, [messages, isOpen]);
@@ -264,85 +255,8 @@ export const ChatBot: React.FC<ChatBotProps> = ({ products }) => {
 
   return (
     <>
-      <div className="fixed bottom-5 right-5 z-40 flex flex-col items-end gap-2">
-        <AnimatePresence>
-          {!isOpen && showWelcomeToast && (
-            <motion.div
-              initial={{ opacity: 0, y: 10, scale: 0.9 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 10, scale: 0.9 }}
-              className="bg-slate-900 text-white rounded-2xl p-3.5 shadow-2xl border border-slate-700/80 max-w-[280px] sm:max-w-[320px] relative text-xs"
-            >
-              <button
-                onClick={() => setShowWelcomeToast(false)}
-                className="absolute top-2 right-2 text-slate-400 hover:text-white p-1 rounded-full cursor-pointer"
-                title="Đóng thông báo"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-
-              <div className="flex items-start gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-[#EE4D2D] flex items-center justify-center text-white font-bold shrink-0 shadow-md">
-                  <Fish className="w-5 h-5 text-yellow-200" />
-                </div>
-                <div>
-                  <div className="font-black text-yellow-300 text-[11px] uppercase tracking-wide flex items-center gap-1">
-                    <Sparkles className="w-3 h-3" /> Trợ lý LK Hòa Chào Bác!
-                  </div>
-                  <p className="text-slate-200 mt-1 leading-relaxed text-[11px]">
-                    Bác cần tư vấn chọn <strong className="text-white">cần câu đài (5H/6H)</strong>, mồi cám chép rô hay <strong className="text-orange-400">tra cứu sản phẩm</strong> hôm nay?
-                  </p>
-
-                  <button
-                    onClick={() => {
-                      setIsOpen(true);
-                      setShowWelcomeToast(false);
-                    }}
-                    className="mt-2.5 w-full bg-gradient-to-r from-[#EE4D2D] to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-extrabold py-1.5 px-3 rounded-xl flex items-center justify-center gap-1.5 cursor-pointer shadow-md text-[11px] uppercase tracking-wider"
-                  >
-                    <MessageCircle className="w-3.5 h-3.5" />
-                    <span>Hỏi Ngay Với AI</span>
-                  </button>
-                </div>
-              </div>
-
-              <div className="absolute -bottom-2 right-6 w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[8px] border-t-slate-900" />
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {!isOpen && (
-          <motion.button
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => {
-              setIsOpen(true);
-              setShowWelcomeToast(false);
-            }}
-            className="group bg-gradient-to-r from-[#EE4D2D] to-orange-600 text-white rounded-full p-3.5 sm:px-5 sm:py-3.5 shadow-2xl hover:shadow-orange-500/40 border-2 border-white/80 flex items-center gap-3 cursor-pointer relative"
-          >
-            <div className="relative flex items-center justify-center">
-              <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-                <Fish className="w-5 h-5 text-yellow-300 animate-bounce" />
-              </div>
-              <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-emerald-400 border-2 border-white" />
-            </div>
-
-            <div className="hidden sm:block text-left">
-              <div className="text-xs font-black uppercase tracking-wider text-yellow-200 flex items-center gap-1">
-                <Sparkles className="w-3 h-3" /> Trợ Lý AI LK Hòa
-              </div>
-              <div className="text-xs font-bold leading-tight text-white">Hỏi đáp đồ câu 24/7</div>
-            </div>
-
-            <span className="absolute -top-1 -right-1 flex h-4 w-4">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-4 w-4 bg-yellow-300 border border-white"></span>
-            </span>
-          </motion.button>
-        )}
+      <div className="fixed bottom-3 right-3 z-40">
+        {!isOpen && <button aria-label="Mở hỗ trợ LK Hòa" onClick={() => setIsOpen(true)} className="w-11 h-11 rounded-full bg-slate-900 text-white flex items-center justify-center shadow-md border border-white"><MessageCircle className="w-5 h-5" /></button>}
       </div>
 
       <AnimatePresence>

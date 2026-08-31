@@ -10,6 +10,7 @@ const TikTokIcon: React.FC<{ className?: string }> = ({ className = 'w-5 h-5' })
 
 interface HeroProps {
   onScrollToCatalog: () => void;
+  onSearch: () => void;
   searchQuery: string;
   onSearchChange: (query: string) => void;
   activeCount: number;
@@ -17,6 +18,7 @@ interface HeroProps {
 
 export const Hero: React.FC<HeroProps> = ({
   onScrollToCatalog,
+  onSearch,
   searchQuery,
   onSearchChange,
   activeCount,
@@ -48,23 +50,31 @@ export const Hero: React.FC<HeroProps> = ({
             </div>
 
             <div className="relative z-10 mt-8 space-y-4">
-              <div className="relative flex items-center bg-white rounded-2xl p-1.5 shadow-lg max-w-xl focus-within:ring-2 focus-within:ring-yellow-300 transition-all">
+              <form role="search" onSubmit={event => { event.preventDefault(); onSearch(); }} className="relative flex items-center bg-white rounded-2xl p-1.5 shadow-lg max-w-xl focus-within:ring-2 focus-within:ring-yellow-300 transition-all">
                 <Search className="w-5 h-5 text-slate-400 ml-3 shrink-0" />
                 <input
                   type="text"
+                  aria-label="Tìm kiếm đồ câu"
+                  enterKeyHint="search"
+                  onKeyDown={event => {
+                    if (event.key === 'Enter' && !event.nativeEvent.isComposing) {
+                      event.preventDefault();
+                      onSearch();
+                    }
+                  }}
                   placeholder="Tìm kiếm đồ câu (Cần tay 6H, Máy Shimano, Mồi chép LK Hòa...)"
                   value={searchQuery}
                   onChange={(e) => onSearchChange(e.target.value)}
                   className="w-full bg-transparent px-3 py-2 text-sm text-slate-800 focus:outline-hidden placeholder:text-slate-400"
                 />
                 <button
-                  onClick={onScrollToCatalog}
+                  type="submit"
                   className="bg-[#EE4D2D] hover:bg-orange-600 text-white font-bold px-4 sm:px-6 py-2.5 rounded-xl text-xs sm:text-sm flex items-center gap-1.5 shrink-0 transition-transform active:scale-95 cursor-pointer"
                 >
                   <span>Tìm Kiếm</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
-              </div>
+              </form>
 
               <div className="flex flex-wrap items-center gap-3 pt-2">
                 <button

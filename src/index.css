@@ -1,1 +1,11 @@
 @import "tailwindcss";
+
+:where(a, button, input, select, summary):focus-visible {
+  outline: 3px solid #c2410c;
+  outline-offset: 3px;
+}
+input[type="search"]::-webkit-search-cancel-button { -webkit-appearance: none; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto !important; }
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}

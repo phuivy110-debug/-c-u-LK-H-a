@@ -44,7 +44,7 @@ export const ScrollToTopButton: React.FC = () => {
           aria-label="Quay lại đầu trang"
         >
           <div className="bg-slate-800 group-hover:bg-orange-600 p-1.5 rounded-xl transition-colors">
-            <ArrowUp className="w-4 h-4 text-orange-400 group-hover:text-white transition-colors animate-bounce" />
+            <ArrowUp className="w-4 h-4 text-orange-400 group-hover:text-white transition-colors" />
           </div>
           <span className="text-xs font-bold tracking-tight hidden sm:inline-block pr-0.5">
             Quay lại đầu trang
