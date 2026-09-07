@@ -5,7 +5,53 @@
   outline-offset: 3px;
 }
 input[type="search"]::-webkit-search-cancel-button { -webkit-appearance: none; }
+
+/* Subtle, smooth, GPU-accelerated CTA button hover effect */
+.cta-btn,
+[data-cta="true"],
+.btn-cta,
+[data-affiliate-tracked="true"] a {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  will-change: transform;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .cta-btn:hover,
+  [data-cta="true"]:hover,
+  .btn-cta:hover,
+  [data-affiliate-tracked="true"] a:hover {
+    transform: scale(1.025) translateZ(0);
+    box-shadow: 0 6px 18px -2px rgba(0, 0, 0, 0.12), 0 3px 8px -1px rgba(0, 0, 0, 0.06);
+  }
+}
+
+.cta-btn:active,
+[data-cta="true"]:active,
+.btn-cta:active,
+[data-affiliate-tracked="true"] a:active {
+  transform: scale(0.98) translateZ(0);
+}
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto !important; }
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  .cta-btn,
+  [data-cta="true"],
+  .btn-cta,
+  [data-affiliate-tracked="true"] a,
+  .cta-btn:hover,
+  [data-cta="true"]:hover,
+  .btn-cta:hover,
+  [data-affiliate-tracked="true"] a:hover,
+  .cta-btn:active,
+  [data-cta="true"]:active,
+  .btn-cta:active,
+  [data-affiliate-tracked="true"] a:active {
+    transform: none !important;
+    transition: none !important;
+    will-change: auto !important;
+  }
 }
+

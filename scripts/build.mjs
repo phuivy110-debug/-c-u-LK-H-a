@@ -1,4 +1,5 @@
 import { build, createServer } from 'vite';
+import { build as esbuild } from 'esbuild';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -22,3 +23,16 @@ try {
 } finally {
   await renderer.close();
 }
+
+// Bundle server entry for production node dist/server.cjs
+await esbuild({
+  entryPoints: ['server.ts'],
+  bundle: true,
+  platform: 'node',
+  format: 'cjs',
+  packages: 'external',
+  sourcemap: true,
+  outfile: 'dist/server.cjs',
+});
+console.log('Production server bundle generated at dist/server.cjs');
+

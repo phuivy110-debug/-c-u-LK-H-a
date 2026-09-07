@@ -8,9 +8,11 @@ import {
   MessageCircle,
   Sparkles,
   ArrowRight,
-  Store
+  Store,
+  MapPin,
 } from 'lucide-react';
 import { SHARED_TIKTOK_URL } from '../utils/googleSheetSync';
+import { GOOGLE_MAPS_STORE_URL } from '../utils/site';
 
 interface RealtimeTrafficTrustSectionProps {
   onScrollToCatalog?: () => void;
@@ -43,7 +45,8 @@ export const RealtimeTrafficTrustSection: React.FC<RealtimeTrafficTrustSectionPr
               href="https://s.shopee.vn/7fYvAFHqaP"
               target="_blank"
               rel="sponsored nofollow noopener noreferrer"
-              className="inline-flex items-center gap-1.5 bg-[#EE4D2D] hover:bg-orange-600 text-white px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition-all shadow-md hover:shadow-lg cursor-pointer"
+              data-cta="true"
+              className="cta-btn inline-flex items-center gap-1.5 bg-[#EE4D2D] hover:bg-orange-600 text-white px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold shadow-md cursor-pointer"
             >
               <Store className="w-4 h-4" />
               <span>Shopee Mall LK Hòa</span>
@@ -160,23 +163,34 @@ export const RealtimeTrafficTrustSection: React.FC<RealtimeTrafficTrustSectionPr
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5 shrink-0">
+          <div className="flex flex-wrap items-center gap-2.5 shrink-0">
             <a
               href="tel:0933040999"
-              className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-xs font-extrabold transition-colors"
+              className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white px-3.5 py-2 rounded-xl text-xs font-extrabold transition-colors"
             >
               <Phone className="w-3.5 h-3.5" />
-              <span>Gọi 0933 040 999</span>
+              <span>0933 040 999</span>
             </a>
 
             <a
-              href="https://zalo.me/0933040999"
+              href="https://zalo.me/3835730533921276555"
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-xs font-extrabold transition-colors"
+              className="inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white px-3.5 py-2 rounded-xl text-xs font-extrabold transition-colors"
             >
               <MessageCircle className="w-3.5 h-3.5" />
               <span>Chat Zalo</span>
+            </a>
+
+            <a
+              href={GOOGLE_MAPS_STORE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700 px-3.5 py-2 rounded-xl text-xs font-bold transition-colors"
+              title="Xem bản đồ chỉ đường Google Maps đến shop Đồ Câu LK Hòa"
+            >
+              <MapPin className="w-3.5 h-3.5 text-red-400" />
+              <span>Google Maps</span>
             </a>
           </div>
         </div>

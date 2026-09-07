@@ -29,12 +29,14 @@ export function AffiliateButtons({ productId, productName, shopeeUrl, tiktokUrl,
     {shopee ? <a href={shopee} target="_blank" rel="sponsored nofollow noopener noreferrer"
       aria-label={`Xem ${productName || 'sản phẩm'} trên Shopee`}
       onClick={event => { event.stopPropagation(); trackAffiliateClick('shopee', shopee, productId, productName, { ...context, destinationType: 'product' }); }}
-      className="min-h-11 px-3 py-3 rounded-xl bg-[#EE4D2D] hover:bg-orange-700 text-white text-sm font-bold flex items-center justify-center gap-1.5 text-center">
+      data-cta="true"
+      className="cta-btn min-h-11 px-3 py-3 rounded-xl bg-[#EE4D2D] hover:bg-orange-700 text-white text-sm font-bold flex items-center justify-center gap-1.5 text-center cursor-pointer">
       Xem trên Shopee <ExternalLink aria-hidden="true" className="w-3.5 h-3.5 shrink-0" />
     </a> : <span className="text-sm text-slate-600 py-3">Chưa có link sản phẩm Shopee</span>}
     <a href={tiktok} target="_blank" rel="sponsored nofollow noopener noreferrer"
       onClick={event => { event.stopPropagation(); trackAffiliateClick('tiktok', tiktok, productId, productName, { ...context, destinationType: directTikTok ? 'product' : 'store' }); }}
-      className="min-h-11 px-3 py-3 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-100 text-sm font-semibold flex items-center justify-center gap-1.5 text-center">
+      data-cta="true"
+      className="cta-btn min-h-11 px-3 py-3 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-100 text-sm font-semibold flex items-center justify-center gap-1.5 text-center cursor-pointer">
       {directTikTok ? 'Xem trên TikTok' : 'Gian hàng TikTok'} <ExternalLink aria-hidden="true" className="w-3.5 h-3.5 shrink-0" />
     </a>
   </div>;

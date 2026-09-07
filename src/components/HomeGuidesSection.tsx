@@ -64,7 +64,8 @@ export const HomeGuidesSection: React.FC<HomeGuidesSectionProps> = ({ onNavigate
 
         <button
           onClick={() => onNavigate('/cam-nang')}
-          className="self-start sm:self-auto bg-slate-900 hover:bg-[#EE4D2D] text-white font-extrabold text-xs sm:text-sm px-4 py-2.5 rounded-xl shadow-xs transition-all flex items-center gap-2 cursor-pointer shrink-0"
+          data-cta="true"
+          className="cta-btn self-start sm:self-auto bg-slate-900 hover:bg-[#EE4D2D] text-white font-extrabold text-xs sm:text-sm px-4 py-2.5 rounded-xl shadow-xs flex items-center gap-2 cursor-pointer shrink-0"
         >
           <span>Xem tất cả cẩm nang ({GUIDE_ARTICLES.length})</span>
           <ArrowRight className="w-4 h-4" />

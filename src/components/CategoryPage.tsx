@@ -105,7 +105,8 @@ export const CategoryPage: React.FC<CategoryPageProps> = ({
               setSearchQuery('');
               onNavigate('/san-pham');
             }}
-            className="bg-[#EE4D2D] text-white text-xs font-bold px-4 py-2 rounded-xl cursor-pointer"
+            data-cta="true"
+            className="cta-btn bg-[#EE4D2D] hover:bg-orange-600 text-white text-xs font-bold px-4 py-2 rounded-xl cursor-pointer"
           >
             Xem tất cả sản phẩm
           </button>

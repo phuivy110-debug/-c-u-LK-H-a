@@ -69,7 +69,8 @@ export const Hero: React.FC<HeroProps> = ({
                 />
                 <button
                   type="submit"
-                  className="bg-[#EE4D2D] hover:bg-orange-600 text-white font-bold px-4 sm:px-6 py-2.5 rounded-xl text-xs sm:text-sm flex items-center gap-1.5 shrink-0 transition-transform active:scale-95 cursor-pointer"
+                  data-cta="true"
+                  className="cta-btn bg-[#EE4D2D] hover:bg-orange-600 text-white font-bold px-4 sm:px-6 py-2.5 rounded-xl text-xs sm:text-sm flex items-center gap-1.5 shrink-0 cursor-pointer"
                 >
                   <span>Tìm Kiếm</span>
                   <ArrowRight className="w-4 h-4" />
@@ -79,7 +80,8 @@ export const Hero: React.FC<HeroProps> = ({
               <div className="flex flex-wrap items-center gap-3 pt-2">
                 <button
                   onClick={onScrollToCatalog}
-                  className="bg-white text-[#EE4D2D] hover:bg-orange-50 font-extrabold text-sm px-6 py-3 rounded-xl shadow-md transition-all flex items-center gap-2 cursor-pointer active:scale-95"
+                  data-cta="true"
+                  className="cta-btn bg-white text-[#EE4D2D] hover:bg-orange-50 font-extrabold text-sm px-6 py-3 rounded-xl shadow-md flex items-center gap-2 cursor-pointer"
                 >
                   <span>Xem Sản Phẩm ({activeCount})</span>
                   <ArrowRight className="w-4 h-4" />
@@ -121,7 +123,8 @@ export const Hero: React.FC<HeroProps> = ({
                 href="https://s.shopee.vn/7fYvAFHqaP"
                 target="_blank"
                 rel="sponsored nofollow noopener noreferrer"
-                className="bg-gradient-to-r from-orange-500 to-[#EE4D2D] hover:from-orange-600 hover:to-[#d73f21] text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-xs hover:shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer group"
+                data-cta="true"
+                className="cta-btn bg-gradient-to-r from-orange-500 to-[#EE4D2D] hover:from-orange-600 hover:to-[#d73f21] text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-xs flex items-center justify-center gap-2 cursor-pointer group"
               >
                 <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
                 <span className="font-extrabold">Shopee LK Hòa</span>
@@ -133,7 +136,8 @@ export const Hero: React.FC<HeroProps> = ({
                 href={SHARED_TIKTOK_URL}
                 target="_blank"
                 rel="sponsored nofollow noopener noreferrer"
-                className="bg-slate-900 hover:bg-black text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-xs hover:shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer border border-slate-800 group"
+                data-cta="true"
+                className="cta-btn bg-slate-900 hover:bg-black text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-xs flex items-center justify-center gap-2 cursor-pointer border border-slate-800 group"
               >
                 <TikTokIcon className="w-3.5 h-3.5 fill-current text-white" />
                 <span className="font-extrabold">TikTok Shop LK</span>

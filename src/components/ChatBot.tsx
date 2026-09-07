@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { Product } from '../types';
+import { ZALO_CHAT_URL, GOOGLE_MAPS_STORE_URL } from '../utils/site';
 import {
   Bot,
   Send,
@@ -12,8 +13,16 @@ import {
   Info,
   ShoppingCart,
   MessageCircle,
+  MapPin,
+  Navigation,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+
+export interface GroundingPlace {
+  uri: string;
+  title: string;
+  snippet?: string;
+}
 
 interface ChatMessage {
   id: string;
@@ -21,6 +30,7 @@ interface ChatMessage {
   content: string;
   timestamp: string;
   recommendedProducts?: Product[];
+  groundingPlaces?: GroundingPlace[];
 }
 
 interface ChatBotProps {
@@ -28,6 +38,7 @@ interface ChatBotProps {
 }
 
 const QUICK_QUESTIONS = [
+  '📍 Địa chỉ & Google Maps chỉ đường đến shop LK Hòa?',
   '🎣 Tư vấn cần câu đài 5H đập chết rô chép giá mềm?',
   '🐟 Mồi cám chép LK Hòa kết hợp thính thế nào nhạy nhất?',
   '⚡ Cần Lure LK HSSV / Sinh viên giá bao nhiêu?',
@@ -35,8 +46,8 @@ const QUICK_QUESTIONS = [
 ];
 
 const MODEL_OPTIONS = [
+  { id: 'gemini-3.5-flash', name: 'Gemini 3.5 Flash', desc: 'Google Maps Grounding' },
   { id: 'gemini-3.6-flash', name: 'Gemini 3.6 Flash', desc: 'Nhanh & Thông Minh' },
-  { id: 'gemini-3.5-flash', name: 'Gemini 3.5 Flash', desc: 'Chính Xác & Tốt' },
   { id: 'gemini-3.1-flash-lite', name: 'Gemini 3.1 Flash Lite', desc: 'Tốc Độ Cao' },
 ];
 
@@ -44,7 +55,7 @@ export const ChatBot: React.FC<ChatBotProps> = ({ products }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedModel, setSelectedModel] = useState('gemini-3.6-flash');
+  const [selectedModel, setSelectedModel] = useState('gemini-3.5-flash');
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: 'welcome-1',
@@ -142,6 +153,10 @@ export const ChatBot: React.FC<ChatBotProps> = ({ products }) => {
           messages: apiPayloadMessages,
           products,
           selectedModel,
+          userLocation: {
+            latitude: 19.4154285,
+            longitude: 105.4515155,
+          },
         }),
       });
 
@@ -150,6 +165,18 @@ export const ChatBot: React.FC<ChatBotProps> = ({ products }) => {
       if (data.error) {
         throw new Error(data.error);
       }
+
+      const isLocationQuery = /địa chỉ|ở đâu|chỉ đường|bản đồ|google maps|maps|vị trí|shop ở|cửa hàng ở/i.test(textToSend);
+      const returnedPlaces: GroundingPlace[] | undefined =
+        data.groundingPlaces && Array.isArray(data.groundingPlaces) && data.groundingPlaces.length > 0
+          ? data.groundingPlaces
+          : (isLocationQuery ? [
+              {
+                uri: GOOGLE_MAPS_STORE_URL,
+                title: 'Cửa hàng Đồ Câu LK Hòa (Nghệ An)',
+                snippet: 'Đường mòn Hồ Chí Minh, Xóm Yên Lâm, Xã Nghĩa Lâm, Huyện Nghĩa Đàn, Tỉnh Nghệ An. Mở bản đồ chỉ đường trực tiếp trên Google Maps.'
+              }
+            ] : undefined);
 
       const botMsg: ChatMessage = {
         id: `bot-${Date.now()}`,
@@ -160,22 +187,33 @@ export const ChatBot: React.FC<ChatBotProps> = ({ products }) => {
           minute: '2-digit',
         }),
         recommendedProducts: matchedProds.length > 0 ? matchedProds : undefined,
+        groundingPlaces: returnedPlaces,
       };
 
       setMessages((prev) => [...prev, botMsg]);
     } catch (err: any) {
       console.error('Bot response error:', err);
+      const isLocationQuery = /địa chỉ|ở đâu|chỉ đường|bản đồ|google maps|maps|vị trí|shop ở|cửa hàng ở/i.test(textToSend);
+      const fallbackPlaces: GroundingPlace[] | undefined = isLocationQuery ? [
+        {
+          uri: GOOGLE_MAPS_STORE_URL,
+          title: 'Cửa hàng Đồ Câu LK Hòa (Nghệ An)',
+          snippet: 'Đường mòn Hồ Chí Minh, Xóm Yên Lâm, Xã Nghĩa Lâm, Huyện Nghĩa Đàn, Tỉnh Nghệ An. Xem bản đồ chỉ đường trực tiếp trên Google Maps.'
+        }
+      ] : undefined;
+
       const errorMsg: ChatMessage = {
         id: `err-${Date.now()}`,
         role: 'assistant',
         content: `⚠️ Có chút gián đoạn kết nối AI: ${
           err.message || 'Chưa nhận được phản hồi.'
-        }\n\nBác hãy thử gửi lại câu hỏi nhé!`,
+        }\n\nBác hãy thử gửi lại câu hỏi hoặc bấm chỉ đường Google Maps bên dưới nhé!`,
         timestamp: new Date().toLocaleTimeString('vi-VN', {
           hour: '2-digit',
           minute: '2-digit',
         }),
         recommendedProducts: matchedProds.length > 0 ? matchedProds : undefined,
+        groundingPlaces: fallbackPlaces,
       };
       setMessages((prev) => [...prev, errorMsg]);
     } finally {
@@ -256,7 +294,16 @@ export const ChatBot: React.FC<ChatBotProps> = ({ products }) => {
   return (
     <>
       <div className="fixed bottom-3 right-3 z-40">
-        {!isOpen && <button aria-label="Mở hỗ trợ LK Hòa" onClick={() => setIsOpen(true)} className="w-11 h-11 rounded-full bg-slate-900 text-white flex items-center justify-center shadow-md border border-white"><MessageCircle className="w-5 h-5" /></button>}
+        {!isOpen && (
+          <button
+            aria-label="Mở hỗ trợ LK Hòa"
+            onClick={() => setIsOpen(true)}
+            data-cta="true"
+            className="cta-btn w-11 h-11 rounded-full bg-slate-900 hover:bg-black text-white flex items-center justify-center shadow-md border border-white cursor-pointer"
+          >
+            <MessageCircle className="w-5 h-5" />
+          </button>
+        )}
       </div>
 
       <AnimatePresence>
@@ -319,8 +366,18 @@ export const ChatBot: React.FC<ChatBotProps> = ({ products }) => {
             <div className="bg-amber-50 border-b border-amber-200/60 px-4 py-2 text-[11px] text-amber-900 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-1.5 font-medium truncate">
                 <Info className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-                <span>Hỗ trợ tự động kết nối {products.length} sản phẩm đồ câu</span>
+                <span>Hỗ trợ tự động {products.length} sản phẩm</span>
               </div>
+              <a
+                href={ZALO_CHAT_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1 font-bold text-blue-600 hover:text-blue-700 hover:underline shrink-0 ml-2"
+                title="Chat Zalo trực tiếp với LK Hòa"
+              >
+                <MessageCircle className="w-3.5 h-3.5" />
+                <span>Chat Zalo</span>
+              </a>
             </div>
 
             <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/60 text-xs">
@@ -351,6 +408,48 @@ export const ChatBot: React.FC<ChatBotProps> = ({ products }) => {
                       }`}
                     >
                       <div className="whitespace-pre-wrap">{renderFormattedText(msg.content)}</div>
+
+                      {msg.groundingPlaces && msg.groundingPlaces.length > 0 && (
+                        <div className="pt-2 border-t border-slate-100 space-y-2 mt-2">
+                          <div className="text-[10px] font-extrabold uppercase text-blue-600 flex items-center gap-1">
+                            <MapPin className="w-3.5 h-3.5 text-red-500 shrink-0" />
+                            <span>Bản đồ Google Maps & Vị trí cửa hàng:</span>
+                          </div>
+                          <div className="grid grid-cols-1 gap-2">
+                            {msg.groundingPlaces.map((place, plIdx) => (
+                              <div
+                                key={`grounding-place-${plIdx}`}
+                                className="flex flex-col gap-1.5 p-2.5 bg-blue-50/70 hover:bg-blue-50 border border-blue-200/80 rounded-xl transition-all shadow-2xs"
+                              >
+                                <div className="flex items-start justify-between gap-2">
+                                  <div className="flex items-start gap-1.5 min-w-0">
+                                    <MapPin className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                                    <div className="font-bold text-slate-900 text-[11px] leading-snug">
+                                      {place.title}
+                                    </div>
+                                  </div>
+                                  <a
+                                    href={place.uri || GOOGLE_MAPS_STORE_URL}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-[10px] px-2.5 py-1.5 rounded-lg shrink-0 flex items-center gap-1 no-underline shadow-xs transition-colors"
+                                    title="Mở trên Google Maps"
+                                  >
+                                    <Navigation className="w-2.5 h-2.5" />
+                                    <span>Chỉ đường</span>
+                                    <ExternalLink className="w-2.5 h-2.5" />
+                                  </a>
+                                </div>
+                                {place.snippet && (
+                                  <p className="text-[10.5px] text-slate-600 leading-relaxed pl-5 font-normal">
+                                    {place.snippet}
+                                  </p>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
 
                       {msg.recommendedProducts && msg.recommendedProducts.length > 0 && (
                         <div className="pt-2 border-t border-slate-100 space-y-2 mt-2">
@@ -384,7 +483,8 @@ export const ChatBot: React.FC<ChatBotProps> = ({ products }) => {
                                   href={prod.shopeeUrl || prod.tiktokUrl || '#'}
                                   target="_blank"
                                   rel="sponsored nofollow noopener noreferrer"
-                                  className="bg-[#EE4D2D] hover:bg-orange-600 text-white font-extrabold text-[10px] px-2.5 py-1.5 rounded-lg shrink-0 flex items-center gap-1 no-underline uppercase"
+                                  data-cta="true"
+                                  className="cta-btn bg-[#EE4D2D] hover:bg-orange-600 text-white font-extrabold text-[10px] px-2.5 py-1.5 rounded-lg shrink-0 flex items-center gap-1 no-underline uppercase cursor-pointer"
                                 >
                                   <span>Xem</span>
                                   <ExternalLink className="w-2.5 h-2.5" />
@@ -500,7 +600,8 @@ export const ChatBot: React.FC<ChatBotProps> = ({ products }) => {
                 <button
                   type="submit"
                   disabled={isLoading || !inputMessage.trim()}
-                  className="bg-[#EE4D2D] hover:bg-orange-600 disabled:bg-slate-300 text-white rounded-xl p-2.5 transition-all shadow-sm cursor-pointer shrink-0"
+                  data-cta="true"
+                  className="cta-btn bg-[#EE4D2D] hover:bg-orange-600 disabled:bg-slate-300 text-white rounded-xl p-2.5 shadow-xs cursor-pointer shrink-0"
                 >
                   <Send className="w-4 h-4" />
                 </button>

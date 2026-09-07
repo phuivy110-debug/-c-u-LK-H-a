@@ -424,7 +424,8 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
 
             <button
               onClick={() => navigate('/san-pham')}
-              className="bg-[#EE4D2D] hover:bg-orange-600 text-white font-extrabold text-xs sm:text-sm px-4 py-2.5 rounded-xl shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
+              data-cta="true"
+              className="cta-btn bg-[#EE4D2D] hover:bg-orange-600 text-white font-extrabold text-xs sm:text-sm px-4 py-2.5 rounded-xl shadow-xs flex items-center gap-1.5 cursor-pointer"
             >
               <span>Xem tất cả</span>
               <ArrowRight className="w-4 h-4" />

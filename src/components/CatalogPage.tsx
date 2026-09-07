@@ -29,11 +29,11 @@ export function CatalogPage({ products, onNavigate, onOpenDetail, initialQuery =
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5">
         {filteredProducts.slice(0, visibleCount).map(product => <ProductCard key={product.id} product={product} onOpenDetail={onOpenDetail} placement="catalog" />)}
       </div>
-      {visibleCount < filteredProducts.length && <div className="text-center"><button className="min-h-11 px-6 py-3 bg-slate-900 text-white rounded-xl font-semibold" onClick={() => setVisibleCount(value => value + 16)}>Xem thêm sản phẩm ({filteredProducts.length - visibleCount} còn lại)</button></div>}
+      {visibleCount < filteredProducts.length && <div className="text-center"><button data-cta="true" className="cta-btn min-h-11 px-6 py-3 bg-slate-900 hover:bg-black text-white rounded-xl font-semibold cursor-pointer" onClick={() => setVisibleCount(value => value + 16)}>Xem thêm sản phẩm ({filteredProducts.length - visibleCount} còn lại)</button></div>}
     </> : <div className="p-8 text-center bg-white rounded-2xl border border-slate-200 space-y-3">
       <h2 className="font-bold">Chưa tìm thấy sản phẩm phù hợp</h2>
       <p className="text-sm text-slate-600">Thử từ khóa ngắn hơn hoặc xóa bộ lọc.</p>
-      <button className="min-h-11 px-4 text-[#EE4D2D] font-bold" onClick={() => { setSearchQuery(''); setSortBy('default'); setShowSaleOnly(false); }}>Xóa tìm kiếm & xem tất cả</button>
+      <button data-cta="true" className="cta-btn min-h-11 px-4 text-[#EE4D2D] font-bold cursor-pointer" onClick={() => { setSearchQuery(''); setSortBy('default'); setShowSaleOnly(false); }}>Xóa tìm kiếm & xem tất cả</button>
     </div>}
   </div>;
 }

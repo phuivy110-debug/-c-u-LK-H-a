@@ -1,4 +1,5 @@
 import express from 'express';
+import http from 'http';
 import path from 'path';
 import fs from 'fs';
 import { createServer as createViteServer } from 'vite';
@@ -18,6 +19,7 @@ const PORT = 3000;
 
 async function startServer() {
   const app = express();
+  const httpServer = http.createServer(app);
   app.use(express.json({ limit: '2mb' }));
 
   // Initialize Gemini AI Client lazily/safely
@@ -709,6 +711,34 @@ async function startServer() {
     const q = (userQuery || '').toLowerCase();
     const prods = Array.isArray(productsList) ? productsList : [];
 
+    // Location, address and Google Maps inquiry
+    if (
+      q.includes('địa chỉ') ||
+      q.includes('ở đâu') ||
+      q.includes('vị trí') ||
+      q.includes('chỉ đường') ||
+      q.includes('bản đồ') ||
+      q.includes('map') ||
+      q.includes('nghĩa lâm') ||
+      q.includes('nghĩa đàn') ||
+      q.includes('nghệ an') ||
+      q.includes('tọa độ')
+    ) {
+      return `Chào Bác! 🎣 Thông tin vị trí chính thức của **Cửa Hàng Đồ Câu LK Hòa**:
+
+📍 **Địa chỉ cửa hàng:**
+Đường mòn Hồ Chí Minh, Xóm Yên Lâm, Xã Nghĩa Lâm, Huyện Nghĩa Đàn, Tỉnh Nghệ An.
+(Tọa độ: 19.4154285, 105.4515155)
+
+🗺️ **Bản đồ Google Maps & Chỉ đường:**
+👉 https://maps.app.goo.gl/Q6qLVcFnBdv7LiZu6
+
+📞 **Hotline tư vấn:** 0933 040 999
+💬 **Chat Zalo chính thức:** https://zalo.me/3835730533921276555
+
+Bác có thể nhấp vào liên kết Google Maps ở trên để xem chỉ đường chi tiết và ghé shop giao lưu, trải nghiệm cần máy trực tiếp nhé! 🐟🔥`;
+    }
+
     const formatProd = (p: any) =>
       `• **${p.name || p.title}**\n  👉 Giá tham khảo: **${p.referencePrice ? p.referencePrice.toLocaleString('vi-VN') + 'đ' : 'Kiểm tra giá mới nhất'}**\n  👉 Liên kết mua: ${p.shopeeUrl || p.tiktokUrl || 'https://vt.tiktok.com/ZS9kJHJuDnoUp-AeYDB/'}`;
 
@@ -760,18 +790,33 @@ Bác cần em tư vấn thêm gì nữa không ạ? 😊`;
   // Chat API endpoint
   app.post('/api/chat', async (req, res) => {
     try {
-      const { messages, products, selectedModel } = req.body;
+      const { messages, products, selectedModel, userLocation } = req.body;
       const lastUserMsg =
         (messages || []).slice().reverse().find((m: any) => m.role === 'user')?.content || '';
+
+      const isMapQuery =
+        selectedModel === 'gemini-3.5-flash' ||
+        /địa chỉ|ở đâu|vị trí|chỉ đường|bản đồ|google map|maps|cửa hàng|shop|nghệ an|nghĩa đàn|nghĩa lâm|tọa độ|điểm câu|hồ câu|sông/i.test(
+          lastUserMsg
+        );
 
       const ai = getAiClient();
       if (!ai) {
         const smartReply = generateSmartFishingReply(lastUserMsg, products);
-        return res.json({ reply: smartReply });
+        const fallbackPlaces = isMapQuery
+          ? [
+              {
+                uri: 'https://maps.app.goo.gl/Q6qLVcFnBdv7LiZu6',
+                title: 'Đồ câu LK Hoà (Cửa hàng chính thức)',
+                snippet: 'Đường mòn Hồ Chí Minh, Xóm Yên Lâm, Xã Nghĩa Lâm, Huyện Nghĩa Đàn, Tỉnh Nghệ An',
+              },
+            ]
+          : [];
+        return res.json({ reply: smartReply, groundingPlaces: fallbackPlaces });
       }
 
       try {
-        const modelName = selectedModel || 'gemini-3.6-flash';
+        const modelName = isMapQuery ? 'gemini-3.5-flash' : selectedModel || 'gemini-3.5-flash';
 
         let productContext = '';
         if (Array.isArray(products) && products.length > 0) {
@@ -792,8 +837,10 @@ Nhiệm vụ chính:
 1. Giải đáp thắc mắc về thiết bị câu cá: độ cứng cần câu (4H, 5H, 6H, 8H), chọn máy câu đứng/ngang, loại dây dù X4/X8, phao nano, mồi xả, mồi vuốt cám chép/rô...
 2. Tư vấn sản phẩm phù hợp dựa trên danh sách sản phẩm cửa hàng LK Hòa.
 3. Khi giới thiệu sản phẩm, hãy trích dẫn tên chính xác, giá tham khảo và kèm theo đường link mua hàng chính thức.
-4. Thái độ: Thân thiện, chu đáo, xưng "Em", gọi người dùng là "Bác" hoặc "Cần thủ". Dùng câu từ gần gũi 🎣🐟🔥.
-5. Trả lời bằng Tiếng Việt rõ ràng, ngắn gọn.
+4. Khi khách cần tư vấn kỹ thuật trực tiếp, đặt hàng hoặc kết nối người thật, hướng dẫn chat Zalo LK Hòa chính thức: https://zalo.me/3835730533921276555 (hoặc gọi Hotline 0933 040 999).
+5. Vị trí & Cửa hàng Đồ Câu LK Hòa: Cửa hàng tọa lạc tại Đường mòn Hồ Chí Minh, Xóm Yên Lâm, Xã Nghĩa Lâm, Huyện Nghĩa Đàn, Tỉnh Nghệ An (Tọa độ: 19.4154285, 105.4515155). Link Google Maps chỉ đường chính thức: https://maps.app.goo.gl/Q6qLVcFnBdv7LiZu6. Khi khách hỏi về địa chỉ, vị trí hoặc cách đi đến cửa hàng hoặc điểm câu cá trong vùng, luôn cung cấp liên kết Google Maps này.
+6. Thái độ: Thân thiện, chu đáo, xưng "Em", gọi người dùng là "Bác" hoặc "Cần thủ". Dùng câu từ gần gũi 🎣🐟🔥.
+7. Trả lời bằng Tiếng Việt rõ ràng, ngắn gọn.
 
 ${productContext}`;
 
@@ -802,25 +849,77 @@ ${productContext}`;
           parts: [{ text: msg.content }],
         }));
 
+        const genConfig: any = {
+          systemInstruction,
+          temperature: 0.7,
+        };
+
+        // Enable Google Maps grounding tool for gemini-3.5-flash
+        if (modelName === 'gemini-3.5-flash') {
+          genConfig.tools = [{ googleMaps: {} }];
+          const lat = Number(userLocation?.latitude) || 19.4154285;
+          const lng = Number(userLocation?.longitude) || 105.4515155;
+          genConfig.toolConfig = {
+            retrievalConfig: {
+              latLng: {
+                latitude: lat,
+                longitude: lng,
+              },
+            },
+          };
+        }
+
         const response = await ai.models.generateContent({
           model: modelName,
           contents: formattedContents,
-          config: {
-            systemInstruction,
-            temperature: 0.7,
-          },
+          config: genConfig,
         });
 
+        // Extract Google Maps grounding chunks and URLs
+        const chunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
+        const groundingPlaces: Array<{ uri: string; title: string; snippet?: string }> = [];
+
+        for (const chunk of chunks as any[]) {
+          if (chunk.maps?.uri) {
+            groundingPlaces.push({
+              uri: chunk.maps.uri,
+              title: chunk.maps.title || 'Địa điểm trên Google Maps',
+              snippet: chunk.maps.placeAnswerSources?.reviewSnippets?.[0]?.reviewText,
+            });
+          }
+        }
+
+        // Ensure official LK Hòa Google Maps pin is available when querying store info
+        if (isMapQuery && !groundingPlaces.some((p) => p.uri.includes('Q6qLVcFnBdv7LiZu6') || p.uri.includes('11n10697zg'))) {
+          groundingPlaces.unshift({
+            uri: 'https://maps.app.goo.gl/Q6qLVcFnBdv7LiZu6',
+            title: 'Đồ câu LK Hoà (Cửa hàng chính thức)',
+            snippet: 'Đường mòn Hồ Chí Minh, Xóm Yên Lâm, Xã Nghĩa Lâm, Huyện Nghĩa Đàn, Tỉnh Nghệ An',
+          });
+        }
+
         if (response.text) {
-          return res.json({ reply: response.text });
+          return res.json({
+            reply: response.text,
+            groundingPlaces,
+          });
         }
 
         const fallbackReply = generateSmartFishingReply(lastUserMsg, products);
-        return res.json({ reply: fallbackReply });
+        return res.json({ reply: fallbackReply, groundingPlaces });
       } catch (geminiErr: any) {
         console.warn('Gemini API call failed, using smart fishing engine fallback:', geminiErr?.message || geminiErr);
         const fallbackReply = generateSmartFishingReply(lastUserMsg, products);
-        return res.json({ reply: fallbackReply });
+        const fallbackPlaces = isMapQuery
+          ? [
+              {
+                uri: 'https://maps.app.goo.gl/Q6qLVcFnBdv7LiZu6',
+                title: 'Đồ câu LK Hoà (Cửa hàng chính thức)',
+                snippet: 'Đường mòn Hồ Chí Minh, Xóm Yên Lâm, Xã Nghĩa Lâm, Huyện Nghĩa Đàn, Tỉnh Nghệ An',
+              },
+            ]
+          : [];
+        return res.json({ reply: fallbackReply, groundingPlaces: fallbackPlaces });
       }
     } catch (error: any) {
       console.error('Chat API error:', error);
@@ -866,7 +965,10 @@ ${productContext}`;
   // SEO Prerender Middleware & Static Server
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
-      server: { middlewareMode: true },
+      server: {
+        middlewareMode: true,
+        hmr: { server: httpServer },
+      },
       appType: 'custom',
     });
 
@@ -904,7 +1006,15 @@ ${productContext}`;
     });
   }
 
-  app.listen(PORT, '0.0.0.0', () => {
+  httpServer.on('error', (err: any) => {
+    if (err && err.code === 'EADDRINUSE') {
+      console.warn(`[server] Port ${PORT} is already in use by another instance.`);
+    } else {
+      console.error('[server] Error:', err);
+    }
+  });
+
+  httpServer.listen(PORT, '0.0.0.0', () => {
     console.log(`Server is running on http://0.0.0.0:${PORT}`);
   });
 }

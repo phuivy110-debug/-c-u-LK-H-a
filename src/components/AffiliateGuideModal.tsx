@@ -231,7 +231,8 @@ export const PRODUCTS_LIST: Product[] = ${JSON.stringify(editingProducts, null, 
                       onTriggerSync();
                     }}
                     disabled={isSyncing}
-                    className="bg-[#EE4D2D] hover:bg-orange-600 disabled:bg-slate-400 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer whitespace-nowrap"
+                    data-cta="true"
+                    className="cta-btn bg-[#EE4D2D] hover:bg-orange-600 disabled:bg-slate-400 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-md flex items-center justify-center gap-2 cursor-pointer whitespace-nowrap"
                   >
                     <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
                     <span>{isSyncing ? 'Đang tải sheet...' : 'Lưu & Đồng Bộ Ngay'}</span>
@@ -478,7 +479,8 @@ export const PRODUCTS_LIST: Product[] = ${JSON.stringify(editingProducts, null, 
             </button>
             <button
               onClick={handleSaveLive}
-              className="bg-[#EE4D2D] hover:bg-orange-600 text-white font-extrabold text-xs sm:text-sm px-6 py-2.5 rounded-xl shadow-md shadow-orange-500/20 flex items-center gap-1.5 cursor-pointer transition-all active:scale-95"
+              data-cta="true"
+              className="cta-btn bg-[#EE4D2D] hover:bg-orange-600 text-white font-extrabold text-xs sm:text-sm px-6 py-2.5 rounded-xl shadow-md shadow-orange-500/20 flex items-center gap-1.5 cursor-pointer"
             >
               <Save className="w-4 h-4" />
               <span>Lưu Thay Đổi Ngay</span>

@@ -560,8 +560,15 @@ export function renderSeoPage(
         'sameAs': [
           'https://s.shopee.vn/7fYvAFHqaP',
           'https://vt.tiktok.com/ZS9kJHJuDnoUp-AeYDB/',
-          'https://zalo.me/0933040999'
-        ]
+          'https://zalo.me/3835730533921276555',
+          'https://maps.app.goo.gl/Q6qLVcFnBdv7LiZu6'
+        ],
+        'hasMap': 'https://maps.app.goo.gl/Q6qLVcFnBdv7LiZu6',
+        'geo': {
+          '@type': 'GeoCoordinates',
+          'latitude': 19.4154285,
+          'longitude': 105.4515155
+        }
       },
       {
         '@context': 'https://schema.org',

@@ -9,7 +9,9 @@ import {
   Scale,
   ShieldCheck,
   UserRound,
+  Navigation,
 } from 'lucide-react';
+import { GOOGLE_MAPS_STORE_URL } from '../utils/site';
 
 const DOMAIN = 'https://docaulkhoa.vn';
 const DEFAULT_TITLE = 'Đồ Câu LK Hòa – Cần Câu, Mồi Câu, Phụ Kiện & Kinh Nghiệm Câu Cá';
@@ -141,7 +143,7 @@ export const AboutReviewPage: React.FC = () => {
             <Phone className="h-5 w-5" /> 0933 040 999
           </a>
           <a
-            href="https://zalo.me/0933040999"
+            href="https://zalo.me/3835730533921276555"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-3 rounded-2xl border border-slate-200 p-4 font-bold text-slate-900 transition-colors hover:border-blue-300 hover:text-blue-600"
@@ -149,10 +151,43 @@ export const AboutReviewPage: React.FC = () => {
             <ExternalLink className="h-5 w-5" /> Zalo LK Hòa
           </a>
         </div>
-        <p className="flex items-start gap-2 pt-2">
-          <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-[#EE4D2D]" />
-          Đường mòn Hồ Chí Minh, Xóm Yên Lâm, Nghĩa Lâm, Nghĩa Đàn, Nghệ An.
-        </p>
+
+        <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-start gap-2.5">
+              <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-[#EE4D2D]" />
+              <div>
+                <div className="font-bold text-slate-900 text-sm">Cửa hàng Đồ Câu LK Hòa</div>
+                <div className="text-xs text-slate-600 mt-0.5">
+                  Đường mòn Hồ Chí Minh, Xóm Yên Lâm, Xã Nghĩa Lâm, Huyện Nghĩa Đàn, Tỉnh Nghệ An.
+                </div>
+              </div>
+            </div>
+
+            <a
+              href={GOOGLE_MAPS_STORE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-xs font-bold transition-colors shrink-0 shadow-sm"
+              title="Mở Google Maps chỉ đường"
+            >
+              <Navigation className="w-3.5 h-3.5" />
+              <span>Chỉ đường trên Google Maps</span>
+            </a>
+          </div>
+
+          <div className="w-full h-48 rounded-xl overflow-hidden border border-slate-200 bg-slate-100">
+            <iframe
+              title="Bản đồ vị trí Đồ Câu LK Hòa"
+              src="https://maps.google.com/maps?q=19.4154285,105.4515155&hl=vi&z=15&output=embed"
+              width="100%"
+              height="100%"
+              style={{ border: 0 }}
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+            />
+          </div>
+        </div>
       </Section>
     </div>
   );

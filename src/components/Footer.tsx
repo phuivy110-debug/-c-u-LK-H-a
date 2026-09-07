@@ -1,7 +1,8 @@
 import React from 'react';
-import { ShieldCheck, ArrowUp, Phone, MessageCircle, MapPin, Store, Share2 } from 'lucide-react';
+import { ShieldCheck, ArrowUp, Phone, MessageCircle, MapPin, Store, Share2, Compass } from 'lucide-react';
 import { LkHoaLogo } from './LkHoaLogo';
 import { SHARED_TIKTOK_URL } from '../utils/googleSheetSync';
+import { GOOGLE_MAPS_STORE_URL } from '../utils/site';
 
 interface FooterProps {}
 
@@ -62,12 +63,12 @@ export const Footer: React.FC<FooterProps> = () => {
                 <div>
                   <span className="text-slate-500 block text-[11px]">Zalo Hỗ Trợ:</span>
                   <a
-                    href="https://zalo.me/0933040999"
+                    href="https://zalo.me/3835730533921276555"
                     target="_blank"
                     rel="noreferrer"
                     className="font-extrabold text-blue-400 hover:underline"
                   >
-                    Shop đồ câu Lê Khánh Hòa (0933040999)
+                    Chat Zalo Đồ Câu LK Hòa
                   </a>
                 </div>
               </div>
@@ -76,9 +77,18 @@ export const Footer: React.FC<FooterProps> = () => {
                 <MapPin className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
                 <div>
                   <span className="text-slate-500 block text-[11px]">Địa chỉ Cửa Hàng:</span>
-                  <span className="text-slate-300 font-medium leading-relaxed block">
+                  <a
+                    href={GOOGLE_MAPS_STORE_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-slate-300 hover:text-blue-400 font-medium leading-relaxed block transition-colors group"
+                    title="Mở bản đồ Google Maps chỉ đường"
+                  >
                     Đường mòn Hồ Chí Minh, Xóm Yên Lâm, Nghĩa Lâm, Nghĩa Đàn, Nghệ An
-                  </span>
+                    <span className="block text-[11px] text-blue-400 underline font-semibold mt-0.5 group-hover:text-blue-300">
+                      📍 Xem vị trí trên Google Maps (Chỉ đường)
+                    </span>
+                  </a>
                 </div>
               </div>
             </div>
@@ -88,15 +98,27 @@ export const Footer: React.FC<FooterProps> = () => {
           <div className="md:col-span-3 space-y-3">
             <h4 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
               <Share2 className="w-3.5 h-3.5 text-orange-400" />
-              <span>Liên Kết Gian Hàng</span>
+              <span>Liên Kết & Vị Trí</span>
             </h4>
             
             <div className="flex flex-col gap-2 text-xs">
               <a
+                href={GOOGLE_MAPS_STORE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 bg-blue-950/40 hover:bg-blue-900/50 border border-blue-800/40 p-2.5 rounded-xl font-bold text-blue-400 transition-colors cursor-pointer"
+                title="Xem chỉ đường Google Maps đến Đồ Câu LK Hòa"
+              >
+                <Compass className="w-4 h-4 shrink-0 text-blue-400" />
+                <span>Bản đồ Google Maps (Chỉ đường)</span>
+              </a>
+
+              <a
                 href="https://s.shopee.vn/7fYvAFHqaP"
                 target="_blank"
                 rel="sponsored nofollow noopener noreferrer"
-                className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 p-2.5 rounded-xl transition-colors font-bold text-orange-400"
+                data-cta="true"
+                className="cta-btn flex items-center gap-2 bg-slate-900 hover:bg-slate-800 p-2.5 rounded-xl font-bold text-orange-400 cursor-pointer"
               >
                 <Store className="w-4 h-4 shrink-0" />
                 <span>Gian hàng Shopee</span>
@@ -106,7 +128,8 @@ export const Footer: React.FC<FooterProps> = () => {
                 href={SHARED_TIKTOK_URL}
                 target="_blank"
                 rel="sponsored nofollow noopener noreferrer"
-                className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 p-2.5 rounded-xl transition-colors font-bold text-white"
+                data-cta="true"
+                className="cta-btn flex items-center gap-2 bg-slate-900 hover:bg-slate-800 p-2.5 rounded-xl font-bold text-white cursor-pointer"
               >
                 <TikTokIcon className="w-4 h-4 fill-current text-white shrink-0" />
                 <span>Xem gian hàng TikTok</span>

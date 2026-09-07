@@ -14,6 +14,8 @@ import {
 } from 'lucide-react';
 import { LkHoaLogo } from './LkHoaLogo';
 import { SHARED_TIKTOK_URL } from '../utils/googleSheetSync';
+import { AnnouncementBanner } from './AnnouncementBanner';
+import { GOOGLE_MAPS_STORE_URL } from '../utils/site';
 
 interface HeaderProps {
   onOpenAdmin: () => void;
@@ -57,6 +59,7 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-100 shadow-xs">
+      <AnnouncementBanner onNavigate={onNavigate} />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 sm:h-20">
           {/* Logo */}
@@ -149,7 +152,8 @@ export const Header: React.FC<HeaderProps> = ({
               href={SHARED_TIKTOK_URL}
               target="_blank"
               rel="sponsored nofollow noopener noreferrer"
-              className="flex items-center gap-1.5 bg-slate-900 border border-slate-800 text-white hover:bg-black px-3.5 py-2 rounded-xl text-xs font-bold transition-all group/tt"
+              data-cta="true"
+              className="cta-btn flex items-center gap-1.5 bg-slate-900 border border-slate-800 text-white hover:bg-black px-3.5 py-2 rounded-xl text-xs font-bold group/tt cursor-pointer"
               title="Ghé TikTok Shop LK Hòa"
             >
               <TikTokIcon className="w-3.5 h-3.5 fill-current text-white" />
@@ -279,9 +283,18 @@ export const Header: React.FC<HeaderProps> = ({
                 <MapPin className="w-3.5 h-3.5 text-red-500 shrink-0 mt-0.5" />
                 <div>
                   <span className="text-slate-400 block text-[10px]">Địa chỉ Cửa hàng:</span>
-                  <span className="font-semibold text-slate-800 leading-tight block">
+                  <a
+                    href={GOOGLE_MAPS_STORE_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-semibold text-slate-800 hover:text-blue-600 leading-tight block group"
+                    title="Mở bản đồ Google Maps chỉ đường"
+                  >
                     Đường mòn Hồ Chí Minh, Xóm Yên Lâm, Nghĩa Lâm, Nghĩa Đàn, Nghệ An
-                  </span>
+                    <span className="inline-flex items-center text-[10px] text-blue-600 font-bold ml-1 underline group-hover:text-blue-700">
+                      (Bản đồ chỉ đường)
+                    </span>
+                  </a>
                 </div>
               </div>
             </div>
