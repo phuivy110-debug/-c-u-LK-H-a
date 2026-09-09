@@ -12,6 +12,7 @@ type ReviewInput = {
   criteria: Array<[string, string]>;
   recommendations: string[];
   cautions: string[];
+  relatedProducts?: string[];
   contentMarkdown?: string;
   readTime?: string;
 };
@@ -29,6 +30,7 @@ const buildReview = (item: ReviewInput): GuideArticle => ({
   date: '2026-08-29',
   readTime: item.readTime || '7 phút đọc',
   relatedCategorySlug: item.categorySlug,
+  relatedProducts: item.relatedProducts,
   contentMarkdown: item.contentMarkdown || `# ${item.title}
 
 > **Minh bạch đánh giá:** Bài viết phân tích dữ liệu danh mục LK Hòa, thông số công bố và tình huống sử dụng được ghi nhận trong nội dung thực tế của thương hiệu. Chúng tôi không tuyên bố đã kiểm thử độc lập những đặc tính chưa có số đo. Giá và ưu đãi có thể thay đổi tại Shopee/TikTok Shop.
@@ -417,5 +419,108 @@ Bài do **LK Hòa** biên soạn theo phương pháp thử đối chứng. Hai �
     criteria: [['Mục tiêu', 'Chọn câu đài hoặc lure trước khi mua'], ['Ngân sách', 'Dành phần dự phòng cho dây, lưỡi và vận chuyển'], ['Khả năng nâng cấp', 'Chọn món tiêu chuẩn, dễ thay thế'], ['Tần suất dùng', 'Không mua số lượng lớn trước buổi trải nghiệm đầu']],
     recommendations: ['Chốt kiểu câu và điểm câu thường đi.', 'Mua bộ cơ bản rồi bổ sung sau 2–3 buổi.', 'Ưu tiên dụng cụ an toàn và hộp bảo quản lưỡi.'],
     cautions: ['Không trộn thiết bị câu đài và lure nếu chưa hiểu tương thích.', 'Combo rẻ có thể cần thay dây/lưỡi.', 'Đối chiếu đúng danh sách món trong gói.'],
+  }),
+  buildReview({
+    slug: 'ca-loc-bong-cau-lure-cau-hinh-lk-hoa',
+    title: 'Cá lóc bông: cách nhận biết, thời điểm săn và bộ cần – mồi – dây LK Hòa',
+    description: 'Hướng dẫn câu cá lóc bông theo địa hình và thời điểm, kèm cấu hình cần, mồi chuột và dây PE LK Hòa để tham khảo trước khi đi câu.',
+    keywords: ['cá lóc bông', 'câu cá lóc bông', 'mồi câu cá lóc bông', 'cần lure cá lóc', 'dây PE câu cá lóc'],
+    category: 'Kỹ thuật đồ câu', categorySlug: 'cam-nang',
+    audience: 'người câu lure muốn chuẩn bị một bộ gọn, dễ kiểm tra và tôn trọng quy định địa phương',
+    verdict: 'Cá lóc bông cần bộ đồ có dư lực, khóa – leader chắc và mồi phù hợp lớp nước. Các món LK Hòa bên dưới là cấu hình tham khảo từ danh mục; chưa phải nhật ký một chuyến săn đã được xác minh.',
+    criteria: [['Địa hình', 'Bãi cỏ, bèo và mép vật cản cần ưu tiên độ chính xác của cú ném'], ['Cần', 'Chọn theo cỡ cá dự kiến và không gian quăng, không suy ra tải cá chỉ từ tên sản phẩm'], ['Mồi', 'Bắt đầu bằng mồi nổi/di chuyển chậm rồi điều chỉnh theo phản ứng cá'], ['Dây', 'Dây PE và leader phải được kiểm tra nút, khóa, lưỡi trước mỗi buổi'], ['Minh bạch', 'Giá, deal và tồn kho chỉ là dữ liệu tham khảo tại thời điểm xem'] ],
+    recommendations: ['Dùng cần lure LK Special Cá Mập cho bài thử ở vùng trống; kiểm tra thông số thực tế trước khi chốt.', 'Mang mồi chuột LK phiên bản nổi/lửng để thăm dò mép cỏ; không khẳng định mồi nào luôn hiệu quả.', 'Ưu tiên dây LK RED X8 150 m hoặc Dù LK X8, sau đó cân lại leader theo vật cản và cỡ cá.'],
+    cautions: ['Không dùng điện, kích nổ hoặc phương tiện bị cấm; hãy hỏi quy định của khu vực.', 'Không kéo cá quá sức trong bụi rậm; chuẩn bị kìm gỡ lưỡi và thảm ướt để giảm tổn thương.', 'Ảnh minh họa không phải bằng chứng LK Hòa đã bắt con cá trong bài; chỉ dùng ảnh thực địa khi có nhật ký kiểm chứng.'],
+    relatedProducts: [
+      'bst-gioi-han-can-cau-chuyen-lure-lk-special-ca-map-can-cau-chuyen-lure-special',
+      'moi-cau-ca-chuyen-lure-chuot-lk--full-phien-ban-skin-s-m-l',
+      'lk-hoa-day-du-chuyen-cau-lure-lk-red-x8-day-cau-chuyen-lure-lk-red-150m-day-lk-red-khong-phai-mau',
+    ],
+    readTime: '8 phút đọc',
+    contentMarkdown: `# Cá lóc bông: cách nhận biết, thời điểm săn và bộ cần – mồi – dây LK Hòa
+
+![Cá lóc bông trong bối cảnh đầm nước nhiệt đới – ảnh minh họa biên tập](/images/ca-loc-bong-field-guide.png)
+
+*Ảnh trên là minh họa cho bài viết, không phải ảnh thực địa chứng minh một chuyến câu cụ thể của LK Hòa.*
+
+> **Phạm vi bài viết:** Nội dung kết hợp kiến thức câu lure phổ thông với dữ liệu sản phẩm đang có trong danh mục LK Hòa. Những món đồ câu được gọi là **cấu hình tham khảo**, không phải lời xác nhận LK Hòa đã dùng đúng bộ này để bắt một con cá lóc bông. Giá, hình ảnh và ưu đãi cần được kiểm tra lại tại trang sản phẩm trước khi mua.
+
+## Tư liệu chuyến đi của LK Hòa
+
+Các video công khai dưới đây được dùng để bổ sung bối cảnh thực địa, không thay thế cho thông số kỹ thuật của từng sản phẩm:
+
+- [Câu Lure Sau Mưa Đầu Mùa, Lụm Toàn Cá Lóc Ôm Trứng](https://www.youtube.com/watch?v=kOGjYkhxOOs) — video đăng ngày 07/05/2025 trên kênh L.k. Hoà. Tư liệu phù hợp để quan sát cách đọc mặt nước sau mưa và nhịp rê mồi.
+- [LK Hoà câu cá ở hồ không có cá – Lure cá lóc](https://www.youtube.com/watch?v=VNi3chnx42k) — video của Shop đồ câu L.k. Hoà, cho thấy việc khảo sát điểm câu và xử lý khi điều kiện thực tế không thuận lợi.
+- [Cách Câu Cá Chép Ở Hồ Siêu Nhiều Cá Con Bằng Mồi LK](https://www.youtube.com/watch?v=nw9Hxj6B3RE) — tư liệu về cách LK Hòa giới thiệu mồi trong bối cảnh câu thực tế; không dùng video này để khẳng định hiệu quả với cá lóc bông.
+
+**Cách đọc tư liệu:** Video cho thấy bối cảnh, thao tác và sản phẩm xuất hiện trong khung hình tại thời điểm đăng. Nếu không nhìn rõ model, size dây hoặc thông số tải, bài viết không suy đoán thay cho dữ liệu gốc.
+
+## Cá lóc bông là gì và vì sao đáng săn?
+
+Cá lóc bông (thường được gọi là cá lóc khổng lồ ở một số vùng) có thân dài, đầu to và lực lao mạnh khi bị kích thích. Môi trường có bèo, cỏ nước, gốc cây hoặc bờ dốc khiến việc đưa cá ra khỏi vật cản khó hơn nhiều so với câu ở mặt nước trống. Vì kích thước và tập tính thay đổi theo vùng, hãy xem thông tin dưới đây như nguyên tắc chuẩn bị chứ không phải công thức bắt cá chắc chắn.
+
+## Thời điểm và cách đọc mặt nước
+
+Buổi sáng sớm hoặc chiều mát thường dễ quan sát dấu hiệu cá hoạt động hơn, nhưng thời tiết, mực nước và tiếng động tại điểm câu mới là yếu tố quyết định. Hãy đi chậm, đứng cách mép cỏ một khoảng an toàn, tìm tiếng đớp, vệt nước hoặc khoảng trống bất thường rồi mới ném. Ở nơi nhiều vật cản, ưu tiên cú ném ngắn và chính xác thay vì cố ném thật xa.
+
+## Bộ cần – mồi – dây LK Hòa để tham khảo
+
+### 1. Cần lure: ưu tiên độ kiểm soát
+
+![Cần lure LK Special Cá Mập – ảnh sản phẩm trong danh mục LK Hòa](https://down-vn.img.susercontent.com/file/vn-11134207-7ras8-m3riuxpvqlrw39)
+
+**LK Special Cá Mập** là một lựa chọn trong danh mục cần lure LK Hòa để bắt đầu so sánh. Tên sản phẩm không thay thế cho việc đọc thông số chiều dài, tải mồi và độ cứng; hãy đối chiếu các thông tin đó với cỡ cá dự kiến trước khi mua. Nếu điểm câu chật, một cần ngắn hơn có thể dễ điều khiển hơn; nếu bờ trống, cần dài hơn có thể giúp kiểm soát đường dây tốt hơn.
+
+### 2. Mồi mềm Skipping: lựa chọn nên thử trước
+
+LK Hòa đang có mẫu **mồi mềm câu lure Skipping mực nhỏ kèm lưỡi** trên Shopee chính thức. Với kiểu mồi mềm, người câu có thể thử rê sát mép cỏ, bèo hoặc khoảng trống giữa các vật cản. Đây là gợi ý theo thiết kế sản phẩm, không phải cam kết mồi luôn bắt được cá lóc bông. Anh em nên kiểm tra kích thước, cách lắp lưỡi và tình trạng hàng ngay trên trang bán trước khi đặt.
+
+[Xem mồi mềm Skipping LK Hòa trên Shopee](https://shopee.vn/-LK-H%C3%92A-M%E1%BB%92I-M%E1%BB%80M-C%C3%82U-LURE-SKIPPING-M%E1%BB%B0C-NH%E1%BB%8E-K%C3%88M-L%C6%AF%E1%BB%A0I-i.1279769928.29015107477)
+
+### 3. Mồi chuột: phương án mặt nước dễ quan sát
+
+![Mồi chuột LK – ảnh sản phẩm trong danh mục LK Hòa](https://down-vn.img.susercontent.com/file/vn-11134207-7r98o-lmvayukeuxgf85)
+
+Mồi chuột LK có các phiên bản S, M, L trong danh mục. Hãy bắt đầu bằng kích thước phù hợp bộ cần và lớp cỏ, rê chậm qua mép trống rồi thay đổi nhịp. Không nên gắn nhãn “mồi sát thủ” hay khẳng định cá lóc bông luôn ăn mồi này; ghi chép lại thời tiết, hướng gió và phản ứng cá sẽ hữu ích hơn việc đổi mồi liên tục.
+
+### 3. Dây: kiểm tra cả PE, leader và nút
+
+![Dây dù LK RED X8 150 m – ảnh sản phẩm trong danh mục LK Hòa](https://down-vn.img.susercontent.com/file/vn-11134207-7ra0g-m7g3kj9upjxvd0)
+
+Dây LK RED X8 150 m hoặc Dù LK X8 là hai sản phẩm có thể đưa vào danh sách so sánh. “X8” mô tả cấu trúc sợi theo tên sản phẩm, không tự động đồng nghĩa với một mức tải cá cụ thể. Trước khi ném, hãy rà đoạn dây gần mồi, siết lại nút, kiểm tra khóa và dùng leader phù hợp vật cản. Khi dây xước hoặc bở, thay ngay thay vì cố tận dụng.
+
+## Một cấu hình gọn cho buổi thử đầu
+
+| Tình huống | Cần | Mồi | Dây |
+|---|---|---|---|
+| Mép cỏ, mặt nước yên | LK Special Cá Mập (đối chiếu thông số) | Mồi mềm Skipping | LK RED X8 + leader kiểm tra kỹ |
+| Bờ trống, cần ném xa hơn | Cần lure phù hợp chiều dài bờ | Mồi chuột nổi/lửng | Dù LK X8, cân lại lực phanh |
+| Nhiều gốc cây, rác nổi | Bộ có độ kiểm soát cao | Mồi ít vướng, rê chậm | Dây mới, khóa và leader dự phòng |
+
+## Quy trình 5 bước trước khi ném
+
+1. Kiểm tra quy định địa phương và chọn điểm câu an toàn.
+2. Soát khoen, máy, dây, nút, khóa và lưỡi; thử lực bằng tay có kiểm soát.
+3. Quan sát mặt nước vài phút rồi chọn một hướng ném rõ ràng.
+4. Khi cá đớp, giữ áp lực đều và đưa cá ra vùng trống; không giật liên tục trong bụi rậm.
+5. Dùng kìm gỡ lưỡi, chụp ảnh nhanh nếu cần và thả cá theo quy định; không đặt cá lên nền khô nóng.
+
+## Câu hỏi thường gặp
+
+### Cá lóc bông khác cá lóc đồng ở điểm nào?
+
+Đây là hai nhóm cá có kích thước và môi trường sống khác nhau; đừng dùng một cấu hình hoặc một mức tải cho mọi con cá. Hãy dựa vào cỡ cá dự kiến và vật cản thực tế.
+
+### Dây X8 có đủ cho cá lóc bông không?
+
+Không thể trả lời chỉ bằng chữ “X8”. Cần xem đường kính, nút, leader, phanh máy và địa hình cùng lúc; nên chừa biên an toàn và kiểm tra dây trước buổi câu.
+
+### LK Hòa đã dùng chính bộ này để săn cá lóc bông chưa?
+
+Bài viết hiện không có nhật ký thực địa đủ để xác minh điều đó. Khi có ảnh, ngày đi, địa điểm, mồi, dây và kết quả được ghi chép, phần cấu hình có thể cập nhật thành một case study minh bạch.
+
+**Xem thêm:** [Các sản phẩm câu lure LK Hòa](/san-pham?category=can-cau) · [Mồi câu LK Hòa](/san-pham?category=moi-cau)
+
+*Bài viết có liên kết tiếp thị. Website có thể nhận hoa hồng khi bạn mua hàng qua liên kết, không làm thay đổi giá bạn thanh toán.*`,
   }),
 ];
