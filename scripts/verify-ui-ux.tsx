@@ -5,7 +5,9 @@ import { renderToString } from 'react-dom/server';
 import { loadServerProducts } from '../src/utils/serverSeoRenderer';
 import { FALLBACK_PRODUCTS } from '../src/data/fallbackProducts';
 import { GUIDE_ARTICLES } from '../src/data/guides';
+import { CONSOLIDATED_GUIDE_REDIRECTS } from '../src/data/guideConsolidation';
 import { GUIDE_PRODUCT_SLUGS } from '../src/data/guideRecommendations';
+import { normalizeInternalPath } from '../src/utils/routes';
 import { selectProducts, normalizeSearch, productDiscount } from '../src/utils/catalog';
 import { recommendedProducts, relatedGuides, guideSections } from '../src/utils/guideRecommendations';
 import { sanitizeGuideMarkdown } from '../src/utils/guideContent';
@@ -18,6 +20,10 @@ const products = loadServerProducts();
 assert.equal(normalizeSearch('  CÁM   CHÉP ĐỎ '), 'cam chep do');
 const findGuides = (q: string) => GUIDE_ARTICLES.filter(a => [a.title, a.summary, ...(a.keywords || [])].some(value => normalizeSearch(value).includes(normalizeSearch(q)))).map(a => a.slug);
 assert.deepEqual(findGuides('cam chep'), findGuides('cám chép'));
+for (const [slug, destination] of Object.entries(CONSOLIDATED_GUIDE_REDIRECTS)) {
+  assert.ok(!GUIDE_ARTICLES.some(article => article.slug === slug), `Consolidated guide remains listed: ${slug}`);
+  assert.equal(normalizeInternalPath(`/cam-nang/${slug}`), destination, `Consolidated guide does not resolve: ${slug}`);
+}
 for (const source of [products, FALLBACK_PRODUCTS]) {
   for (const category of ['tat-ca', 'can-cau', 'moi-cau']) {
     const sorted = selectProducts(source, category, '', 'discount-desc');

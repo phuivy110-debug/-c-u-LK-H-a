@@ -3,6 +3,7 @@ import { PRODUCT_GUIDES_BATCH_2 } from './productGuidesBatch2';
 import { PRODUCT_GUIDES_BATCH_3 } from './productGuidesBatch3';
 import { NEW_GUIDES_WITH_IMAGES } from './newGuidesWithImages';
 import { AFFILIATE_REVIEW_GUIDES } from './affiliateReviews';
+import { isConsolidatedGuide } from './guideConsolidation';
 
 export interface GuideArticle {
   slug: string;
@@ -570,7 +571,7 @@ export const GUIDE_ARTICLES: GuideArticle[] = [
   ...PRODUCT_GUIDES_BATCH_1,
   ...PRODUCT_GUIDES_BATCH_2,
   ...PRODUCT_GUIDES_BATCH_3
-].map((article) => ({
+].filter((article) => !isConsolidatedGuide(article.slug)).map((article) => ({
   ...article,
   author: 'LK Hòa',
 }));

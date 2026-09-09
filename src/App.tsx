@@ -63,6 +63,13 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
   useEffect(() => {
     const previousRestoration = window.history.scrollRestoration;
     window.history.scrollRestoration = 'manual';
+    const initialLocation = window.location.pathname + window.location.search + window.location.hash;
+    const normalizedInitialLocation = normalizeInternalPath(initialLocation);
+    if (normalizedInitialLocation !== initialLocation) {
+      window.history.replaceState(window.history.state, '', normalizedInitialLocation);
+      activeLocation.current = window.location.pathname + window.location.search;
+      setCurrentPath(normalizedInitialLocation.split(/[?#]/)[0]);
+    }
     const handlePopState = () => {
       const location = window.location.pathname + window.location.search;
       if (location === activeLocation.current) return; // Native in-page anchors keep their own scroll/history.

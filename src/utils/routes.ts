@@ -1,5 +1,6 @@
 import { CATEGORIES } from '../data/products';
 import { GUIDE_ARTICLES } from '../data/guides';
+import { CONSOLIDATED_GUIDE_REDIRECTS } from '../data/guideConsolidation';
 import type { Product } from '../types';
 
 export function normalizeInternalPath(href: string): string {
@@ -7,6 +8,11 @@ export function normalizeInternalPath(href: string): string {
   const [, pathname, suffix] = href.match(/^([^?#]*)(.*)$/)!;
   const clean = pathname.replace(/\/+$/, '') || '/';
   if (clean === '/danh-muc/tat-ca') return `/san-pham${suffix}`;
+  const guideSlug = clean.replace(/^\/cam-nang\//, '').replace(/^\//, '');
+  const consolidatedDestination = CONSOLIDATED_GUIDE_REDIRECTS[guideSlug];
+  if (consolidatedDestination && (clean.startsWith('/cam-nang/') || clean === `/${guideSlug}`)) {
+    return `${consolidatedDestination}${suffix}`;
+  }
   if (GUIDE_ARTICLES.some(guide => `/${guide.slug}` === clean)) {
     return `/cam-nang${clean}${suffix}`;
   }

@@ -1,3 +1,5 @@
+import { isConsolidatedGuide } from './guideConsolidation';
+
 // Exact existing product slugs, reviewed against the catalogue. No category/random fallback.
 const product = {
   dai5h: 'lk-hoa-can-cau-dai-5h-lk-tong-hop-2026',
@@ -69,4 +71,8 @@ const groups: [string[], (keyof typeof product)[]][] = [
   [['tui-dung-ca'], ['tui']], [['rong-dung-ca'], ['rong']], [['can-vot-ro-chep'], ['votRo']], [['can-vot-san-hang'], ['votSan']],
   [['thinh-cau-ca'], ['thinh']], [['may-daiwa-mg'], ['mayMG']], [['may-daiwa-rs'], ['mayRS']],
 ];
-export const GUIDE_PRODUCT_SLUGS: Record<string, string[]> = Object.fromEntries(groups.flatMap(([guides, keys]) => guides.map(slug => [slug, keys.map(key => product[key])])));
+export const GUIDE_PRODUCT_SLUGS: Record<string, string[]> = Object.fromEntries(
+  groups
+    .flatMap(([guides, keys]) => guides.map(slug => [slug, keys.map(key => product[key])] as const))
+    .filter(([slug]) => !isConsolidatedGuide(slug)),
+);
