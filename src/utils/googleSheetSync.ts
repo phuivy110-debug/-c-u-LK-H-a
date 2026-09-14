@@ -3,6 +3,7 @@ import { Product, ProductCache } from '../types';
 import { generateSlug } from '../data/products';
 import { validateAffiliateUrl } from '../components/AffiliateButtons';
 import { FALLBACK_PRICE_MAP, FALLBACK_PRODUCTS } from '../data/fallbackProducts';
+import { generateSeoProductDescription } from './productDescription';
 
 export const DEFAULT_SHEET_URL =
   'https://docs.google.com/spreadsheets/d/1KO_7U5VJJNKBphq_NNM4MnwbsfDq1GEg6mRGxz4y3B8/edit?gid=0#gid=0';
@@ -447,7 +448,7 @@ export async function fetchProductsFromGoogleSheet(sheetUrl: string): Promise<Pr
               category = 'Chưa phân loại';
             }
 
-            const description = getExactColumnValue(row, ['mota', 'description', 'thongso', 'chitiet']);
+            const sourceDescription = getExactColumnValue(row, ['mota', 'description', 'thongso', 'chitiet']);
 
             const rawSalePrice = parsePriceNumber(getExactColumnValue(row, HEADER_ALIASES.salePrice));
             const rawRefPrice = parsePriceNumber(getExactColumnValue(row, HEADER_ALIASES.referencePrice));
@@ -522,7 +523,12 @@ export async function fetchProductsFromGoogleSheet(sheetUrl: string): Promise<Pr
               slug,
               name,
               category,
-              description: description || undefined,
+              description: sourceDescription || generateSeoProductDescription({
+                name,
+                category,
+                referencePrice,
+                originalPrice,
+              }),
               referencePrice,
               originalPrice,
               salePrice,

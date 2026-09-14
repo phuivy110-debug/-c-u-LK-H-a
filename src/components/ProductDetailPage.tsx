@@ -6,6 +6,7 @@ import { ProductCard } from './ProductCard';
 import { InternalLink } from './InternalLink';
 import { formatPrice, productDiscount, productPrice } from '../utils/catalog';
 import { NotFoundPage } from './NotFoundPage';
+import { getProductDescription } from '../utils/productDescription';
 
 export function ProductDetailPage({ productSlug, products, onNavigate, onOpenDetail }: {
   productSlug: string; products: Product[]; onNavigate: (path: string) => void; onOpenDetail?: (product: Product) => void;
@@ -58,7 +59,7 @@ export function ProductDetailPage({ productSlug, products, onNavigate, onOpenDet
 
         <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
           <h2 className="mb-2 font-extrabold text-slate-900">Thông tin & Đặc điểm sản phẩm</h2>
-          <p className="whitespace-pre-line text-sm leading-relaxed text-slate-700">{product.description || 'Chưa có mô tả chi tiết trong danh mục. Vui lòng xem thông số và phân loại trên trang sản phẩm của người bán.'}</p>
+          <p className="whitespace-pre-line text-sm leading-relaxed text-slate-700">{getProductDescription(product)}</p>
         </div>
       </div>
     </section>

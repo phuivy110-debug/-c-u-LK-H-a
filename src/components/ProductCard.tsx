@@ -5,6 +5,7 @@ import { AffiliateButtons } from './AffiliateButtons';
 import { InternalLink } from './InternalLink';
 import { formatPrice, productDiscount, productPrice } from '../utils/catalog';
 import type { AffiliateContext } from '../utils/analyticsService';
+import { getProductDescriptionExcerpt } from '../utils/productDescription';
 
 export const ProductCard = ({ product, onOpenDetail, placement = 'product_card', articleSlug }:
   { product: Product; onOpenDetail?: (product: Product) => void } & AffiliateContext) => {
@@ -45,6 +46,7 @@ export const ProductCard = ({ product, onOpenDetail, placement = 'product_card',
         <h3 className="mb-3 min-h-10 text-sm font-bold leading-snug text-slate-900 sm:text-base">
           <InternalLink href={href} onNavigate={open} className="line-clamp-2 transition-colors hover:text-[#EE4D2D]">{product.name}</InternalLink>
         </h3>
+        <p className="mb-3 line-clamp-2 text-xs leading-relaxed text-slate-600">{getProductDescriptionExcerpt(product)}</p>
 
         <div className="mt-auto space-y-2 border-t border-slate-100 pt-3">
           <div className="flex items-center justify-between gap-2">

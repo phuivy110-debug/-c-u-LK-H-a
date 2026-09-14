@@ -6,6 +6,7 @@ import { CATEGORIES } from '../data/products';
 import { GUIDE_ARTICLES } from '../data/guides';
 import { FALLBACK_PRODUCTS } from '../data/fallbackProducts';
 import { sanitizeGuideMarkdown } from './guideContent';
+import { getProductDescription } from './productDescription';
 
 import { DOMAIN } from './site';
 export { DOMAIN } from './site';
@@ -296,10 +297,11 @@ export function renderSeoPage(
     if (product) {
       const priceFormatted = product.referencePrice ? `${product.referencePrice.toLocaleString('vi-VN')}đ` : 'Giá tốt';
       title = `${product.name} – ${priceFormatted} | Đồ Câu LK Hòa Chính Hãng`;
-      description = `Mua ${product.name} chính hãng LK Hòa thuộc danh mục ${product.category}. Xem thông số kỹ thuật, giá sale ${priceFormatted} và mua trực tiếp trên Shopee Mall & TikTok Shop.`;
+      description = `Tìm hiểu ${product.name} LK Hòa: thông tin sản phẩm, hình ảnh, giá tham khảo ${priceFormatted} và link mua trên Shopee/TikTok Shop. Xem kỹ phân loại trước khi đặt hàng.`;
       ogType = 'product';
       if (product.imageUrl) ogImage = product.imageUrl;
-      seoBodyHtml = `<main><article><h1>${escapeHtml(product.name)}</h1><p>${escapeHtml(product.description || description)}</p><p>Danh mục: ${escapeHtml(product.category)}. Giá tham khảo: ${escapeHtml(priceFormatted)}.</p><p><strong>Công bố affiliate:</strong> Trang có liên kết tiếp thị tới Shopee hoặc TikTok Shop. Giá của người mua không tăng khi sử dụng liên kết.</p><p><a href="${DOMAIN}/danh-muc/${CATEGORIES.find(c => c.name === product.category)?.slug || 'can-cau'}">Xem thêm sản phẩm ${escapeHtml(product.category)}</a></p></article></main>`;
+      const productDescription = getProductDescription(product);
+      seoBodyHtml = `<main><article><h1>${escapeHtml(product.name)} LK Hòa</h1><p>${escapeHtml(productDescription).replace(/\n\n/g, '</p><p>')}</p><p>Danh mục: ${escapeHtml(product.category)}. Giá tham khảo: ${escapeHtml(priceFormatted)}.</p><p><strong>Gợi ý trước khi mua:</strong> Kiểm tra hình ảnh, thông số, phân loại, tồn kho và ưu đãi đang hiển thị trên gian hàng chính thức.</p><p><strong>Công bố affiliate:</strong> Trang có liên kết tiếp thị tới Shopee hoặc TikTok Shop. Giá của người mua không tăng khi sử dụng liên kết.</p><p><a href="${DOMAIN}/danh-muc/${CATEGORIES.find(c => c.name === product.category)?.slug || 'can-cau'}">Xem thêm sản phẩm ${escapeHtml(product.category)} LK Hòa</a></p></article></main>`;
 
       jsonLdData = [
         {
@@ -317,7 +319,7 @@ export function renderSeoPage(
           '@type': 'Product',
           'name': product.name,
           'image': product.imageUrl ? [product.imageUrl] : [ogImage],
-          'description': product.description || description,
+          'description': productDescription,
           'sku': product.id,
           'category': product.category,
           'brand': {
@@ -325,6 +327,19 @@ export function renderSeoPage(
             'name': 'LK Hòa',
             'logo': `${DOMAIN}/favicon.svg`
           },
+          ...(product.referencePrice ? {
+            'offers': {
+              '@type': 'Offer',
+              'priceCurrency': 'VND',
+              'price': product.referencePrice,
+              'availability': 'https://schema.org/InStock',
+              'url': canonicalUrl,
+              'seller': {
+                '@type': 'Organization',
+                'name': 'LK Hòa'
+              }
+            }
+          } : {}),
           'url': canonicalUrl
         }
       ];
