@@ -79,6 +79,37 @@ function usageGuide(category: string, name: string): string {
   return 'Cách dùng: kiểm tra kích thước, chất liệu, phụ kiện đi kèm và khả năng tương thích với bộ đồ câu trước khi sử dụng.';
 }
 
+function liveProductGuidance(category: string, name: string): string {
+  const normalized = name.toLowerCase();
+
+  if (category === 'Cần Câu' && /tiểu học sinh|học sinh|sinh viên|cheap/i.test(normalized)) {
+    return 'Theo nội dung giới thiệu trong live, nhóm cần này hướng đến học sinh, sinh viên và người mới bắt đầu với ngân sách vừa phải. Cần thiên về sự dễ dùng, phù hợp các buổi câu cá nhỏ và câu giải trí; nên chọn đúng phiên bản theo độ dẻo/cứng và chiều dài hiển thị trên gian hàng.';
+  }
+  if (category === 'Cần Câu' && /solid|tổng hợp|đa năng|bản rô|rô chép/i.test(normalized)) {
+    return 'Theo phần tư vấn trực tiếp, dòng cần đa năng có thể dùng cho nhiều bài câu nước ngọt, từ cá nhỏ đến các bài câu cá lóc tùy phiên bản. Live có nhắc các lựa chọn độ cứng từ mềm, trung bình đến cứng; người câu nên chọn theo lực cá, loại mồi và khoảng ném thực tế.';
+  }
+  if (category === 'Cần Câu' && /special|cá mập|lure star|two|lure/i.test(normalized)) {
+    return 'Trong live, nhóm cần lure được tư vấn cho người cần ném mồi và chủ động rê mồi; phiên bản cứng phù hợp khi câu cá lóc, cá lóc bông hoặc cá chẽm cần lực tải cao hơn. Một số mẫu được giới thiệu có lựa chọn ngọn thay, vì vậy cần kiểm tra đúng phiên bản trước khi đặt.';
+  }
+  if (category === 'Cần Câu' && /suối|ul/i.test(normalized)) {
+    return 'Live giới thiệu nhóm cần này cho câu suối, cá bé và các không gian cần bộ đồ gọn nhẹ. Khi dùng nên phối máy, dây và mồi nhẹ đúng phân loại; không ép cần vượt mức tải hoặc dùng sai mục đích.';
+  }
+  if (category === 'Máy Câu') {
+    return 'Theo phần giới thiệu trong live, máy được dùng để phối với cần lure/cần máy và hỗ trợ các bài câu cá rô, chép, trắm, cá lóc cùng nhiều bài câu nước ngọt. Khi lắp cần chỉnh phanh, quấn dây đều và chọn size máy phù hợp với cần, dây và trọng lượng mồi.';
+  }
+  if (category === 'Dây Câu' && /x4|x8|dù|pe/i.test(normalized)) {
+    return 'Live nhấn mạnh dây PE/dây dù phù hợp nhiều bài câu và hỗ trợ ném xa khi chọn đúng size. Người câu cá lóc hoặc cần khoảng ném tốt nên đối chiếu size, màu, chiều dài và tải của từng phân loại; luôn kiểm tra nút nối và đoạn dây gần mồi trước khi câu.';
+  }
+  if (category === 'Mồi Câu' && /chuột|lure|bọ|nhái/i.test(normalized)) {
+    return 'Theo nội dung bán hàng trực tiếp, đây là nhóm mồi lure mô phỏng sinh vật nhỏ để rê mồi và tìm cá săn mồi. Nên chọn màu, kích thước và cách đi mồi theo mặt nước, cỏ rong, độ sâu và phản ứng cá; kiểm tra khoen, lưỡi và vòng nối trước khi sử dụng.';
+  }
+  if (/Phao|Lưỡi/.test(category) || category === 'Phụ Kiện') {
+    return 'Live giới thiệu nhóm phụ kiện này như phần hỗ trợ hoàn thiện bộ đồ câu: thay lưỡi, nối dây, gỡ lưỡi hoặc chuẩn bị bộ câu đài/lure. Hãy kiểm tra kích thước, số lượng và khả năng tương thích với cần, dây, mồi đang dùng trước khi mua.';
+  }
+
+  return '';
+}
+
 function isThinDescription(description: string | undefined): boolean {
   if (!description) return true;
   const normalized = description.trim().toLowerCase();
@@ -94,6 +125,7 @@ export function generateSeoProductDescription(product: Pick<Product, 'name' | 'c
   const itemType = categoryLabel(product.category);
   const intent = categoryIntent(product.category);
   const facts = nameFacts(product.name);
+  const liveGuidance = liveProductGuidance(product.category, product.name);
   const priceNote = product.referencePrice
     ? `Mức giá tham khảo hiện được ghi nhận là ${new Intl.NumberFormat('vi-VN').format(product.referencePrice)}đ`
     : 'Giá bán được cập nhật theo thông tin trên sàn';
@@ -103,6 +135,7 @@ export function generateSeoProductDescription(product: Pick<Product, 'name' | 'c
     facts.length > 0
       ? `Thông tin nhận diện: ${facts.join('; ')}. Đây là các dữ kiện được thể hiện trong tên sản phẩm, không thay thế bảng thông số chính thức của nhà bán.`
       : 'Thông tin nhận diện: sản phẩm được phân loại theo danh mục và tên đăng bán; các thông số như kích thước, trọng lượng, size hoặc phiên bản cần đối chiếu tại gian hàng.',
+    liveGuidance || 'Thông tin sử dụng thực tế: hãy đối chiếu nhu cầu câu, môi trường nước, loại cá và bộ đồ đang có với tư vấn của nhà bán trước khi chọn phiên bản.',
     usageGuide(product.category, product.name),
     `${priceNote}. Tồn kho, phân loại, phí vận chuyển và mã giảm giá có thể thay đổi theo từng thời điểm hoặc chương trình của sàn.`,
     'Trước khi đặt mua, hãy kiểm tra ảnh thật, bảng thông số, phân loại đang chọn, thành phần combo và chính sách đổi trả trên gian hàng LK Hòa tại Shopee hoặc TikTok Shop. Giá khách hàng thanh toán không tăng khi sử dụng liên kết giới thiệu trên website.',
