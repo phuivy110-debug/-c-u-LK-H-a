@@ -51,6 +51,20 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
     });
   }, []);
 
+  // The published sheet can lag behind newly verified affiliate products.
+  // Keep those local additions visible until the sheet catches up, without
+  // duplicating rows that are already present in the live feed.
+  const mergeWithLocalAdditions = useCallback((incoming: Product[]) => {
+    const existingKeys = new Set(
+      incoming.flatMap((product) => [product.id, product.slug, product.shopeeUrl].filter(Boolean))
+    );
+    const localAdditions = FALLBACK_PRODUCTS.filter((product) => {
+      const keys = [product.id, product.slug, product.shopeeUrl].filter(Boolean);
+      return !keys.some((key) => existingKeys.has(key));
+    });
+    return [...incoming, ...localAdditions];
+  }, []);
+
   // Client Routing State
   const [currentPath, setCurrentPath] = useState<string>(() => {
     return normalizeInternalPath(initialPath ?? (typeof window !== 'undefined' ? window.location.pathname : '/'));
@@ -214,8 +228,9 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
       try {
         const fetchedProducts = await fetchProductsFromGoogleSheet(urlToFetch);
         if (fetchedProducts.length > 0) {
-          setProducts(fetchedProducts);
-          saveProductsCache(fetchedProducts, urlToFetch);
+          const mergedProducts = mergeWithLocalAdditions(fetchedProducts);
+          setProducts(mergedProducts);
+          saveProductsCache(mergedProducts, urlToFetch);
           const timeStr = new Date().toLocaleTimeString('vi-VN', {
             hour: '2-digit',
             minute: '2-digit',
@@ -234,13 +249,13 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
         // Fall back to cache if available
         const cached = loadProductsCache(urlToFetch);
         if (cached && cached.products.length > 0) {
-          setProducts(cached.products);
+          setProducts(mergeWithLocalAdditions(cached.products));
         }
       } finally {
         setIsSyncing(false);
       }
     },
-    [sheetUrl]
+    [mergeWithLocalAdditions, sheetUrl]
   );
 
   // The published sheet is the data source; no simulated live-price endpoint.
