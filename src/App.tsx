@@ -17,6 +17,7 @@ import { ChatBot } from './components/ChatBot';
 import { ScrollToTopButton } from './components/ScrollToTopButton';
 import { SeoToolkitModal } from './components/SeoToolkitModal';
 import { HomeGuidesSection } from './components/HomeGuidesSection';
+import { ProductSkeletonGrid } from './components/ProductSkeleton';
 import { GUIDE_ARTICLES } from './data/guides';
 import { Product } from './types';
 import { CATEGORIES } from './data/products';
@@ -182,7 +183,9 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
   const [sheetUrl, setSheetUrl] = useState<string>(() => {
     return typeof localStorage !== 'undefined' ? localStorage.getItem(SHEET_URL_KEY) || DEFAULT_SHEET_URL : DEFAULT_SHEET_URL;
   });
-  const [isSyncing, setIsSyncing] = useState(false);
+  const [isSyncing, setIsSyncing] = useState<boolean>(() => {
+    return typeof window !== 'undefined' && !initialProducts;
+  });
   const [lastSyncTime, setLastSyncTime] = useState<string | null>(null);
   const [syncError, setSyncError] = useState<string | null>(null);
 
@@ -454,7 +457,9 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
             </button>
           </div>
 
-          {homepageProducts.length > 0 ? (
+          {isSyncing ? (
+            <ProductSkeletonGrid count={8} message="Đang kết nối và đồng bộ dữ liệu mới nhất từ Google Sheet..." />
+          ) : homepageProducts.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
               {homepageProducts.map((product) => (
                 <ProductCard
