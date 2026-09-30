@@ -41,7 +41,7 @@ const SEO_CHECKLIST = [
   },
   {
     title: 'Dữ Liệu Có Cấu Trúc Schema.org (Rich Snippets)',
-    desc: 'Tích hợp đầy đủ Product Schema (giá VND, tồn kho, đánh giá 4.9⭐), BreadcrumbList, FAQPage, Organization và Article Schema.',
+    desc: 'Có dữ liệu có cấu trúc cho các trang phù hợp. Kiểm tra từng URL bằng Google Rich Results Test; dữ liệu có cấu trúc không bảo đảm hiển thị sao đánh giá.',
     status: 'passed'
   },
   {
@@ -56,7 +56,7 @@ const SEO_CHECKLIST = [
   },
   {
     title: 'Tối Ưu Trải Nghiệm & Tốc Độ Tải Trang (Core Web Vitals)',
-    desc: 'Giao diện tối ưu ảnh WebP/CDN, Lazy-load hình ảnh, không bị giật khung hình (CLS < 0.1), tương thích 100% điện thoại di động.',
+    desc: 'Ảnh sản phẩm được tải theo nhu cầu. Cần đo Core Web Vitals trên PageSpeed Insights hoặc Search Console trước khi kết luận về CLS và tốc độ.',
     status: 'passed'
   }
 ];
@@ -64,45 +64,38 @@ const SEO_CHECKLIST = [
 const KEYWORD_GROUPS = [
   {
     name: '1. Từ Khóa Thương Hiệu (Brand Keywords)',
-    intent: 'Độ ưu tiên cao nhất - Chiếm lĩnh top 1 tên thương hiệu',
+    intent: 'Nhóm thương hiệu cần theo dõi trong Search Console',
     keywords: [
-      { kw: 'đồ câu lk hòa', vol: '14.800/tháng', diff: 'Dễ (Top 1)' },
-      { kw: 'cần câu lk hòa', vol: '9.900/tháng', diff: 'Dễ (Top 1)' },
-      { kw: 'mồi câu lk hòa', vol: '6.600/tháng', diff: 'Dễ (Top 1)' },
-      { kw: 'shop lk hòa nghĩa đàn', vol: '2.400/tháng', diff: 'Dễ (Top 1)' },
-      { kw: 'lê khánh hòa đồ câu', vol: '5.200/tháng', diff: 'Dễ (Top 1)' }
+      'đồ câu lk hòa', 'cần câu lk hòa', 'mồi câu lk hòa',
+      'shop lk hòa nghĩa đàn', 'lê khánh hòa đồ câu',
     ]
   },
   {
     name: '2. Từ Khóa Sản Phẩm Cần Câu (Product Keywords)',
     intent: 'Người dùng có nhu cầu mua sắm trực tiếp',
     keywords: [
-      { kw: 'cần lure tiểu lk', vol: '4.800/tháng', diff: 'Rất cao' },
-      { kw: 'cần solid đa năng 10kg lk', vol: '3.600/tháng', diff: 'Cao' },
-      { kw: 'cần lure cá mập lk special', vol: '2.900/tháng', diff: 'Cao' },
-      { kw: 'cần câu đài 5h 6h lk hòa', vol: '4.100/tháng', diff: 'Cao' },
-      { kw: 'cần câu cá lóc giá rẻ', vol: '8.100/tháng', diff: 'Trung bình' }
+      'cần lure tiểu lk', 'cần solid đa năng 10kg lk',
+      'cần lure cá mập lk special', 'cần câu đài 5h 6h lk hòa',
+      'cần câu cá lóc giá rẻ',
     ]
   },
   {
     name: '3. Từ Khóa Mồi Câu & Phụ Kiện (High Conversion)',
     intent: 'Sản phẩm mua thường xuyên, tỉ lệ chốt đơn cao',
     keywords: [
-      { kw: 'mồi câu chép lk hòa', vol: '3.200/tháng', diff: 'Cao' },
-      { kw: 'mồi chuột trơn câu lóc lk', vol: '2.800/tháng', diff: 'Cao' },
-      { kw: 'dây dù pe x4 x8 lk hòa', vol: '1.900/tháng', diff: 'Cao' },
-      { kw: 'phao câu đài nano lk', vol: '1.500/tháng', diff: 'Trung bình' },
-      { kw: 'lưỡi câu cá lóc bọc chì lk', vol: '1.700/tháng', diff: 'Cao' }
+      'mồi câu chép lk hòa', 'mồi chuột trơn câu lóc lk',
+      'dây dù pe x4 x8 lk hòa', 'phao câu đài nano lk',
+      'lưỡi câu cá lóc bọc chì lk',
     ]
   },
   {
     name: '4. Từ Khóa Cẩm Nang & Kinh Nghiệm (Informational Traffic Magnet)',
     intent: 'Kéo hàng chục nghìn lượt truy cập tự nhiên mỗi tháng',
     keywords: [
-      { kw: 'cách chọn cần câu lure cho người mới', vol: '5.400/tháng', diff: 'Dễ lên Top' },
-      { kw: 'độ cứng cần đài 4h 5h 6h 8h là gì', vol: '4.200/tháng', diff: 'Dễ lên Top' },
-      { kw: 'công thức pha mồi câu chép nhạy nhất', vol: '6.800/tháng', diff: 'Dễ lên Top' },
-      { kw: 'so sánh cần lure máy đứng và máy ngang', vol: '3.100/tháng', diff: 'Dễ lên Top' }
+      'cách chọn cần câu lure cho người mới',
+      'độ cứng cần đài 4h 5h 6h 8h là gì',
+      'công thức pha mồi câu chép nhạy nhất',
+      'so sánh cần lure máy đứng và máy ngang',
     ]
   }
 ];
@@ -116,24 +109,12 @@ export const SeoToolkitModal: React.FC<SeoToolkitModalProps> = ({
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [previewDevice, setPreviewDevice] = useState<'mobile' | 'desktop'>('mobile');
 
-  // GSC Meta verification tag state
-  const [gscMetaTag, setGscMetaTag] = useState<string>(() => {
-    return localStorage.getItem('lkhoa_gsc_meta_code') || 'google65de479323d0c6e8';
-  });
-  const [savedSuccess, setSavedSuccess] = useState(false);
-
   if (!isOpen) return null;
 
   const handleCopy = (text: string, key: string) => {
     navigator.clipboard.writeText(text);
     setCopiedKey(key);
     setTimeout(() => setCopiedKey(null), 2000);
-  };
-
-  const handleSaveGsc = () => {
-    localStorage.setItem('lkhoa_gsc_meta_code', gscMetaTag.trim());
-    setSavedSuccess(true);
-    setTimeout(() => setSavedSuccess(false), 2500);
   };
 
   const currentDomain = window.location.origin;
@@ -163,7 +144,7 @@ export const SeoToolkitModal: React.FC<SeoToolkitModalProps> = ({
                 </span>
               </div>
               <p className="text-xs text-slate-300">
-                Hướng dẫn chi tiết từng bước đưa Đồ Câu LK Hòa lên Top 1 Google bền vững
+                Hướng dẫn kiểm tra và cải thiện khả năng hiển thị của Đồ Câu LK Hòa trên Google
               </p>
             </div>
           </div>
@@ -190,7 +171,7 @@ export const SeoToolkitModal: React.FC<SeoToolkitModalProps> = ({
             }`}
           >
             <TrendingUp className="w-4 h-4 text-orange-500" />
-            <span>5 Bước Triển Khai Lên Top 1</span>
+            <span>5 Bước Cải Thiện SEO</span>
           </button>
 
           <button
@@ -247,10 +228,10 @@ export const SeoToolkitModal: React.FC<SeoToolkitModalProps> = ({
                   </div>
                   <div className="space-y-1">
                     <h4 className="text-sm sm:text-base font-black text-emerald-950">
-                      Hệ Thống Đã Được Tối Ưu Toàn Diện Kỹ Thuật SEO 100%
+                      Kiểm tra SEO kỹ thuật và hiệu suất định kỳ
                     </h4>
                     <p className="text-xs text-emerald-800 leading-relaxed">
-                      Toàn bộ 66+ sản phẩm, 6 danh mục chính và cẩm nang câu cá đã được tích hợp đầy đủ Schema.org JSON-LD (Product ⭐⭐⭐⭐⭐, Breadcrumbs, FAQ, Organization), Sitemap XML động kèm ảnh và Server-Side Meta Tags chuẩn chỉ theo tiêu chuẩn của Google Search Central.
+                      Các trang sản phẩm và cẩm nang đã có meta tag và sitemap trong bản build. Hãy kiểm tra dữ liệu có cấu trúc trên từng URL bằng Rich Results Test và theo dõi trạng thái lập chỉ mục trong Search Console; không có bảo đảm hiển thị sao hay vị trí top đầu.
                     </p>
                   </div>
                 </div>
@@ -279,7 +260,7 @@ export const SeoToolkitModal: React.FC<SeoToolkitModalProps> = ({
                   </div>
 
                   <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                    Truy cập <a href="https://search.google.com/search-console" target="_blank" rel="noreferrer" className="text-blue-600 font-bold underline inline-flex items-center gap-0.5">Google Search Console <ExternalLink className="w-3 h-3" /></a>, chọn <strong>"Sơ đồ trang web" (Sitemaps)</strong> và nhập đường dẫn sau để Googlebot quét toàn bộ sản phẩm ngay lập tức:
+                    Truy cập <a href="https://search.google.com/search-console" target="_blank" rel="noreferrer" className="text-blue-600 font-bold underline inline-flex items-center gap-0.5">Google Search Console <ExternalLink className="w-3 h-3" /></a>, chọn <strong>"Sơ đồ trang web" (Sitemaps)</strong> và gửi đường dẫn dưới đây. Việc gửi sitemap không bảo đảm Google lập chỉ mục ngay:
                   </p>
 
                   <div className="flex items-center gap-2 p-2.5 bg-slate-900 text-emerald-400 rounded-xl text-xs font-mono">
@@ -324,12 +305,12 @@ export const SeoToolkitModal: React.FC<SeoToolkitModalProps> = ({
                       </h5>
                     </div>
                     <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
-                      Tín hiệu SEO cực mạnh
+                      Giúp người dùng tìm thấy website
                     </span>
                   </div>
 
                   <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                    Google đánh giá cực cao các liên kết uy tín từ mạng xã hội chính chủ:
+                    Liên kết từ các kênh chính chủ giúp người xem tìm được website; không bảo đảm tăng thứ hạng:
                   </p>
 
                   <ul className="text-xs text-slate-600 space-y-1.5 list-disc pl-5">
@@ -353,7 +334,7 @@ export const SeoToolkitModal: React.FC<SeoToolkitModalProps> = ({
                   </div>
 
                   <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                    Hệ thống mã nguồn đã cài đặt sẵn Schema <strong>Product Rating 4.9⭐</strong> và <strong>FAQ Accordion</strong>. Khi người dùng tìm kiếm từ khóa trên Google, kết quả của bạn sẽ nổi bật vượt trội so với đối thủ nhờ dải sao vàng rực rỡ và giá bán ưu đãi.
+                    Kiểm tra dữ liệu có cấu trúc của từng trang bằng Rich Results Test. Google quyết định có hiển thị kết quả mở rộng hay không; không thể cam kết sao đánh giá hoặc vị trí tìm kiếm.
                   </p>
                 </div>
 
@@ -371,7 +352,7 @@ export const SeoToolkitModal: React.FC<SeoToolkitModalProps> = ({
                   </div>
 
                   <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                    Mỗi bài viết cẩm nang như <em>"Cách chọn cần câu lure cho người mới"</em> hay <em>"Độ cứng cần đài 5H 6H là gì"</em> là một thỏi nam châm hút khách. Chia sẻ các bài viết này vào nhóm Facebook câu đài/câu lure sẽ mang về hàng ngàn khách hàng tiềm năng hoàn toàn miễn phí.
+                    Chia sẻ bài cẩm nang hữu ích như <em>"Cách chọn cần câu lure cho người mới"</em> hoặc <em>"Độ cứng cần đài 5H 6H là gì"</em> đến cộng đồng quan tâm, theo đúng quy định nhóm. Theo dõi truy cập thực tế để đánh giá hiệu quả.
                   </p>
                 </div>
               </div>
@@ -387,7 +368,7 @@ export const SeoToolkitModal: React.FC<SeoToolkitModalProps> = ({
                     Trình Giả Lập Kết Quả Tìm Kiếm Google (SERP Preview)
                   </h4>
                   <p className="text-xs text-slate-500">
-                    Xem trước cách website hiển thị nổi bật trên trang nhất kết quả tìm kiếm Google
+                    Bản minh họa giao diện kết quả; vị trí và đoạn trích thực tế do Google quyết định
                   </p>
                 </div>
 
@@ -430,18 +411,6 @@ export const SeoToolkitModal: React.FC<SeoToolkitModalProps> = ({
                   {/* Title */}
                   <div className="text-[#1a0dab] hover:underline font-medium text-base sm:text-lg cursor-pointer leading-snug">
                     Đồ Câu LK Hòa – Cần Câu, Mồi Câu, Phụ Kiện &amp; Kinh Nghiệm Câu Cá
-                  </div>
-
-                  {/* Rating Rich Snippet */}
-                  <div className="flex items-center gap-2 text-xs text-slate-600">
-                    <div className="flex items-center text-amber-400 font-bold">
-                      <span>★★★★★</span>
-                    </div>
-                    <span className="font-bold text-slate-800">Xếp hạng: 4.9/5</span>
-                    <span>·</span>
-                    <span className="text-slate-500">189 lượt đánh giá</span>
-                    <span>·</span>
-                    <span className="font-bold text-emerald-600">Còn hàng</span>
                   </div>
 
                   {/* Meta Description */}
@@ -497,7 +466,7 @@ export const SeoToolkitModal: React.FC<SeoToolkitModalProps> = ({
                   Bộ Từ Khóa Mục Tiêu Dành Cho Đồ Câu LK Hòa
                 </h4>
                 <p className="text-xs text-slate-500">
-                  Tập hợp các từ khóa có lượng tìm kiếm lớn nhất và tỉ lệ chuyển đổi đơn hàng cao nhất trong ngành đồ câu cá
+                  Các chủ đề để theo dõi. Xem lượt hiển thị, nhấp và vị trí thực tế trong Google Search Console.
                 </p>
               </div>
 
@@ -515,13 +484,7 @@ export const SeoToolkitModal: React.FC<SeoToolkitModalProps> = ({
                           key={kIdx}
                           className="flex items-center justify-between p-2 rounded-xl bg-slate-50 text-xs hover:bg-orange-50/50 transition-colors"
                         >
-                          <span className="font-bold text-slate-800">{item.kw}</span>
-                          <div className="flex items-center gap-2">
-                            <span className="text-[11px] text-slate-500 font-mono">{item.vol}</span>
-                            <span className="text-[10px] font-extrabold bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded">
-                              {item.diff}
-                            </span>
-                          </div>
+                          <span className="font-bold text-slate-800">{item}</span>
                         </div>
                       ))}
                     </div>
@@ -606,32 +569,16 @@ export const SeoToolkitModal: React.FC<SeoToolkitModalProps> = ({
                 </div>
               </div>
 
-              {/* GSC Meta Tag Input */}
+              {/* GSC verification */}
               <div className="p-4 sm:p-5 rounded-2xl bg-indigo-50/50 border border-indigo-200/80 space-y-3">
                 <div className="flex items-center gap-2 font-bold text-slate-900 text-xs sm:text-sm">
                   <ShieldCheck className="w-4 h-4 text-indigo-600" />
-                  <span>Mã Xác Minh Google Search Console (google-site-verification):</span>
+                  <span>Xác minh Google Search Console</span>
                 </div>
 
                 <p className="text-xs text-slate-600 leading-relaxed">
-                  Khi Google yêu cầu xác minh bằng Thẻ HTML (HTML tag) dạng: <code className="text-slate-800 bg-white px-1.5 py-0.5 rounded">&lt;meta name="google-site-verification" content="..." /&gt;</code>, bạn có thể dán mã vào ô bên dưới:
+                  Website đã có tệp và thẻ HTML xác minh trong bản triển khai. Nếu Google yêu cầu mã mới, hãy cập nhật tệp xác minh hoặc thẻ <code className="text-slate-800 bg-white px-1.5 py-0.5 rounded">google-site-verification</code> trong mã nguồn rồi triển khai lại; lưu mã trong trình duyệt không xác minh được website. Với tài sản miền, hãy làm theo hướng dẫn xác minh DNS của Search Console.
                 </p>
-
-                <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={gscMetaTag}
-                    onChange={(e) => setGscMetaTag(e.target.value)}
-                    placeholder="Ví dụ: google65de479323d0c6e8..."
-                    className="flex-1 px-3 py-2 rounded-xl bg-white border border-slate-300 text-xs font-mono text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
-                  />
-                  <button
-                    onClick={handleSaveGsc}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition-colors cursor-pointer shrink-0"
-                  >
-                    {savedSuccess ? '✓ Đã Lưu' : 'Lưu Mã'}
-                  </button>
-                </div>
               </div>
             </div>
           )}
@@ -641,7 +588,7 @@ export const SeoToolkitModal: React.FC<SeoToolkitModalProps> = ({
         {/* Modal Footer */}
         <div className="p-4 sm:p-5 bg-slate-50 border-t border-slate-200 flex items-center justify-between shrink-0">
           <div className="text-xs text-slate-500 font-medium hidden sm:block">
-            Mã nguồn đã sẵn sàng 100% cho Google, Bing và các bộ máy tìm kiếm hàng đầu.
+            Theo dõi lập chỉ mục và vị trí thực tế trong Google Search Console.
           </div>
 
           <button

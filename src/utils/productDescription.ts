@@ -1,4 +1,5 @@
 import type { Product } from '../types';
+import { RESEARCHED_PRODUCT_COPY } from '../data/researchedProductCopy';
 
 const CATEGORY_LABELS: Record<string, string> = {
   'Cần Câu': 'cần câu',
@@ -121,11 +122,12 @@ function isThinDescription(description: string | undefined): boolean {
  * editorial description. It intentionally avoids inventing dimensions,
  * materials, load ratings, or performance claims that are not in the source.
  */
-export function generateSeoProductDescription(product: Pick<Product, 'name' | 'category' | 'referencePrice' | 'originalPrice'>): string {
+export function generateSeoProductDescription(product: Pick<Product, 'name' | 'category' | 'referencePrice' | 'originalPrice'> & Pick<Product, 'shopeeUrl'>): string {
   const itemType = categoryLabel(product.category);
   const intent = categoryIntent(product.category);
   const facts = nameFacts(product.name);
   const liveGuidance = liveProductGuidance(product.category, product.name);
+  const researchedDetail = product.shopeeUrl && RESEARCHED_PRODUCT_COPY[product.shopeeUrl]?.detail;
   const priceNote = product.referencePrice
     ? `Mức giá tham khảo hiện được ghi nhận là ${new Intl.NumberFormat('vi-VN').format(product.referencePrice)}đ`
     : 'Giá bán được cập nhật theo thông tin trên sàn';
@@ -135,7 +137,7 @@ export function generateSeoProductDescription(product: Pick<Product, 'name' | 'c
     facts.length > 0
       ? `Thông tin nhận diện: ${facts.join('; ')}. Đây là các dữ kiện được thể hiện trong tên sản phẩm, không thay thế bảng thông số chính thức của nhà bán.`
       : 'Thông tin nhận diện: sản phẩm được phân loại theo danh mục và tên đăng bán; các thông số như kích thước, trọng lượng, size hoặc phiên bản cần đối chiếu tại gian hàng.',
-    liveGuidance || 'Thông tin sử dụng thực tế: hãy đối chiếu nhu cầu câu, môi trường nước, loại cá và bộ đồ đang có với tư vấn của nhà bán trước khi chọn phiên bản.',
+    researchedDetail || liveGuidance || 'Thông tin sử dụng thực tế: hãy đối chiếu nhu cầu câu, môi trường nước, loại cá và bộ đồ đang có với tư vấn của nhà bán trước khi chọn phiên bản.',
     usageGuide(product.category, product.name),
     `${priceNote}. Tồn kho, phân loại, phí vận chuyển và mã giảm giá có thể thay đổi theo từng thời điểm hoặc chương trình của sàn.`,
     'Trước khi đặt mua, hãy kiểm tra ảnh thật, bảng thông số, phân loại đang chọn, thành phần combo và chính sách đổi trả trên gian hàng LK Hòa tại Shopee hoặc TikTok Shop. Giá khách hàng thanh toán không tăng khi sử dụng liên kết giới thiệu trên website.',
@@ -143,7 +145,8 @@ export function generateSeoProductDescription(product: Pick<Product, 'name' | 'c
 }
 
 export function getProductDescription(product: Product): string {
-  return isThinDescription(product.description)
+  const isGeneratedCopy = product.description?.includes('Thông tin nhận diện:') && product.description.includes('Cách dùng:');
+  return isThinDescription(product.description) || (isGeneratedCopy && !!product.shopeeUrl && !!RESEARCHED_PRODUCT_COPY[product.shopeeUrl])
     ? generateSeoProductDescription(product)
     : product.description!.trim();
 }

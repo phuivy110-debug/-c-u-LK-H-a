@@ -528,6 +528,7 @@ export async function fetchProductsFromGoogleSheet(sheetUrl: string): Promise<Pr
                 category,
                 referencePrice,
                 originalPrice,
+                shopeeUrl: validShopee,
               }),
               referencePrice,
               originalPrice,

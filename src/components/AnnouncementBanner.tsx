@@ -14,22 +14,22 @@ const ANNOUNCEMENTS: Announcement[] = [
   {
     id: 'promo-2026',
     badge: 'Ưu Đãi 2026',
-    text: 'Tặng kèm mồi câu & phụ kiện khi mua cần câu LK Hòa chính hãng',
+    text: 'Xem sản phẩm và kiểm tra quà tặng theo từng phân loại trên gian hàng',
     linkText: 'Xem sản phẩm',
     href: '/san-pham',
   },
   {
     id: 'freeship',
-    badge: 'Freeship',
-    text: 'Hỗ trợ mã giảm giá & miễn phí vận chuyển đơn hàng Shopee từ 50K',
+    badge: 'Ưu Đãi Trên Sàn',
+    text: 'Kiểm tra voucher và phí vận chuyển trên Shopee hoặc TikTok trước khi đặt',
     linkText: 'Khám phá ngay',
     href: '/san-pham',
   },
   {
     id: 'authentic-guarantee',
-    badge: 'Chính Hãng',
-    text: 'Cam kết 100% đồ câu LK Hòa chuẩn nguồn gốc, bảo hành uy tín',
-    linkText: 'Đọc cam kết',
+    badge: 'Mua Sắm An Tâm',
+    text: 'Đọc nguồn thông tin và xác nhận bảo hành, đổi trả với người bán',
+    linkText: 'Xem hướng dẫn',
     href: '/gioi-thieu-phuong-phap-danh-gia',
   },
 ];

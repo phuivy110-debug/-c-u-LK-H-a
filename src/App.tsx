@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
+import React, { Suspense, lazy, useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { Header } from './components/Header';
 import { Hero } from './components/Hero';
 import { ProductCard } from './components/ProductCard';
@@ -10,12 +10,10 @@ import { GuideDetailPage } from './components/GuideDetailPage';
 import { AboutReviewPage, PrivacyPage } from './components/TrustPages';
 import { WhyUsSection } from './components/WhyUsSection';
 import { FaqSection } from './components/FaqSection';
-import { AffiliateGuideModal } from './components/AffiliateGuideModal';
 import { Footer } from './components/Footer';
 import { Toast } from './components/Toast';
 import { ChatBot } from './components/ChatBot';
 import { ScrollToTopButton } from './components/ScrollToTopButton';
-import { SeoToolkitModal } from './components/SeoToolkitModal';
 import { HomeGuidesSection } from './components/HomeGuidesSection';
 import { ProductSkeletonGrid } from './components/ProductSkeleton';
 import { GUIDE_ARTICLES } from './data/guides';
@@ -30,6 +28,8 @@ import { NotFoundPage } from './components/NotFoundPage';
 import { DOMAIN } from './utils/site';
 
 const SHEET_URL_KEY = 'lkhoa_sheet_url_v2';
+const AffiliateGuideModal = lazy(() => import('./components/AffiliateGuideModal').then(module => ({ default: module.AffiliateGuideModal })));
+const SeoToolkitModal = lazy(() => import('./components/SeoToolkitModal').then(module => ({ default: module.SeoToolkitModal })));
 
 export default function App({ initialPath, initialProducts }: { initialPath?: string; initialProducts?: Product[] } = {}) {
   // Products state (defaults to cached or fallback products with active discounts)
@@ -507,26 +507,34 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
       <Footer />
 
       {/* SEO Toolkit & Google Search Console Guide Modal */}
-      {isSeoModalOpen && <SeoToolkitModal
-        isOpen={isSeoModalOpen}
-        onClose={() => setIsSeoModalOpen(false)}
-        productCount={activeProducts.length}
-      />}
+      {isSeoModalOpen && (
+        <Suspense fallback={null}>
+          <SeoToolkitModal
+            isOpen={isSeoModalOpen}
+            onClose={() => setIsSeoModalOpen(false)}
+            productCount={activeProducts.length}
+          />
+        </Suspense>
+      )}
 
       {/* Admin Google Sheet Configuration Modal */}
-      <AffiliateGuideModal
-        isOpen={isAdminOpen}
-        onClose={() => setIsAdminOpen(false)}
-        products={products}
-        onUpdateProducts={setProducts}
-        onResetDefault={() => {}}
-        sheetUrl={sheetUrl}
-        onUpdateSheetUrl={setSheetUrl}
-        onTriggerSync={() => handleSyncGoogleSheet(sheetUrl)}
-        isSyncing={isSyncing}
-        lastSyncTime={lastSyncTime}
-        onOpenSeoModal={() => setIsSeoModalOpen(true)}
-      />
+      {isAdminOpen && (
+        <Suspense fallback={null}>
+          <AffiliateGuideModal
+            isOpen={isAdminOpen}
+            onClose={() => setIsAdminOpen(false)}
+            products={products}
+            onUpdateProducts={setProducts}
+            onResetDefault={() => {}}
+            sheetUrl={sheetUrl}
+            onUpdateSheetUrl={setSheetUrl}
+            onTriggerSync={() => handleSyncGoogleSheet(sheetUrl)}
+            isSyncing={isSyncing}
+            lastSyncTime={lastSyncTime}
+            onOpenSeoModal={() => setIsSeoModalOpen(true)}
+          />
+        </Suspense>
+      )}
 
       {/* Chatbot */}
       <ChatBot products={activeProducts} />
