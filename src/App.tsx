@@ -16,6 +16,7 @@ import { ChatBot } from './components/ChatBot';
 import { ScrollToTopButton } from './components/ScrollToTopButton';
 import { HomeGuidesSection } from './components/HomeGuidesSection';
 import { ProductSkeletonGrid } from './components/ProductSkeleton';
+import { ShopeeVoucherSection } from './components/ShopeeVoucherSection';
 import { GUIDE_ARTICLES } from './data/guides';
 import { Product } from './types';
 import { CATEGORIES } from './data/products';
@@ -107,6 +108,8 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
         restoreScroll.current = null;
       } else if (window.location.hash === '#catalog-search') {
         document.getElementById('catalog-search')?.focus();
+      } else if (window.location.hash && document.getElementById(window.location.hash.slice(1))) {
+        document.getElementById(window.location.hash.slice(1))?.scrollIntoView({ block: 'start' });
       } else if (routeVersion > 0) {
         document.querySelector<HTMLElement>('main')?.focus({ preventScroll: true });
         window.scrollTo({ top: 0, behavior: 'instant' });
@@ -170,6 +173,7 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
     const target = normalizeInternalPath(path);
     if (target === `${window.location.pathname}${window.location.search}${window.location.hash}`) {
       if (target.endsWith('#catalog-search')) document.getElementById('catalog-search')?.focus();
+      else if (window.location.hash) document.getElementById(window.location.hash.slice(1))?.scrollIntoView({ block: 'start' });
       return;
     }
     window.history.replaceState({ ...window.history.state, scrollY: window.scrollY }, '');
@@ -373,6 +377,8 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
           onSearchChange={setSearchQuery}
           activeCount={activeProducts.length}
         />
+
+        <ShopeeVoucherSection />
 
         {/* Featured Category Section */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">

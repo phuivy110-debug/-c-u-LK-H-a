@@ -20,10 +20,10 @@ const ANNOUNCEMENTS: Announcement[] = [
   },
   {
     id: 'freeship',
-    badge: 'Ưu Đãi Trên Sàn',
-    text: 'Kiểm tra voucher và phí vận chuyển trên Shopee hoặc TikTok trước khi đặt',
-    linkText: 'Khám phá ngay',
-    href: '/san-pham',
+    badge: 'Voucher Shopee',
+    text: 'Sao chép mã giảm giá Shopee tháng 10 và xem cách áp dụng khi thanh toán',
+    linkText: 'Lấy mã',
+    href: '/#shopee-voucher',
   },
   {
     id: 'authentic-guarantee',

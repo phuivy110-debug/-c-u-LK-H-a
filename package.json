@@ -11,7 +11,8 @@
     "clean": "rm -rf dist server.js",
     "lint": "tsc --noEmit",
     "test:schema": "tsx scripts/verify-data-schema.ts",
-    "test:ux": "node scripts/verify-ui-ux.mjs"
+    "test:ux": "node scripts/verify-ui-ux.mjs",
+    "test:vouchers": "tsx scripts/verify-shopee-vouchers.ts"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
