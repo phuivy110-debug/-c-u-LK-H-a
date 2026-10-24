@@ -31,7 +31,7 @@ Dữ liệu dưới đây lấy từ bảng sản phẩm affiliate LK Hòa (cậ
 
 | # | Tên sản phẩm | Giá tham khảo | Link mua |
 |---|---|---|---|
-| 1 | [LK HÒA] DÂY DÙ CHUYÊN CÂU LURE LK RED X8, DÂY CÂU CHUYÊN LURE LK RED 150M, DÂY LK RED KHÔNG PHAI MÀU | 240.000đ | [Xem & Mua](https://s.shopee.vn/3qMBmFEEmF) |
+| 1 | [LK HÒA] DÂY DÙ CHUYÊN CÂU LURE LK RED X8, DÂY CÂU CHUYÊN LURE LK RED 150M, DÂY LK RED KHÔNG PHAI MÀU | 240.000đ | [Xem & Mua](https://s.shopee.vn/3VlGFhhOuw) |
 
 ## Đặc điểm nổi bật
 
@@ -70,7 +70,7 @@ Trả lời: Chính sách đổi trả, bảo hành do shop quyết định. Vui
 
 ## Mua ở đâu?
 
-👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/3qMBmFEEmF)
+👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/3VlGFhhOuw)
 
 *Lưu ý: Link mua là link affiliate của Đồ Câu LK Hòa — giá trị đơn hàng không đổi, giúp website có hoa hồng duy trì nội dung.*
 
@@ -109,7 +109,7 @@ Dữ liệu dưới đây lấy từ bảng sản phẩm affiliate LK Hòa (cậ
 
 | # | Tên sản phẩm | Giá tham khảo | Link mua |
 |---|---|---|---|
-| 1 | [LK HOÀ] [ MUA 01 CUỘN DÙ TẶNG 01 BỊCH KHÓA LINK ] DÙ LK X8 CHUYÊN LURE THẾ HỆ MỚI, DÙ LK X8 MÀU ĐEN CHUYÊN CÂU LURE | 260.000đ | [Xem & Mua](https://s.shopee.vn/7fYuLHzdzq) |
+| 1 | [LK HOÀ] [ MUA 01 CUỘN DÙ TẶNG 01 BỊCH KHÓA LINK ] DÙ LK X8 CHUYÊN LURE THẾ HỆ MỚI, DÙ LK X8 MÀU ĐEN CHUYÊN CÂU LURE | 260.000đ | [Xem & Mua](https://s.shopee.vn/4fxDdqcxYJ) |
 
 ## Đặc điểm nổi bật
 
@@ -148,7 +148,7 @@ Trả lời: Chính sách đổi trả, bảo hành do shop quyết định. Vui
 
 ## Mua ở đâu?
 
-👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/7fYuLHzdzq)
+👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/4fxDdqcxYJ)
 
 *Lưu ý: Link mua là link affiliate của Đồ Câu LK Hòa — giá trị đơn hàng không đổi, giúp website có hoa hồng duy trì nội dung.*
 
@@ -187,7 +187,7 @@ Dữ liệu dưới đây lấy từ bảng sản phẩm affiliate LK Hòa (cậ
 
 | # | Tên sản phẩm | Giá tham khảo | Link mua |
 |---|---|---|---|
-| 1 | [LK HÒA] DÙ PE X4 LK CHUYÊN CÂU LURE Fishing | 105.000đ | [Xem & Mua](https://s.shopee.vn/5fnpxc7G3G) |
+| 1 | [LK HÒA] DÙ PE X4 LK CHUYÊN CÂU LURE Fishing | 105.000đ | [Xem & Mua](https://s.shopee.vn/5VWKdNZmr8) |
 
 ## Đặc điểm nổi bật
 
@@ -226,7 +226,7 @@ Trả lời: Chính sách đổi trả, bảo hành do shop quyết định. Vui
 
 ## Mua ở đâu?
 
-👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/5fnpxc7G3G)
+👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/5VWKdNZmr8)
 
 *Lưu ý: Link mua là link affiliate của Đồ Câu LK Hòa — giá trị đơn hàng không đổi, giúp website có hoa hồng duy trì nội dung.*
 
@@ -265,7 +265,7 @@ Dữ liệu dưới đây lấy từ bảng sản phẩm affiliate LK Hòa (cậ
 
 | # | Tên sản phẩm | Giá tham khảo | Link mua |
 |---|---|---|---|
-| 1 | [LK HÒA] KẸP GẮP CÁ LK, KẸP GẮP CÁ ĐƯỢC LÀM TỪ THÉP KHÔNG RỈ | 120.000đ | [Xem & Mua](https://s.shopee.vn/19TDCSpYe) |
+| 1 | [LK HÒA] KẸP GẮP CÁ LK, KẸP GẮP CÁ ĐƯỢC LÀM TỪ THÉP KHÔNG RỈ | 120.000đ | [Xem & Mua](https://s.shopee.vn/1gJc4KoNe1) |
 
 ## Đặc điểm nổi bật
 
@@ -304,7 +304,7 @@ Trả lời: Chính sách đổi trả, bảo hành do shop quyết định. Vui
 
 ## Mua ở đâu?
 
-👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/19TDCSpYe)
+👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/1gJc4KoNe1)
 
 *Lưu ý: Link mua là link affiliate của Đồ Câu LK Hòa — giá trị đơn hàng không đổi, giúp website có hoa hồng duy trì nội dung.*
 
@@ -343,7 +343,7 @@ Dữ liệu dưới đây lấy từ bảng sản phẩm affiliate LK Hòa (cậ
 
 | # | Tên sản phẩm | Giá tham khảo | Link mua |
 |---|---|---|---|
-| 1 | [LK HÒA] KHÓA LINK CHUYÊN CÂU LURE SNAP LK Đi Câu Bắt Cá | 50.000đ | [Xem & Mua](https://s.shopee.vn/6pznLl2ogb) |
+| 1 | [LK HÒA] KHÓA LINK CHUYÊN CÂU LURE SNAP LK Đi Câu Bắt Cá | 50.000đ | [Xem & Mua](https://s.shopee.vn/6q1iDpUi9W) |
 
 ## Đặc điểm nổi bật
 
@@ -382,7 +382,7 @@ Trả lời: Chính sách đổi trả, bảo hành do shop quyết định. Vui
 
 ## Mua ở đâu?
 
-👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/6pznLl2ogb)
+👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/6q1iDpUi9W)
 
 *Lưu ý: Link mua là link affiliate của Đồ Câu LK Hòa — giá trị đơn hàng không đổi, giúp website có hoa hồng duy trì nội dung.*
 
@@ -421,7 +421,7 @@ Dữ liệu dưới đây lấy từ bảng sản phẩm affiliate LK Hòa (cậ
 
 | # | Tên sản phẩm | Giá tham khảo | Link mua |
 |---|---|---|---|
-| 1 | [LK HÒA] KÌM GỠ LƯỠI GỠ CÁ VÀ VÒNG RING LK, KÌM ĐA NĂNG CẮT DÂY LEADER VÀ DÂY PE | 150.000đ | [Xem & Mua](https://s.shopee.vn/2qTeaPI2nx) |
+| 1 | [LK HÒA] KÌM GỠ LƯỠI GỠ CÁ VÀ VÒNG RING LK, KÌM ĐA NĂNG CẮT DÂY LEADER VÀ DÂY PE | 150.000đ | [Xem & Mua](https://s.shopee.vn/LoETstSLd) |
 
 ## Đặc điểm nổi bật
 
@@ -460,7 +460,7 @@ Trả lời: Chính sách đổi trả, bảo hành do shop quyết định. Vui
 
 ## Mua ở đâu?
 
-👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/2qTeaPI2nx)
+👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/LoETstSLd)
 
 *Lưu ý: Link mua là link affiliate của Đồ Câu LK Hòa — giá trị đơn hàng không đổi, giúp website có hoa hồng duy trì nội dung.*
 
@@ -577,7 +577,7 @@ Dữ liệu dưới đây lấy từ bảng sản phẩm affiliate LK Hòa (cậ
 
 | # | Tên sản phẩm | Giá tham khảo | Link mua |
 |---|---|---|---|
-| 1 | [LK HÒA] LƯỠI CÂU ĐÀI - LƯỠI SĂN HÀNG LK HÒA | 55.000đ | [Xem & Mua](https://s.shopee.vn/7psKXaz0et) |
+| 1 | [LK HÒA] LƯỠI CÂU ĐÀI - LƯỠI SĂN HÀNG LK HÒA | 55.000đ | [Xem & Mua](https://s.shopee.vn/2LZIrYlqI5) |
 
 ## Đặc điểm nổi bật
 
@@ -616,7 +616,7 @@ Trả lời: Chính sách đổi trả, bảo hành do shop quyết định. Vui
 
 ## Mua ở đâu?
 
-👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/7psKXaz0et)
+👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/2LZIrYlqI5)
 
 *Lưu ý: Link mua là link affiliate của Đồ Câu LK Hòa — giá trị đơn hàng không đổi, giúp website có hoa hồng duy trì nội dung.*
 
@@ -655,7 +655,7 @@ Dữ liệu dưới đây lấy từ bảng sản phẩm affiliate LK Hòa (cậ
 
 | # | Tên sản phẩm | Giá tham khảo | Link mua |
 |---|---|---|---|
-| 1 | [LK HÒA] LƯỠI CÂU ĐƠN LK - LƯỠI CÂU RÔ CHÉP LK | 35.000đ | [Xem & Mua](https://s.shopee.vn/5q7G9v6ciJ) |
+| 1 | [LK HÒA] LƯỠI CÂU ĐƠN LK - LƯỠI CÂU RÔ CHÉP LK | 35.000đ | [Xem & Mua](https://s.shopee.vn/7KxyokSo8Z) |
 
 ## Đặc điểm nổi bật
 
@@ -694,7 +694,7 @@ Trả lời: Chính sách đổi trả, bảo hành do shop quyết định. Vui
 
 ## Mua ở đâu?
 
-👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/5q7G9v6ciJ)
+👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/7KxyokSo8Z)
 
 *Lưu ý: Link mua là link affiliate của Đồ Câu LK Hòa — giá trị đơn hàng không đổi, giúp website có hoa hồng duy trì nội dung.*
 
@@ -811,7 +811,7 @@ Dữ liệu dưới đây lấy từ bảng sản phẩm affiliate LK Hòa (cậ
 
 | # | Tên sản phẩm | Giá tham khảo | Link mua |
 |---|---|---|---|
-| 1 | [LK HÒA] MÁY CÂU CHUYÊN LURE DAIWA MG, MÁY CÂU ĐỨNG CHUYÊN CÂU LURE HÃNG DAIWA Đi Câu Bắt Cá | 1.100.000đ | [Xem & Mua](https://s.shopee.vn/5LBU3IuX2k) |
+| 1 | [LK HÒA] MÁY CÂU CHUYÊN LURE DAIWA MG, MÁY CÂU ĐỨNG CHUYÊN CÂU LURE HÃNG DAIWA Đi Câu Bắt Cá | 1.100.000đ | [Xem & Mua](https://s.shopee.vn/40hWqcfUuF) |
 
 ## Đặc điểm nổi bật
 
@@ -850,7 +850,7 @@ Trả lời: Chính sách đổi trả, bảo hành do shop quyết định. Vui
 
 ## Mua ở đâu?
 
-👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/7AcdkN1Y0h)
+👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/40hWqcfUuF)
 
 *Lưu ý: Link mua là link affiliate của Đồ Câu LK Hòa — giá trị đơn hàng không đổi, giúp website có hoa hồng duy trì nội dung.*
 
@@ -889,7 +889,7 @@ Dữ liệu dưới đây lấy từ bảng sản phẩm affiliate LK Hòa (cậ
 
 | # | Tên sản phẩm | Giá tham khảo | Link mua |
 |---|---|---|---|
-| 1 | [LK HÒA] [MUA 01 MÁY TẶNG 01 MỒI LURE CÁ SẮT] MÁY CÂU CÁ DAIWA RS CHUYÊN LURE - DÒNG MÁY CHÍNH HÃNG DAIWA | 870.000đ | [Xem & Mua](https://s.shopee.vn/40fbyYDbRI) |
+| 1 | [LK HÒA] [MUA 01 MÁY TẶNG 01 MỒI LURE CÁ SẮT] MÁY CÂU CÁ DAIWA RS CHUYÊN LURE - DÒNG MÁY CHÍNH HÃNG DAIWA | 870.000đ | [Xem & Mua](https://s.shopee.vn/2BFsfFmTd4) |
 
 ## Đặc điểm nổi bật
 
@@ -928,7 +928,7 @@ Trả lời: Chính sách đổi trả, bảo hành do shop quyết định. Vui
 
 ## Mua ở đâu?
 
-👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/40fbyYDbRI)
+👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/2BFsfFmTd4)
 
 *Lưu ý: Link mua là link affiliate của Đồ Câu LK Hòa — giá trị đơn hàng không đổi, giúp website có hoa hồng duy trì nội dung.*
 

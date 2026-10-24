@@ -4,6 +4,7 @@ import { generateSlug } from '../data/products';
 import { validateAffiliateUrl } from '../components/AffiliateButtons';
 import { FALLBACK_PRICE_MAP, FALLBACK_PRODUCTS } from '../data/fallbackProducts';
 import { generateSeoProductDescription } from './productDescription';
+import { getMecuabinShopeeUrl } from './shopeeAffiliateLinks';
 
 export const DEFAULT_SHEET_URL =
   'https://docs.google.com/spreadsheets/d/1KO_7U5VJJNKBphq_NNM4MnwbsfDq1GEg6mRGxz4y3B8/edit?gid=0#gid=0';
@@ -201,7 +202,7 @@ export function ensureUniqueProductIds(products: Product[]): Product[] {
       }
     }
     seenIds.add(id);
-    return { ...p, id };
+    return { ...p, id, shopeeUrl: getMecuabinShopeeUrl(p.name, p.shopeeUrl) };
   });
 }
 
@@ -411,7 +412,8 @@ export async function fetchProductsFromGoogleSheet(sheetUrl: string): Promise<Pr
             }
 
             const verifiedShopeeCorrection = getVerifiedShopeeCorrection(name);
-            const validShopee = verifiedShopeeCorrection || (isValidShopeeUrl(rawShopee) ? rawShopee.trim() : undefined);
+            const sourceShopee = verifiedShopeeCorrection || (isValidShopeeUrl(rawShopee) ? rawShopee.trim() : undefined);
+            const validShopee = getMecuabinShopeeUrl(name, sourceShopee);
             let validTikTok = validateAffiliateUrl(rawTikTok, 'tiktok');
 
             let tiktokLinkStatus: 'verified-product' | 'shared-unverified' | 'none' = 'none';
@@ -429,7 +431,7 @@ export async function fetchProductsFromGoogleSheet(sheetUrl: string): Promise<Pr
               tiktokLinkStatus = 'shared-unverified';
             }
 
-            const id = rawId ? rawId.trim() : generateStableTechnicalId(name, validShopee || '', sourceRow);
+            const id = rawId ? rawId.trim() : generateStableTechnicalId(name, sourceShopee || '', sourceRow);
 
             const baseSlug = generateSlug(name) || 'san-pham';
             let slug = baseSlug;

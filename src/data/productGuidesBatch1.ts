@@ -109,7 +109,7 @@ Dữ liệu dưới đây lấy từ bảng sản phẩm affiliate LK Hòa (cậ
 
 | # | Tên sản phẩm | Giá tham khảo | Link mua |
 |---|---|---|---|
-| 1 | [LK HÒA] [Mua 01 cần tặng 01 túi lưỡi rô chép 12 cái] CẦN CÂU TAY LK HÒA - PHIÊN BẢN SĂN RÔ CHÉP - 4H | 850.000đ | [Xem & Mua](https://s.shopee.vn/20uXasLDVE) |
+| 1 | [LK HÒA] [Mua 01 cần tặng 01 túi lưỡi rô chép 12 cái] CẦN CÂU TAY LK HÒA - PHIÊN BẢN SĂN RÔ CHÉP - 4H | 850.000đ | [Xem & Mua](https://s.shopee.vn/5q9B1zYWCD) |
 
 ## Đặc điểm nổi bật
 
@@ -148,7 +148,7 @@ Trả lời: Chính sách đổi trả, bảo hành do shop quyết định. Vui
 
 ## Mua ở đâu?
 
-👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/20uXasLDVE)
+👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/5q9B1zYWCD)
 
 *Lưu ý: Link mua là link affiliate của Đồ Câu LK Hòa — giá trị đơn hàng không đổi, giúp website có hoa hồng duy trì nội dung.*
 
@@ -187,8 +187,8 @@ Dữ liệu dưới đây lấy từ bảng sản phẩm affiliate LK Hòa (cậ
 
 | # | Tên sản phẩm | Giá tham khảo | Link mua |
 |---|---|---|---|
-| 1 | [LK HÒA] CẦN CÂU ĐÀI 5H LK TỔNG HỢP 2026 | 1.300.000đ | [Xem & Mua](https://s.shopee.vn/70JDY42BLe) |
-| 2 | [LK HÒA] [MUA 01 CẦN TẶNG 01 GÓI CÁM CHÉP LK] CẦN CÂU LK HÒA - PHIÊN BẢN TỔNG HỢP - 5H | 1.200.000đ | [Xem & Mua](https://s.shopee.vn/2gAEO6Ig8u) |
+| 1 | [LK HÒA] CẦN CÂU ĐÀI 5H LK TỔNG HỢP 2026 | 1.300.000đ | [Xem & Mua](https://s.shopee.vn/1BNLTPqHei) |
+| 2 | [LK HÒA] [MUA 01 CẦN TẶNG 01 GÓI CÁM CHÉP LK] CẦN CÂU LK HÒA - PHIÊN BẢN TỔNG HỢP - 5H | 1.200.000đ | [Xem & Mua](https://s.shopee.vn/906CnoMSlU) |
 
 ## Đặc điểm nổi bật
 
@@ -227,7 +227,7 @@ Trả lời: Chính sách đổi trả, bảo hành do shop quyết định. Vui
 
 ## Mua ở đâu?
 
-👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/70JDY42BLe)
+👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/1BNLTPqHei)
 
 *Lưu ý: Link mua là link affiliate của Đồ Câu LK Hòa — giá trị đơn hàng không đổi, giúp website có hoa hồng duy trì nội dung.*
 
@@ -266,7 +266,7 @@ Dữ liệu dưới đây lấy từ bảng sản phẩm affiliate LK Hòa (cậ
 
 | # | Tên sản phẩm | Giá tham khảo | Link mua |
 |---|---|---|---|
-| 1 | [LK HÒA] CẦN ĐÀI LK PRO 2025 PHIÊN BẢN TỔNG HỢP ĐỘ CỨNG 5H, CẦN CÂU ĐÀI LK PRO 2025 | 1.100.000đ | [Xem & Mua](https://s.shopee.vn/6L3Wkq4ihS) |
+| 1 | [LK HÒA] CẦN ĐÀI LK PRO 2025 PHIÊN BẢN TỔNG HỢP ĐỘ CỨNG 5H, CẦN CÂU ĐÀI LK PRO 2025 | 1.100.000đ | [Xem & Mua](https://s.shopee.vn/3LRq3Oi2Fv) |
 
 ## Đặc điểm nổi bật
 
@@ -305,7 +305,7 @@ Trả lời: Chính sách đổi trả, bảo hành do shop quyết định. Vui
 
 ## Mua ở đâu?
 
-👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/6L3Wkq4ihS)
+👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/3LRq3Oi2Fv)
 
 *Lưu ý: Link mua là link affiliate của Đồ Câu LK Hòa — giá trị đơn hàng không đổi, giúp website có hoa hồng duy trì nội dung.*
 
@@ -344,7 +344,7 @@ Dữ liệu dưới đây lấy từ bảng sản phẩm affiliate LK Hòa (cậ
 
 | # | Tên sản phẩm | Giá tham khảo | Link mua |
 |---|---|---|---|
-| 1 | [LK HÒA] CẦN CÂU ĐÀI BẢN RÔ CHÉP 2026 | 650.000đ | [Xem & Mua](https://s.shopee.vn/6VMwx945MV) |
+| 1 | [LK HÒA] CẦN CÂU ĐÀI BẢN RÔ CHÉP 2026 | 650.000đ | [Xem & Mua](https://s.shopee.vn/4VdnRXdatI) |
 
 ## Đặc điểm nổi bật
 
@@ -383,7 +383,7 @@ Trả lời: Chính sách đổi trả, bảo hành do shop quyết định. Vui
 
 ## Mua ở đâu?
 
-👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/6VMwx945MV)
+👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/4VdnRXdatI)
 
 *Lưu ý: Link mua là link affiliate của Đồ Câu LK Hòa — giá trị đơn hàng không đổi, giúp website có hoa hồng duy trì nội dung.*
 
@@ -422,7 +422,7 @@ Dữ liệu dưới đây lấy từ bảng sản phẩm affiliate LK Hòa (cậ
 
 | # | Tên sản phẩm | Giá tham khảo | Link mua |
 |---|---|---|---|
-| 1 | [LK HOÀ] [MUA 01 CẦN TẶNG 01 GÓI CÁM CHÉP VÀNG] CẦN ĐÀI LK RÔ CHÉP PRO 2025 PHIÊN BẢN 4H,CHUYÊN CÂU ĐÀI bắt cá đi câu | 960.000đ | [Xem & Mua](https://s.shopee.vn/4VbsZTBhQR) |
+| 1 | [LK HOÀ] [MUA 01 CẦN TẶNG 01 GÓI CÁM CHÉP VÀNG] CẦN ĐÀI LK RÔ CHÉP PRO 2025 PHIÊN BẢN 4H,CHUYÊN CÂU ĐÀI bắt cá đi câu | 960.000đ | [Xem & Mua](https://s.shopee.vn/8fTMPCNjRS) |
 
 ## Đặc điểm nổi bật
 
@@ -461,7 +461,7 @@ Trả lời: Chính sách đổi trả, bảo hành do shop quyết định. Vui
 
 ## Mua ở đâu?
 
-👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/4VbsZTBhQR)
+👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/8fTMPCNjRS)
 
 *Lưu ý: Link mua là link affiliate của Đồ Câu LK Hòa — giá trị đơn hàng không đổi, giúp website có hoa hồng duy trì nội dung.*
 
@@ -500,8 +500,8 @@ Dữ liệu dưới đây lấy từ bảng sản phẩm affiliate LK Hòa (cậ
 
 | # | Tên sản phẩm | Giá tham khảo | Link mua |
 |---|---|---|---|
-| 1 | [LK HOÀ] CẦN CÂU CHUYÊN LURE TIỂU HỌC SINH LK, CẦN LURE LK 1 KHÚC TIỂU HỌC | 399.000đ | [Xem & Mua](https://s.shopee.vn/6fgN9S3S1Y) |
-| 2 | [LK HÒA] CẦN CÂU CHUYÊN LURE LK HỌC SINH, CẦN LURE LK GIÁ RẺ PHIÊN BẢN HỌC SINH | 690.000đ | [Xem & Mua](https://s.shopee.vn/LmJboRYsk) |
+| 1 | [LK HOÀ] CẦN CÂU CHUYÊN LURE TIỂU HỌC SINH LK, CẦN LURE LK 1 KHÚC TIỂU HỌC | 399.000đ | [Xem & Mua](https://s.shopee.vn/70L8Q8U4oX) |
+| 2 | [LK HÒA] CẦN CÂU CHUYÊN LURE LK HỌC SINH, CẦN LURE LK GIÁ RẺ PHIÊN BẢN HỌC SINH | 690.000đ | [Xem & Mua](https://s.shopee.vn/9pfJnLJI4r) |
 | 3 | Cần LK Hòa Chuyên Câu Lure Học Sinh Sinh Viên - Cần 1m98 Chính Hãng Mẫu Mới | 720.000đ | [Xem & Mua](https://s.shopee.vn/2LXNzUJwpK) |
 
 ## Đặc điểm nổi bật
@@ -541,7 +541,7 @@ Trả lời: Chính sách đổi trả, bảo hành do shop quyết định. Vui
 
 ## Mua ở đâu?
 
-👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/6fgN9S3S1Y)
+👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/70L8Q8U4oX)
 
 *Lưu ý: Link mua là link affiliate của Đồ Câu LK Hòa — giá trị đơn hàng không đổi, giúp website có hoa hồng duy trì nội dung.*
 
@@ -580,7 +580,7 @@ Dữ liệu dưới đây lấy từ bảng sản phẩm affiliate LK Hòa (cậ
 
 | # | Tên sản phẩm | Giá tham khảo | Link mua |
 |---|---|---|---|
-| 1 | [LK HÒA] CẦN CÂU CHUYÊN LURE STAR LK, CẦN 1 KHÚC STAR | 569.000đ | [Xem & Mua](https://s.shopee.vn/3VjLNdFVS9) |
+| 1 | [LK HÒA] CẦN CÂU CHUYÊN LURE STAR LK, CẦN 1 KHÚC STAR | 569.000đ | [Xem & Mua](https://s.shopee.vn/9zyjzeIejq) |
 
 ## Đặc điểm nổi bật
 
@@ -619,7 +619,7 @@ Trả lời: Chính sách đổi trả, bảo hành do shop quyết định. Vui
 
 ## Mua ở đâu?
 
-👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/3VjLNdFVS9)
+👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/9zyjzeIejq)
 
 *Lưu ý: Link mua là link affiliate của Đồ Câu LK Hòa — giá trị đơn hàng không đổi, giúp website có hoa hồng duy trì nội dung.*
 
@@ -658,7 +658,7 @@ Dữ liệu dưới đây lấy từ bảng sản phẩm affiliate LK Hòa (cậ
 
 | # | Tên sản phẩm | Giá tham khảo | Link mua |
 |---|---|---|---|
-| 1 | [LK HÒA] CẦN CÂU CHUYÊN LURE SUỐI LK KHOEN FUJI, CẦN CHUYÊN ĐÁNH CÁC DÒNG CÁ SUỐI VÀ CÁ BÉ | 950.000đ | [Xem & Mua](https://s.shopee.vn/BStPVSCDh) |
+| 1 | [LK HÒA] CẦN CÂU CHUYÊN LURE SUỐI LK KHOEN FUJI, CẦN CHUYÊN ĐÁNH CÁC DÒNG CÁ SUỐI VÀ CÁ BÉ | 950.000đ | [Xem & Mua](https://s.shopee.vn/9fLtb2JvPo) |
 
 ## Đặc điểm nổi bật
 
@@ -697,7 +697,7 @@ Trả lời: Chính sách đổi trả, bảo hành do shop quyết định. Vui
 
 ## Mua ở đâu?
 
-👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/BStPVSCDh)
+👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/9fLtb2JvPo)
 
 *Lưu ý: Link mua là link affiliate của Đồ Câu LK Hòa — giá trị đơn hàng không đổi, giúp website có hoa hồng duy trì nội dung.*
 
@@ -736,8 +736,8 @@ Dữ liệu dưới đây lấy từ bảng sản phẩm affiliate LK Hòa (cậ
 
 | # | Tên sản phẩm | Giá tham khảo | Link mua |
 |---|---|---|---|
-| 1 | [LK HÒA] [ MUA 01 CẦN TẶNG 01 DÙ LK X4 ] CẦN SV SINH VIÊN PRO PHIÊN BẢN MỚI NHẤT 2025, CẦN CÂU LURE SV 2025 | 1.100.000đ | [Xem & Mua](https://s.shopee.vn/30n4miHPT0) |
-| 2 | [LK HÒA] [MUA 01 CẦN TẶNG 01 CUỘN DÙ LK X4] CẦN LURE LK SV SINH VIÊN , CẦN LURE LK PHIÊN BẢN MỚI, CẦN CHUYÊN CÂU LURE LK | 1.000.000đ | [Xem & Mua](https://s.shopee.vn/1LeqneNkr2) |
+| 1 | [LK HÒA] [ MUA 01 CẦN TẶNG 01 DÙ LK X4 ] CẦN SV SINH VIÊN PRO PHIÊN BẢN MỚI NHẤT 2025, CẦN CÂU LURE SV 2025 | 1.100.000đ | [Xem & Mua](https://s.shopee.vn/8V9wCtOMmT) |
+| 2 | [LK HÒA] [MUA 01 CẦN TẶNG 01 CUỘN DÙ LK X4] CẦN LURE LK SV SINH VIÊN , CẦN LURE LK PHIÊN BẢN MỚI, CẦN CHUYÊN CÂU LURE LK | 1.000.000đ | [Xem & Mua](https://s.shopee.vn/AAIABxI1Ot) |
 
 ## Đặc điểm nổi bật
 
@@ -776,7 +776,7 @@ Trả lời: Chính sách đổi trả, bảo hành do shop quyết định. Vui
 
 ## Mua ở đâu?
 
-👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/30n4miHPT0)
+👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/8V9wCtOMmT)
 
 *Lưu ý: Link mua là link affiliate của Đồ Câu LK Hòa — giá trị đơn hàng không đổi, giúp website có hoa hồng duy trì nội dung.*
 
@@ -815,7 +815,7 @@ Dữ liệu dưới đây lấy từ bảng sản phẩm affiliate LK Hòa (cậ
 
 | # | Tên sản phẩm | Giá tham khảo | Link mua |
 |---|---|---|---|
-| 1 | [LK HÒA] CẦN TWO LK, CẦN LURE 2 NGỌN LK, CẦN CÂU CHUYÊN LURE LK | 769.000đ | [Xem & Mua](https://s.shopee.vn/1120P2P1Ww) |
+| 1 | [LK HÒA] CẦN TWO LK, CẦN LURE 2 NGỌN LK, CẦN CÂU CHUYÊN LURE LK | 769.000đ | [Xem & Mua](https://s.shopee.vn/7puFPfQu7c) |
 
 ## Đặc điểm nổi bật
 
@@ -854,7 +854,7 @@ Trả lời: Chính sách đổi trả, bảo hành do shop quyết định. Vui
 
 ## Mua ở đâu?
 
-👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/1120P2P1Ww)
+👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/7puFPfQu7c)
 
 *Lưu ý: Link mua là link affiliate của Đồ Câu LK Hòa — giá trị đơn hàng không đổi, giúp website có hoa hồng duy trì nội dung.*
 
@@ -893,8 +893,8 @@ Dữ liệu dưới đây lấy từ bảng sản phẩm affiliate LK Hòa (cậ
 
 | # | Tên sản phẩm | Giá tham khảo | Link mua |
 |---|---|---|---|
-| 1 | [LK HÒA] [ MUA 01 CẦN SOIL TẶNG 01 CUỘN DÙ LK X4 ] CẦN SOLID ĐA NĂNG TẢI TĨNH 10KG | 1.200.000đ | [Xem & Mua](https://s.shopee.vn/5LAzZ08WjA) |
-| 2 | [LK HÒA] [ MUA 01 CẦN TẶNG 01 DÙ LK X4 ] CẦN CÂU SOLID PRO LK 2026 | 1.600.000đ | [Xem & Mua](https://s.shopee.vn/4fvIlmB45U) |
+| 1 | [LK HÒA] [ MUA 01 CẦN SOIL TẶNG 01 CUỘN DÙ LK X4 ] CẦN SOLID ĐA NĂNG TẢI TĨNH 10KG | 1.200.000đ | [Xem & Mua](https://s.shopee.vn/2gC9GAkZbr) |
+| 2 | [LK HÒA] [ MUA 01 CẦN TẶNG 01 DÙ LK X4 ] CẦN CÂU SOLID PRO LK 2026 | 1.600.000đ | [Xem & Mua](https://s.shopee.vn/5LCuR4aQD8) |
 
 ## Đặc điểm nổi bật
 
@@ -933,7 +933,7 @@ Trả lời: Chính sách đổi trả, bảo hành do shop quyết định. Vui
 
 ## Mua ở đâu?
 
-👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/5LAzZ08WjA)
+👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/2gC9GAkZbr)
 
 *Lưu ý: Link mua là link affiliate của Đồ Câu LK Hòa — giá trị đơn hàng không đổi, giúp website có hoa hồng duy trì nội dung.*
 
@@ -972,7 +972,7 @@ Dữ liệu dưới đây lấy từ bảng sản phẩm affiliate LK Hòa (cậ
 
 | # | Tên sản phẩm | Giá tham khảo | Link mua |
 |---|---|---|---|
-| 1 | [lLK HÒA] CẦN CÂU UL LK CHUYÊN ĐÁNH CÁC DÒNG CÁ SUỐI VÀ CÁ BÉ Đi Câu Bắt Cá | 499.000đ | [Xem & Mua](https://s.shopee.vn/3B6Uz1Gm83) |
+| 1 | [lLK HÒA] CẦN CÂU UL LK CHUYÊN ĐÁNH CÁC DÒNG CÁ SUỐI VÀ CÁ BÉ Đi Câu Bắt Cá | 499.000đ | [Xem & Mua](https://s.shopee.vn/W7egBsp0e) |
 
 ## Đặc điểm nổi bật
 
@@ -1011,7 +1011,7 @@ Trả lời: Chính sách đổi trả, bảo hành do shop quyết định. Vui
 
 ## Mua ở đâu?
 
-👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/3B6Uz1Gm83)
+👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/W7egBsp0e)
 
 *Lưu ý: Link mua là link affiliate của Đồ Câu LK Hòa — giá trị đơn hàng không đổi, giúp website có hoa hồng duy trì nội dung.*
 
@@ -1050,7 +1050,7 @@ Dữ liệu dưới đây lấy từ bảng sản phẩm affiliate LK Hòa (cậ
 
 | # | Tên sản phẩm | Giá tham khảo | Link mua |
 |---|---|---|---|
-| 1 | [LK HÒA] CÁN VỢT LK, CÁN VỢT CACBON CHUYÊN RÔ CHÉP VÀ CÁC LOẠI CÁ SIZE VỪA | 600.000đ | [Xem & Mua](https://s.shopee.vn/1qb7OZLqqB) |
+| 1 | [LK HÒA] CÁN VỢT LK, CÁN VỢT CACBON CHUYÊN RÔ CHÉP VÀ CÁC LOẠI CÁ SIZE VỪA | 600.000đ | [Xem & Mua](https://s.shopee.vn/8pmmbVN66V) |
 
 ## Đặc điểm nổi bật
 
@@ -1089,7 +1089,7 @@ Trả lời: Chính sách đổi trả, bảo hành do shop quyết định. Vui
 
 ## Mua ở đâu?
 
-👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/1qb7OZLqqB)
+👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/8pmmbVN66V)
 
 *Lưu ý: Link mua là link affiliate của Đồ Câu LK Hòa — giá trị đơn hàng không đổi, giúp website có hoa hồng duy trì nội dung.*
 
@@ -1128,7 +1128,7 @@ Dữ liệu dưới đây lấy từ bảng sản phẩm affiliate LK Hòa (cậ
 
 | # | Tên sản phẩm | Giá tham khảo | Link mua |
 |---|---|---|---|
-| 1 | [LK HÒA] CÁN VỢT LK HÒA, CÁN VỢT CACBON CHUYÊN SĂN HÀNG | 550.000đ | [Xem & Mua](https://s.shopee.vn/gPA0QQICq) |
+| 1 | [LK HÒA] CÁN VỢT LK HÒA, CÁN VỢT CACBON CHUYÊN SĂN HÀNG | 550.000đ | [Xem & Mua](https://s.shopee.vn/6L5RcuWcBE) |
 
 ## Đặc điểm nổi bật
 
@@ -1167,7 +1167,7 @@ Trả lời: Chính sách đổi trả, bảo hành do shop quyết định. Vui
 
 ## Mua ở đâu?
 
-👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/gPA0QQICq)
+👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/6L5RcuWcBE)
 
 *Lưu ý: Link mua là link affiliate của Đồ Câu LK Hòa — giá trị đơn hàng không đổi, giúp website có hoa hồng duy trì nội dung.*
 
@@ -1206,9 +1206,9 @@ Dữ liệu dưới đây lấy từ bảng sản phẩm affiliate LK Hòa (cậ
 
 | # | Tên sản phẩm | Giá tham khảo | Link mua |
 |---|---|---|---|
-| 1 | [LK HÒA] BỘ 2 SẢN PHẨM CẦN CHEAP VÀ MÁY DAIWA MG, BỘ 2 CẦN CHUYÊN CÂU LURE | 1.800.000đ | [Xem & Mua](https://s.shopee.vn/50Y9AO9nPa) |
-| 2 | [LK HÒA] BỘ 2 SẢN PHẨM CẦN CÂU CHEAP LK VÀ MÁY DAIWA RS, BỘ CẦN MÁY CHUYÊN CÂU LURE | 1.600.000đ | [Xem & Mua](https://s.shopee.vn/5ArZMh9A4d) |
-| 3 | [LK HÒA] COMBO CHUYÊN LURE CẦN LK, MÁY ĐỨNG RS, MỒI, DÙ FULL BỘ 07 SẢN PHẨM | 2.800.000đ | [Xem & Mua](https://s.shopee.vn/1gHhCGMUB8) |
+| 1 | [LK HÒA] BỘ 2 SẢN PHẨM CẦN CHEAP VÀ MÁY DAIWA MG, BỘ 2 CẦN CHUYÊN CÂU LURE | 1.800.000đ | [Xem & Mua](https://s.shopee.vn/60SbEIXsrC) |
+| 2 | [LK HÒA] BỘ 2 SẢN PHẨM CẦN CÂU CHEAP LK VÀ MÁY DAIWA RS, BỘ CẦN MÁY CHUYÊN CÂU LURE | 1.600.000đ | [Xem & Mua](https://s.shopee.vn/9Kj3CQLC5m) |
+| 3 | [LK HÒA] COMBO CHUYÊN LURE CẦN LK, MÁY ĐỨNG RS, MỒI, DÙ FULL BỘ 07 SẢN PHẨM | 2.800.000đ | [Xem & Mua](https://s.shopee.vn/7fapDMRXTc) |
 
 ## Đặc điểm nổi bật
 
@@ -1247,7 +1247,7 @@ Trả lời: Chính sách đổi trả, bảo hành do shop quyết định. Vui
 
 ## Mua ở đâu?
 
-👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/50Y9AO9nPa)
+👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/60SbEIXsrC)
 
 *Lưu ý: Link mua là link affiliate của Đồ Câu LK Hòa — giá trị đơn hàng không đổi, giúp website có hoa hồng duy trì nội dung.*
 

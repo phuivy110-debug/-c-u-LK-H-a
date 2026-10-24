@@ -7,6 +7,7 @@ import { GUIDE_ARTICLES } from '../data/guides';
 import { FALLBACK_PRODUCTS } from '../data/fallbackProducts';
 import { sanitizeGuideMarkdown } from './guideContent';
 import { getProductDescription } from './productDescription';
+import { getMecuabinShopeeUrl } from './shopeeAffiliateLinks';
 
 import { DOMAIN } from './site';
 export { DOMAIN } from './site';
@@ -99,7 +100,7 @@ export function loadServerProducts(): Product[] {
             slug: nameSlug,
             name: rawName,
             category: rawCategory,
-            shopeeUrl: rawShopee || 'https://s.shopee.vn/7fYvAFHqaP',
+            shopeeUrl: getMecuabinShopeeUrl(rawName, rawShopee || undefined),
             tiktokUrl: rawTiktok || 'https://vt.tiktok.com/ZS9kJHJuDnoUp-AeYDB/',
             tiktokLinkStatus: rawTiktok ? 'verified-product' : 'shared-unverified',
             imageUrl: rawImage,

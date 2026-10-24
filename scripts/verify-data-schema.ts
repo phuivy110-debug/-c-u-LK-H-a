@@ -9,6 +9,7 @@ import {
   DEFAULT_SHEET_URL,
 } from '../src/utils/googleSheetSync';
 import { Product } from '../src/types';
+import { MECUABIN_SHOPEE_LINKS } from '../src/data/mecuabinShopeeLinks';
 
 // Mock localStorage for node test runner
 const store: Record<string, string> = {};
@@ -125,11 +126,15 @@ async function runTests() {
     assert(products.length === 66, `Fetched exactly 66 products from Google Sheet (got ${products.length})`);
 
     const shopeeCount = products.filter((p) => p.shopeeUrl && p.shopeeUrl.startsWith('https://s.shopee.vn/')).length;
-    assert(shopeeCount === 66, `All 66 products have valid https://s.shopee.vn/ links (got ${shopeeCount})`);
+    assert(shopeeCount === 65, `65 products have Shopee links; one sheet product awaits its mecuabin link (got ${shopeeCount})`);
 
-    const shopeeUrls = products.map((p) => p.shopeeUrl);
+    const shopeeUrls = products.flatMap((p) => p.shopeeUrl ? [p.shopeeUrl] : []);
     const uniqueShopeeUrls = new Set(shopeeUrls);
-    assert(uniqueShopeeUrls.size === 66, `All 66 Shopee links are unique (got ${uniqueShopeeUrls.size})`);
+    assert(uniqueShopeeUrls.size === 64, `64 distinct Shopee destinations; duplicate combo rows share their item link (got ${uniqueShopeeUrls.size})`);
+    const allowedLinks = new Set(MECUABIN_SHOPEE_LINKS.flatMap(entry => entry.url ? [entry.url] : []));
+    assert(shopeeUrls.every(url => allowedLinks.has(url)), 'Every sheet purchase link belongs to the supplied mecuabin export');
+    const disabledNames = new Set(MECUABIN_SHOPEE_LINKS.filter(entry => entry.url === null).map(entry => entry.name));
+    assert(products.filter(product => !product.shopeeUrl).every(product => disabledNames.has(product.name)), 'Only explicitly disabled products lack a Shopee link');
 
     const legacyPropertyCount = products.filter((p: any) => 'affiliateUrl' in p || 'shopee_url' in p).length;
     assert(legacyPropertyCount === 0, `No product contains legacy affiliateUrl or shopee_url properties`);

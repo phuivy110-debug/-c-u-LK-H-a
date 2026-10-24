@@ -31,7 +31,7 @@ Dữ liệu dưới đây lấy từ bảng sản phẩm affiliate LK Hòa (cậ
 
 | # | Tên sản phẩm | Giá tham khảo | Link mua |
 |---|---|---|---|
-| 1 | [LK HÒA] [KHI MUA 05 CON SẼ ĐƯỢC TẶNG THÊM 01 CÁ SẮT LK] MỒI CÂU LURE CÁ SẮT LK, MỒI CÁ SẮT CHUYÊN LURE Câu Cá Bắt Cá | 60.000đ | [Xem & Mua](https://s.shopee.vn/4Az2ArCy6L) |
+| 1 | [LK HÒA] [KHI MUA 05 CON SẼ ĐƯỢC TẶNG THÊM 01 CÁ SẮT LK] MỒI CÂU LURE CÁ SẮT LK, MỒI CÁ SẮT CHUYÊN LURE Câu Cá Bắt Cá | 60.000đ | [Xem & Mua](https://s.shopee.vn/20wSSwn6y3) |
 
 ## Đặc điểm nổi bật
 
@@ -73,7 +73,7 @@ Trả lời: Chính sách đổi trả, bảo hành do shop quyết định. Vui
 
 ## Mua ở đâu?
 
-👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/4Az2ArCy6L)
+👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/20wSSwn6y3)
 
 *Lưu ý: Link mua là link affiliate của Đồ Câu LK Hòa — giá trị đơn hàng không đổi, giúp website có hoa hồng duy trì nội dung.*
 
@@ -112,9 +112,9 @@ Dữ liệu dưới đây lấy từ bảng sản phẩm affiliate LK Hòa (cậ
 
 | # | Tên sản phẩm | Giá tham khảo | Link mua |
 |---|---|---|---|
-| 1 | [LK HÒA] MỒI CÂU CHUYÊN CHÉP LK, CÁM CHÉP LK | 47.000đ | [Xem & Mua](https://s.shopee.vn/60QgME5zNM) |
-| 2 | [LK HÒA] CÁM CHÉP LK SERIES 2, MỒI CÂU CHÉP THẾ HỆ MỚI | 250.000đ | [Xem & Mua](https://s.shopee.vn/3LPvBKG8n6) |
-| 3 | [LK HÒA] MỒI CÁM CHÉP RẺ LK, MỒI CHUYÊN CHÉP RẺ LK | 105.000đ | [Xem & Mua](https://s.shopee.vn/qiaCjPert) |
+| 1 | [LK HÒA] MỒI CÂU CHUYÊN CHÉP LK, CÁM CHÉP LK | 47.000đ | [Xem & Mua](https://s.shopee.vn/7VHP13SAna) |
+| 2 | [LK HÒA] CÁM CHÉP LK SERIES 2, MỒI CÂU CHÉP THẾ HỆ MỚI | 250.000đ | [Xem & Mua](https://s.shopee.vn/5fpkpgZ9XA) |
+| 3 | [LK HÒA] MỒI CÁM CHÉP RẺ LK, MỒI CHUYÊN CHÉP RẺ LK | 105.000đ | [Xem & Mua](https://s.shopee.vn/6VOrpDVyqH) |
 | 4 | Mồi Câu Cám Chép LK Hoà 250g Chính Hãng Trộn Sẵn Câu Cá Chép- Mồi Câu Cá Chép Siêu Nhạy | 40.000đ | [Xem & Mua](https://s.shopee.vn/6fgN9S3S2b) |
 | 5 | Mồi Câu Cám Chép LK Hoà 250g Chính Hãng Trộn Sẵn Câu Cá Chép - Mồi Câu Cá Chép Siêu Nhạy | 40.000đ | [Xem & Mua](https://s.shopee.vn/2gAEO6Ig9x) |
 | 6 | Mồi Câu Cám Chép LK Hoà 250g Chính Hãng Trộn Sẵn Câu Cá Chép | 44.000đ | [Xem & Mua](https://s.shopee.vn/3LPvBKG8o9) |
@@ -159,7 +159,7 @@ Trả lời: Chính sách đổi trả, bảo hành do shop quyết định. Vui
 
 ## Mua ở đâu?
 
-👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/60QgME5zNM)
+👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/7VHP13SAna)
 
 *Lưu ý: Link mua là link affiliate của Đồ Câu LK Hòa — giá trị đơn hàng không đổi, giúp website có hoa hồng duy trì nội dung.*
 
@@ -198,7 +198,7 @@ Dữ liệu dưới đây lấy từ bảng sản phẩm affiliate LK Hòa (cậ
 
 | # | Tên sản phẩm | Giá tham khảo | Link mua |
 |---|---|---|---|
-| 1 | [LK HÒA] MỒI CÂU ĐÀI LK, MỒI CHUYÊN DÙNG CHO CÂU RÔ PHI, CHÉP, TRẮM CỎ | 42.000đ | [Xem & Mua](https://s.shopee.vn/2LXsTn5x8T) |
+| 1 | [LK HÒA] MỒI CÂU ĐÀI LK, MỒI CHUYÊN DÙNG CHO CÂU RÔ PHI, CHÉP, TRẮM CỎ | 42.000đ | [Xem & Mua](https://s.shopee.vn/5LCuR4aQC7) |
 
 ## Đặc điểm nổi bật
 
@@ -240,7 +240,7 @@ Trả lời: Chính sách đổi trả, bảo hành do shop quyết định. Vui
 
 ## Mua ở đâu?
 
-👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/5VUPlJ7tOD)
+👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/5LCuR4aQC7)
 
 *Lưu ý: Link mua là link affiliate của Đồ Câu LK Hòa — giá trị đơn hàng không đổi, giúp website có hoa hồng duy trì nội dung.*
 
@@ -442,7 +442,7 @@ Dữ liệu dưới đây lấy từ bảng sản phẩm affiliate LK Hòa (cậ
 
 | # | Tên sản phẩm | Giá tham khảo | Link mua |
 |---|---|---|---|
-| 1 | [LK HÒA] MỒI CÂU CHUYÊN LURE BỌ LK, MỒI CÂU CHUYÊN LURE LK | 129.000đ | [Xem & Mua](https://s.shopee.vn/4LISNACKlO) |
+| 1 | [LK HÒA] MỒI CÂU CHUYÊN LURE BỌ LK, MỒI CÂU CHUYÊN LURE LK | 129.000đ | [Xem & Mua](https://s.shopee.vn/gR4sUsBff) |
 
 ## Đặc điểm nổi bật
 
@@ -484,7 +484,7 @@ Trả lời: Chính sách đổi trả, bảo hành do shop quyết định. Vui
 
 ## Mua ở đâu?
 
-👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/4LISNACKlO)
+👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/gR4sUsBff)
 
 *Lưu ý: Link mua là link affiliate của Đồ Câu LK Hòa — giá trị đơn hàng không đổi, giúp website có hoa hồng duy trì nội dung.*
 
@@ -523,7 +523,7 @@ Dữ liệu dưới đây lấy từ bảng sản phẩm affiliate LK Hòa (cậ
 
 | # | Tên sản phẩm | Giá tham khảo | Link mua |
 |---|---|---|---|
-| 1 | [LK HÒA] MỒI CÂU CHUYÊN LURE CHUỘT LK ACTION NỔI VÀ LỬNG (S/7G, M/8G, M/SKIN8G VÀ L/12G LỬNG) | 120.000đ | [Xem & Mua](https://s.shopee.vn/6Ak6YX5M2P) |
+| 1 | [LK HÒA] MỒI CÂU CHUYÊN LURE CHUỘT LK ACTION NỔI VÀ LỬNG (S/7G, M/8G, M/SKIN8G VÀ L/12G LỬNG) | 120.000đ | [Xem & Mua](https://s.shopee.vn/3qO6eJg8Ey) |
 | 2 | Mồi Câu LK hoà , MỒI HƠI CHUỘT TRƠN LK CHUYÊN CÂU LURE - Đồ Câu Văn Chương | 150.000đ | [Xem & Mua](https://s.shopee.vn/2BDxnBKaAH) |
 | 3 | mồi câu lure chuột Lk Hoà phiên bản mới nhất chuột trơn Có 3 size | 75.000đ | [Xem & Mua](https://s.shopee.vn/8fRRX7vpyf) |
 | 4 | Chuột hơi LK HOÀ hàng loại 1 chuyên câu lure cao su cao cấp nặng 7g, 8g | 98.000đ | [Xem & Mua](https://s.shopee.vn/904HvjuZIl) |
@@ -578,7 +578,7 @@ Trả lời: Chính sách đổi trả, bảo hành do shop quyết định. Vui
 
 ## Mua ở đâu?
 
-👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/6Ak6YX5M2P)
+👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/3qO6eJg8Ey)
 
 *Lưu ý: Link mua là link affiliate của Đồ Câu LK Hòa — giá trị đơn hàng không đổi, giúp website có hoa hồng duy trì nội dung.*
 
@@ -702,7 +702,7 @@ Dữ liệu dưới đây lấy từ bảng sản phẩm affiliate LK Hòa (cậ
 
 | # | Tên sản phẩm | Giá tham khảo | Link mua |
 |---|---|---|---|
-| 1 | [LK HÒA] MỒI CÂU RÔ PHI LK HÒA, MỒI CÂU ĐÀI CHUYÊN RÔ PHI LK | 42.000đ | [Xem & Mua](https://s.shopee.vn/3g3G4F0sR7) |
+| 1 | [LK HÒA] MỒI CÂU RÔ PHI LK HÒA, MỒI CÂU ĐÀI CHUYÊN RÔ PHI LK | 42.000đ | [Xem & Mua](https://s.shopee.vn/5AtUElb3XM) |
 | 2 | Mồi câu cá Rô Phi LK Hoà vị tanh gan,gan,dứa, bột tôm nam cực | 58.000đ | [Xem & Mua](https://s.shopee.vn/8pkrjQvCdg) |
 
 ## Đặc điểm nổi bật
@@ -745,7 +745,7 @@ Trả lời: Chính sách đổi trả, bảo hành do shop quyết định. Vui
 
 ## Mua ở đâu?
 
-👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/4qEiy5AQkX)
+👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/5AtUElb3XM)
 
 *Lưu ý: Link mua là link affiliate của Đồ Câu LK Hòa — giá trị đơn hàng không đổi, giúp website có hoa hồng duy trì nội dung.*
 
@@ -943,7 +943,7 @@ Dữ liệu dưới đây lấy từ bảng sản phẩm affiliate LK Hòa (cậ
 
 | # | Tên sản phẩm | Giá tham khảo | Link mua |
 |---|---|---|---|
-| 1 | Phao câu lục độc quyền LK Hòa- Vẩy Sơn và Cuốn chỉ | 230.000đ | [Xem & Mua](https://s.shopee.vn/19TDCSpZh) |
+| 1 | Phao câu lục độc quyền LK Hòa- Vẩy Sơn và Cuốn chỉ | 230.000đ | [Xem & Mua](https://s.shopee.vn/7VHP13SAod) |
 
 ## Đặc điểm nổi bật
 
@@ -982,7 +982,7 @@ Trả lời: Chính sách đổi trả, bảo hành do shop quyết định. Vui
 
 ## Mua ở đâu?
 
-👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/19TDCSpZh)
+👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/7VHP13SAod)
 
 *Lưu ý: Link mua là link affiliate của Đồ Câu LK Hòa — giá trị đơn hàng không đổi, giúp website có hoa hồng duy trì nội dung.*
 
@@ -1021,7 +1021,7 @@ Dữ liệu dưới đây lấy từ bảng sản phẩm affiliate LK Hòa (cậ
 
 | # | Tên sản phẩm | Giá tham khảo | Link mua |
 |---|---|---|---|
-| 1 | [LK HÒA] RỌNG ĐỰNG CÁ LK, RỌNG CÁ SĂN HÀNG | 500.000đ | [Xem & Mua](https://s.shopee.vn/W5jo7QvXn) |
+| 1 | [LK HÒA] RỌNG ĐỰNG CÁ LK, RỌNG CÁ SĂN HÀNG | 500.000đ | [Xem & Mua](https://s.shopee.vn/8AX5oHPdSR) |
 
 ## Đặc điểm nổi bật
 
@@ -1060,7 +1060,7 @@ Trả lời: Chính sách đổi trả, bảo hành do shop quyết định. Vui
 
 ## Mua ở đâu?
 
-👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/W5jo7QvXn)
+👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/8AX5oHPdSR)
 
 *Lưu ý: Link mua là link affiliate của Đồ Câu LK Hòa — giá trị đơn hàng không đổi, giúp website có hoa hồng duy trì nội dung.*
 
@@ -1099,7 +1099,7 @@ Dữ liệu dưới đây lấy từ bảng sản phẩm affiliate LK Hòa (cậ
 
 | # | Tên sản phẩm | Giá tham khảo | Link mua |
 |---|---|---|---|
-| 1 | [LK HÒA] THẺO CÂU ĐÀI BUỘC SẴN LK CHUYÊN RÔ CHÉP, THẺO LK LÀM SẴN CÂU RÔ CHÉP | 119.000đ | [Xem & Mua](https://s.shopee.vn/7VFU8z0HKn) |
+| 1 | [LK HÒA] THẺO CÂU ĐÀI BUỘC SẴN LK CHUYÊN RÔ CHÉP, THẺO LK LÀM SẴN CÂU RÔ CHÉP | 119.000đ | [Xem & Mua](https://s.shopee.vn/113vH6quzh) |
 
 ## Đặc điểm nổi bật
 
@@ -1138,7 +1138,7 @@ Trả lời: Chính sách đổi trả, bảo hành do shop quyết định. Vui
 
 ## Mua ở đâu?
 
-👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/7VFU8z0HKn)
+👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/113vH6quzh)
 
 *Lưu ý: Link mua là link affiliate của Đồ Câu LK Hòa — giá trị đơn hàng không đổi, giúp website có hoa hồng duy trì nội dung.*
 
@@ -1177,7 +1177,7 @@ Dữ liệu dưới đây lấy từ bảng sản phẩm affiliate LK Hòa (cậ
 
 | # | Tên sản phẩm | Giá tham khảo | Link mua |
 |---|---|---|---|
-| 1 | THÍNH CÂU CÁ LK HOÀ | 100.000đ | [Xem & Mua](https://s.shopee.vn/7Kw3wg0ufk) |
+| 1 | THÍNH CÂU CÁ LK HOÀ | 100.000đ | [Xem & Mua](https://s.shopee.vn/2qVZSTjwGs) |
 
 ## Đặc điểm nổi bật
 
@@ -1219,7 +1219,7 @@ Trả lời: Chính sách đổi trả, bảo hành do shop quyết định. Vui
 
 ## Mua ở đâu?
 
-👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/7Kw3wg0ufk)
+👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/2qVZSTjwGs)
 
 *Lưu ý: Link mua là link affiliate của Đồ Câu LK Hòa — giá trị đơn hàng không đổi, giúp website có hoa hồng duy trì nội dung.*
 
@@ -1258,7 +1258,7 @@ Dữ liệu dưới đây lấy từ bảng sản phẩm affiliate LK Hòa (cậ
 
 | # | Tên sản phẩm | Giá tham khảo | Link mua |
 |---|---|---|---|
-| 1 | [LK HÒA] TRỤC CÂU ĐÀI LK CHUYÊN RÔ CHÉP, TRỤC CHUYÊN CÂU RÔ CHÉP LK | 39.000đ | [Xem & Mua](https://s.shopee.vn/AUt5iUorF9) |
+| 1 | [LK HÒA] TRỤC CÂU ĐÀI LK CHUYÊN RÔ CHÉP, TRỤC CHUYÊN CÂU RÔ CHÉP LK | 39.000đ | [Xem & Mua](https://s.shopee.vn/5fpkpgZ9W9) |
 
 ## Đặc điểm nổi bật
 
@@ -1297,7 +1297,7 @@ Trả lời: Chính sách đổi trả, bảo hành do shop quyết định. Vui
 
 ## Mua ở đâu?
 
-👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/AUt5iUorF9)
+👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/5fpkpgZ9W9)
 
 *Lưu ý: Link mua là link affiliate của Đồ Câu LK Hòa — giá trị đơn hàng không đổi, giúp website có hoa hồng duy trì nội dung.*
 
@@ -1336,7 +1336,7 @@ Dữ liệu dưới đây lấy từ bảng sản phẩm affiliate LK Hòa (cậ
 
 | # | Tên sản phẩm | Giá tham khảo | Link mua |
 |---|---|---|---|
-| 1 | [LK HÒA] TÚI ĐỰNG CÁ LK, TÚI CÂU ĐỰNG CÁ HOẶC ĐỰNG PHỤ KIỆN ĐI CÂU | 399.000đ | [Xem & Mua](https://s.shopee.vn/3g2lZwEs7C) |
+| 1 | [LK HÒA] TÚI ĐỰNG CÁ LK, TÚI CÂU ĐỰNG CÁ HOẶC ĐỰNG PHỤ KIỆN ĐI CÂU | 399.000đ | [Xem & Mua](https://s.shopee.vn/1LglfipeJz) |
 
 ## Đặc điểm nổi bật
 
@@ -1375,7 +1375,7 @@ Trả lời: Chính sách đổi trả, bảo hành do shop quyết định. Vui
 
 ## Mua ở đâu?
 
-👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/3g2lZwEs7C)
+👉 **Nút mua chính:** [Xem sản phẩm & giá tốt nhất trên Shopee](https://s.shopee.vn/1LglfipeJz)
 
 *Lưu ý: Link mua là link affiliate của Đồ Câu LK Hòa — giá trị đơn hàng không đổi, giúp website có hoa hồng duy trì nội dung.*
 

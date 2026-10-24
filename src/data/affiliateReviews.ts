@@ -126,8 +126,8 @@ Giá dưới đây là ảnh chụp dữ liệu ngày 29/08/2026 và có thể t
 
 | Sản phẩm đã đối chiếu | Giá sale trong danh mục | Điều cần kiểm tra trên sàn |
 |---|---:|---|
-| [Cần câu đài 5H LK Tổng Hợp 2026](https://s.shopee.vn/5LB1Lgzjtf) | 1.050.000đ | Chiều dài, phụ kiện đi kèm, chính sách lóng |
-| [Cần LK Hòa phiên bản Tổng Hợp 5H](https://s.shopee.vn/3qMDYyviHy) | 990.000đ | Đúng biến thể, quà tặng, giá cuối sau voucher |
+| [Cần câu đài 5H LK Tổng Hợp 2026](https://s.shopee.vn/1BNLTPqHei) | 1.050.000đ | Chiều dài, phụ kiện đi kèm, chính sách lóng |
+| [Cần LK Hòa phiên bản Tổng Hợp 5H](https://s.shopee.vn/906CnoMSlU) | 990.000đ | Đúng biến thể, quà tặng, giá cuối sau voucher |
 
 Hai listing cùng ghi 5H nhưng không nên mặc định là một sản phẩm giống hệt nhau. Hãy đối chiếu ảnh, biến thể và mô tả ở trang thanh toán.
 
@@ -193,11 +193,11 @@ Giá là dữ liệu danh mục tại thời điểm cập nhật, có thể tha
 
 | Lựa chọn | Giá sale | Điều tên listing xác nhận | Phải hỏi thêm trước khi mua |
 |---|---:|---|---|
-| [Cần Lure Tiểu Học LK](https://s.shopee.vn/2qTgN58yOH) | 319.000đ | Phân khúc giá thấp, cần chuyên lure | Chiều dài, power, tải mồi, máy đứng/ngang |
-| [Cần Lure Đứng 1 Khúc Tiểu LK](https://s.shopee.vn/7psMKARxov) | 450.000đ | Máy đứng, một khúc | Chiều dài vận chuyển, độ cứng, tải mồi |
-| [Cần STAR LK 1 Khúc](https://s.shopee.vn/80BmWjcStk) | 459.000đ | Một khúc | Loại máy, power, khoen và tải mồi |
-| [Cần Lure CHEAP LK](https://s.shopee.vn/5Arb9PvItR) | 590.000đ | Dòng giá học sinh–sinh viên | Cấu hình từng biến thể và phụ kiện |
-| [Cần TWO LK 2 Ngọn](https://s.shopee.vn/6Ak8LVJsZR) | 620.000đ | Có hai ngọn | Power của từng ngọn, loại máy, tải mồi |
+| [Cần Lure Tiểu Học LK](https://s.shopee.vn/70L8Q8U4oX) | 319.000đ | Phân khúc giá thấp, cần chuyên lure | Chiều dài, power, tải mồi, máy đứng/ngang |
+| [Cần Lure Đứng 1 Khúc Tiểu LK](https://s.shopee.vn/3g4gS0glZx) | 450.000đ | Máy đứng, một khúc | Chiều dài vận chuyển, độ cứng, tải mồi |
+| [Cần STAR LK 1 Khúc](https://s.shopee.vn/9zyjzeIejq) | 459.000đ | Một khúc | Loại máy, power, khoen và tải mồi |
+| [Cần Lure CHEAP LK](https://s.shopee.vn/4LKNFEeEEH) | 590.000đ | Dòng giá học sinh–sinh viên | Cấu hình từng biến thể và phụ kiện |
+| [Cần TWO LK 2 Ngọn](https://s.shopee.vn/7puFPfQu7c) | 620.000đ | Có hai ngọn | Power của từng ngọn, loại máy, tải mồi |
 
 ![Cần Lure Tiểu Học LK trong danh mục](https://i.postimg.cc/pr7n3GMc/vn-11134207-81ztc-mqifhmyoyeww59.webp)
 
@@ -227,7 +227,7 @@ Máy đứng thường có đường học ngắn hơn vì ít yêu cầu xử l
 
 ## Khi nào nên mua combo?
 
-Nếu chưa có máy và dây, listing [Cần CHEAP LK + máy Daiwa RS](https://s.shopee.vn/8V837aM9xd) có giá danh mục 1.290.000đ. Combo giảm nguy cơ mua sai chân máy hoặc size máy, nhưng phải đọc danh sách thành phần thay vì suy đoán từ ảnh bìa.
+Nếu chưa có máy và dây, listing [Cần CHEAP LK + máy Daiwa RS](https://s.shopee.vn/9Kj3CQLC5m) có giá danh mục 1.290.000đ. Combo giảm nguy cơ mua sai chân máy hoặc size máy, nhưng phải đọc danh sách thành phần thay vì suy đoán từ ảnh bìa.
 
 Mua cần rời hợp hơn khi bạn đã có máy, biết cỡ dây và muốn kiểm soát từng món trong bộ.
 
