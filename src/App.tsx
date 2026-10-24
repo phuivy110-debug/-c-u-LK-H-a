@@ -27,6 +27,7 @@ import { trackAffiliateClick, trackPageView } from './utils/analyticsService';
 import { normalizeInternalPath, publicRoutes } from './utils/routes';
 import { NotFoundPage } from './components/NotFoundPage';
 import { DOMAIN } from './utils/site';
+import { mergeWithLocalAdditions } from './utils/mergeLocalProducts';
 
 const SHEET_URL_KEY = 'lkhoa_sheet_url_v2';
 const AffiliateGuideModal = lazy(() => import('./components/AffiliateGuideModal').then(module => ({ default: module.AffiliateGuideModal })));
@@ -51,20 +52,6 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
       const resolved = typeof newProds === 'function' ? newProds(prev) : newProds;
       return ensureUniqueProductIds(resolved);
     });
-  }, []);
-
-  // The published sheet can lag behind newly verified affiliate products.
-  // Keep those local additions visible until the sheet catches up, without
-  // duplicating rows that are already present in the live feed.
-  const mergeWithLocalAdditions = useCallback((incoming: Product[]) => {
-    const existingKeys = new Set(
-      incoming.flatMap((product) => [product.id, product.slug, product.shopeeUrl].filter(Boolean))
-    );
-    const localAdditions = FALLBACK_PRODUCTS.filter((product) => {
-      const keys = [product.id, product.slug, product.shopeeUrl].filter(Boolean);
-      return !keys.some((key) => existingKeys.has(key));
-    });
-    return [...incoming, ...localAdditions];
   }, []);
 
   // Client Routing State

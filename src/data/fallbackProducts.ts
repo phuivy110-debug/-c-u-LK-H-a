@@ -1,6 +1,8 @@
 import { Product } from "../types";
+import { NEW_SHOPEE_PRODUCTS } from './newShopeeProducts';
 
 export const FALLBACK_PRODUCTS: Product[] = [
+  ...NEW_SHOPEE_PRODUCTS,
   {
     "id": "sp_1_lk-hoa-mua-01-can-",
     "slug": "lk-hoa-mua-01-can-soil-tang-01-cuon-du-lk-x4-can-solid-da-nang-tai-tinh-10kg",

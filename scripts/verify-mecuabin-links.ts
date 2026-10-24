@@ -12,6 +12,8 @@ import {
   generateStableTechnicalId, loadProductsCache, saveProductsCache,
 } from '../src/utils/googleSheetSync';
 import { loadServerProducts } from '../src/utils/serverSeoRenderer';
+import { NEW_SHOPEE_PRODUCTS } from '../src/data/newShopeeProducts';
+import { mergeWithLocalAdditions } from '../src/utils/mergeLocalProducts';
 
 const enabled = MECUABIN_SHOPEE_LINKS.filter(entry => entry.url !== null);
 const disabled = MECUABIN_SHOPEE_LINKS.filter(entry => entry.url === null);
@@ -43,8 +45,8 @@ assert.equal(getMecuabinShopeeUrl(ambiguous.name), undefined, 'Never guess betwe
 assert.equal(getMecuabinShopeeUrl('Unlisted product', 'https://s.shopee.vn/unknown'), 'https://s.shopee.vn/unknown');
 
 for (const products of [FALLBACK_PRODUCTS, loadServerProducts()]) {
-  assert.equal(products.length, 70);
-  assert.equal(products.filter(product => product.shopeeUrl).length, 68);
+  assert.equal(products.length, 75);
+  assert.equal(products.filter(product => product.shopeeUrl).length, 73);
   for (const product of products) {
     if (product.shopeeUrl) assert.ok(allowed.has(product.shopeeUrl), `Old link for ${product.slug}`);
     const html = renderToString(React.createElement(AffiliateButtons, {
@@ -102,7 +104,7 @@ try {
     const entry = MECUABIN_SHOPEE_LINKS.find(item =>
       item.url ? item.url === product.shopeeUrl : item.name === product.name);
     assert.ok(entry);
-    return { ...product, shopeeUrl: entry.previousUrls?.[0] };
+    return { ...product, shopeeUrl: entry.previousUrls?.[0] || product.shopeeUrl };
   });
   assert.deepEqual(ensureUniqueProductIds(stale).map(product => product.shopeeUrl), FALLBACK_PRODUCTS.map(product => product.shopeeUrl));
   saveProductsCache(stale);
@@ -114,4 +116,20 @@ try {
     else Reflect.deleteProperty(globalThis, key);
   }
 }
-console.log('PASS affiliate: 72 export links, 68 catalog replacements, 2 hidden links, SSR/buttons/sheet/cache and stable IDs.');
+assert.equal(NEW_SHOPEE_PRODUCTS.length, 5);
+const originalProducts = FALLBACK_PRODUCTS.filter(product => !NEW_SHOPEE_PRODUCTS.some(item => item.id === product.id));
+const merged = mergeWithLocalAdditions(originalProducts);
+assert.equal(merged.length, 75);
+assert.deepEqual(merged.slice(0, 5), NEW_SHOPEE_PRODUCTS);
+assert.equal(mergeWithLocalAdditions(merged).length, 75, 'Repeated sync does not duplicate additions');
+const renamed = { ...NEW_SHOPEE_PRODUCTS[0], id: 'sheet-renamed', slug: 'sheet-renamed', name: 'Updated listing name' };
+assert.equal(mergeWithLocalAdditions([...originalProducts, renamed]).length, 75, 'Same affiliate item is not added twice');
+for (const product of NEW_SHOPEE_PRODUCTS) {
+  assert.ok(allowed.has(product.shopeeUrl));
+  assert.equal(product.imageUrl, undefined);
+  assert.equal(product.salePrice, undefined);
+  assert.equal(product.originalPrice, undefined);
+  assert.equal(product.tiktokLinkStatus, 'none');
+  assert.ok(product.description.includes('tham khảo'));
+}
+console.log('PASS affiliate: 72 export links, 75 catalog entries, 2 hidden links, 5 new listings, SSR/buttons/sheet/cache and stable IDs.');

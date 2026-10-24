@@ -8,6 +8,7 @@ import { FALLBACK_PRODUCTS } from '../data/fallbackProducts';
 import { sanitizeGuideMarkdown } from './guideContent';
 import { getProductDescription } from './productDescription';
 import { getMecuabinShopeeUrl } from './shopeeAffiliateLinks';
+import { mergeWithLocalAdditions } from './mergeLocalProducts';
 
 import { DOMAIN } from './site';
 export { DOMAIN } from './site';
@@ -119,7 +120,7 @@ export function loadServerProducts(): Product[] {
         }
 
         if (products.length >= 50) {
-          return products;
+          return mergeWithLocalAdditions(products);
         }
       }
     }

@@ -8,7 +8,7 @@ const productsByShopeeUrl = new Map(
 );
 const researchedProducts = Object.entries(RESEARCHED_PRODUCT_COPY);
 
-assert.equal(FALLBACK_PRODUCTS.length, 70);
+assert.equal(FALLBACK_PRODUCTS.length, 75);
 // Two catalog entries share the same verified Shopee item and researched copy.
 assert.equal(researchedProducts.length, 24);
 assert.equal(FALLBACK_PRODUCTS.filter(product => product.shopeeUrl && RESEARCHED_PRODUCT_COPY[product.shopeeUrl]).length, 25);
