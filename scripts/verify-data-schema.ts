@@ -7,6 +7,7 @@ import {
   loadProductsCache,
   saveProductsCache,
   DEFAULT_SHEET_URL,
+  extractSpreadsheetId,
 } from '../src/utils/googleSheetSync';
 import { Product } from '../src/types';
 import { MECUABIN_SHOPEE_LINKS } from '../src/data/mecuabinShopeeLinks';
@@ -146,7 +147,7 @@ async function runTests() {
     assert(cache?.schemaVersion === 5, 'Cache schemaVersion is 5');
     assert(cache?.source === 'google-sheet', 'Cache source is "google-sheet"');
     assert(
-      cache?.spreadsheetId === '1KO_7U5VJJNKBphq_NNM4MnwbsfDq1GEg6mRGxz4y3B8',
+      cache?.spreadsheetId === extractSpreadsheetId(DEFAULT_SHEET_URL),
       'Cache spreadsheetId is correct'
     );
     assert(cache?.products.length === 66, 'Cached products count is 66');

@@ -15,6 +15,7 @@ import { useCart } from '../utils/CartContext';
 import { formatPrice } from '../utils/catalog';
 import { AVAILABLE_COUPONS } from '../utils/cartStore';
 import { getProductDetailData } from '../data/productVariants';
+import { CartUpdateNotice } from './CartUpdateNotice';
 
 interface CartDrawerProps {
   products: Product[];
@@ -90,6 +91,10 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ products, onNavigate }) 
           >
             <X className="w-5 h-5" />
           </button>
+        </div>
+
+        <div className="px-4 pt-3">
+          <CartUpdateNotice compact />
         </div>
 
         {/* Freeship Progress Bar */}

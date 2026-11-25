@@ -2,6 +2,49 @@ import type { Product } from '../types';
 import { CATEGORIES } from '../data/products';
 
 export type ProductSort = 'default' | 'price-asc' | 'price-desc' | 'name-asc' | 'discount-desc';
+const PRODUCT_PREFIX_RE = /^(?:\s*\[[^\]]+\]\s*)+/u;
+const PROMO_BRACKET_RE = /\[([^\]]*(?:mua|tặng|ra mắt|mở bán|bst|giới hạn)[^\]]*)\]/giu;
+
+const PRODUCT_TERM_CASE: Record<string, string> = {
+  lk: 'LK',
+  mg: 'MG',
+  sv: 'SV',
+  pe: 'PE',
+  x4: 'X4',
+  x8: 'X8',
+  daiwa: 'Daiwa',
+  carbon: 'Carbon',
+  mono: 'Mono',
+  lure: 'Lure',
+  cod: 'COD',
+};
+
+function sentenceCaseProductName(value: string): string {
+  const normalized = value.trim().replace(/\s+/g, ' ').toLocaleLowerCase('vi');
+  const restored = normalized.replace(/\b(lk|mg|sv|pe|x4|x8|daiwa|carbon|mono|lure|cod)\b/giu, (term) => (
+    PRODUCT_TERM_CASE[term.toLocaleLowerCase('vi')] || term
+  ));
+  return restored ? restored.charAt(0).toLocaleUpperCase('vi') + restored.slice(1) : '';
+}
+
+export function productDisplayName(product: Pick<Product, 'name'>): string {
+  const withoutPromo = product.name
+    .replace(PROMO_BRACKET_RE, ' ')
+    .replace(PRODUCT_PREFIX_RE, ' ')
+    .replace(/\s*[,|]\s*/g, ' · ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return sentenceCaseProductName(withoutPromo || product.name);
+}
+
+export function productPromoLabel(product: Pick<Product, 'name' | 'isFlashSale'>): string | undefined {
+  if (!product.isFlashSale) return undefined;
+  const matches = [...product.name.matchAll(PROMO_BRACKET_RE)];
+  const label = matches[0]?.[1]?.trim();
+  return label ? sentenceCaseProductName(label) : 'Ưu đãi có thời hạn';
+}
+
+export const isPromotedProduct = (product: Product) => Boolean(product.isFlashSale);
 export const normalizeSearch = (value: string) => value.toLowerCase().normalize('NFD')
   .replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').trim().replace(/\s+/g, ' ');
 export const productPrice = (product: Product) => {
@@ -9,6 +52,7 @@ export const productPrice = (product: Product) => {
   return Number.isFinite(value) && value > 0 ? value : 0;
 };
 export const productDiscount = (product: Product) => {
+  if (!isPromotedProduct(product)) return 0;
   const price = productPrice(product), original = product.originalPrice || 0;
   return Number.isFinite(original) && original > price && price > 0
     ? Math.round((original - price) / original * 100) : 0;

@@ -15,6 +15,7 @@ import { useCart } from '../utils/CartContext';
 import { formatPrice } from '../utils/catalog';
 import { AVAILABLE_COUPONS } from '../utils/cartStore';
 import { getProductDetailData } from '../data/productVariants';
+import { CartUpdateNotice } from './CartUpdateNotice';
 
 interface CartPageProps {
   products: Product[];
@@ -60,6 +61,8 @@ export const CartPage: React.FC<CartPageProps> = ({ products, onNavigate }) => {
           </h1>
         </div>
       </div>
+
+      <CartUpdateNotice />
 
       {/* Freeship Progress Banner */}
       <div className="rounded-2xl border border-slate-800 bg-[#111827] p-4 space-y-2">

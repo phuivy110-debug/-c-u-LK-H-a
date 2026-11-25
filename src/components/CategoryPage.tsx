@@ -1,4 +1,4 @@
-import { selectProducts, type ProductSort } from '../utils/catalog';
+import { productDisplayName, selectProducts, type ProductSort } from '../utils/catalog';
 import { useHistoryState } from '../utils/useHistoryState';
 import React, { useMemo } from 'react';
 import { Product } from '../types';
@@ -150,7 +150,7 @@ export const CategoryPage: React.FC<CategoryPageProps> = ({
                 <tbody className="divide-y divide-slate-800 text-slate-300">
                   {sampleComparisonProducts.map((prod) => (
                     <tr key={prod.id} className="hover:bg-slate-900/60">
-                      <td className="p-3 font-bold text-white">{prod.name}</td>
+                      <td className="p-3 font-bold text-white">{productDisplayName(prod)}</td>
                       <td className="p-3">{prod.category}</td>
                       <td className="p-3 font-bold text-[#FACC15] tabular-nums">
                         {prod.referencePrice ? `${prod.referencePrice.toLocaleString('vi-VN')}đ` : 'Xem chi tiết'}

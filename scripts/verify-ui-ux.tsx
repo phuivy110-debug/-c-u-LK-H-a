@@ -8,16 +8,34 @@ import { GUIDE_ARTICLES } from '../src/data/guides';
 import { CONSOLIDATED_GUIDE_REDIRECTS } from '../src/data/guideConsolidation';
 import { GUIDE_PRODUCT_SLUGS } from '../src/data/guideRecommendations';
 import { normalizeInternalPath } from '../src/utils/routes';
-import { selectProducts, normalizeSearch, productDiscount } from '../src/utils/catalog';
+import { selectProducts, normalizeSearch, productDiscount, productDisplayName, productPromoLabel } from '../src/utils/catalog';
 import { recommendedProducts, relatedGuides, guideSections } from '../src/utils/guideRecommendations';
 import { sanitizeGuideMarkdown } from '../src/utils/guideContent';
 import { AffiliateButtons, validateAffiliateUrl } from '../src/components/AffiliateButtons';
 import { GuideDetailPage } from '../src/components/GuideDetailPage';
 import { SHARED_TIKTOK_URL } from '../src/utils/googleSheetSync';
 import { trackAffiliateClick } from '../src/utils/analyticsService';
+import { reconcileCartItems } from '../src/utils/CartContext';
+import { getProductDetailData } from '../src/data/productVariants';
+import { makeCartItem } from '../src/utils/cartStore';
 
 const products = loadServerProducts();
+const cartProduct = products[0];
+const cartVariant = getProductDetailData(cartProduct).variants[0];
+const currentCartItem = makeCartItem(cartProduct, cartVariant, 2);
+const staleCartItem = { ...currentCartItem, price: Math.max(1, currentCartItem.price - 1000), variantLabel: 'Phân loại cũ' };
+const reconciledCart = reconcileCartItems([staleCartItem], products);
+assert.equal(reconciledCart.changedCount, 1);
+assert.equal(reconciledCart.items[0].price, cartVariant.price);
+assert.equal(reconciledCart.items[0].variantLabel, cartVariant.label);
+assert.equal(reconcileCartItems([{ ...staleCartItem, productId: 'missing', slug: 'missing' }], products).removedCount, 1);
 assert.equal(normalizeSearch('  CÁM   CHÉP ĐỎ '), 'cam chep do');
+assert.equal(
+  productDisplayName({ name: '[LK HÒA] [MUA 01 COMBO TẶNG 01 MŨ LK] COMBO CÂU LURE ĐẦY ĐỦ MÁY MG VÀ CẦN LK SV' }),
+  'Combo câu Lure đầy đủ máy MG và cần LK SV',
+);
+assert.equal(productPromoLabel({ name: '[MUA 01 CẦN TẶNG 01 DÙ X4] CẦN LK', isFlashSale: false }), undefined);
+assert.equal(productPromoLabel({ name: '[MUA 01 CẦN TẶNG 01 DÙ X4] CẦN LK', isFlashSale: true }), 'Mua 01 cần tặng 01 dù X4');
 const findGuides = (q: string) => GUIDE_ARTICLES.filter(a => [a.title, a.summary, ...(a.keywords || [])].some(value => normalizeSearch(value).includes(normalizeSearch(q)))).map(a => a.slug);
 assert.deepEqual(findGuides('cam chep'), findGuides('cám chép'));
 for (const [slug, destination] of Object.entries(CONSOLIDATED_GUIDE_REDIRECTS)) {

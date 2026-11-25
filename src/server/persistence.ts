@@ -65,7 +65,7 @@ export async function loadOrders(localPath: string): Promise<JsonRecord[]> {
       FROM lkhoa_orders
       ORDER BY created_at DESC
       LIMIT 500
-    `;
+    ` as unknown as Array<{ order_data: JsonRecord }>;
     return rows.map((row: any) => row.order_data).filter(Boolean);
   }
 
@@ -118,7 +118,7 @@ export async function loadConnectorConfigs(localPath: string): Promise<Record<st
     const rows = await sql`
       SELECT provider, config_data
       FROM lkhoa_connector_config
-    `;
+    ` as unknown as Array<{ provider: string; config_data: JsonRecord }>;
     return Object.fromEntries(rows.map((row: any) => [row.provider, row.config_data || {}]));
   }
 

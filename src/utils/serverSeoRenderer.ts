@@ -9,6 +9,7 @@ import { sanitizeGuideMarkdown } from './guideContent';
 import { getProductDescription } from './productDescription';
 import { getMecuabinShopeeUrl } from './shopeeAffiliateLinks';
 import { mergeWithLocalAdditions } from './mergeLocalProducts';
+import { productDisplayName } from './catalog';
 
 import { DOMAIN } from './site';
 export { DOMAIN } from './site';
@@ -317,9 +318,10 @@ export function renderSeoPage(
     const product = activeProducts.find(p => p.slug === slug) || FALLBACK_PRODUCTS.find(p => p.slug === slug);
 
     if (product) {
+      const displayName = productDisplayName(product);
       const priceFormatted = product.referencePrice ? `${product.referencePrice.toLocaleString('vi-VN')}đ` : 'Giá tốt';
-      title = `${product.name} – ${priceFormatted} | Đồ Câu LK Hòa Chính Hãng`;
-      description = `Mua ${product.name} chính hãng tại Đồ Câu LK Hòa (docaulkhoa.vn): giá ${priceFormatted}, giao hàng toàn quốc, đóng ống PVC bảo vệ ngọn cần, hỗ trợ COD đồng kiểm & VietQR.`;
+      title = `${displayName} – ${priceFormatted} | Đồ Câu LK Hòa Chính Hãng`;
+      description = `Mua ${displayName} chính hãng tại Đồ Câu LK Hòa (docaulkhoa.vn): giá ${priceFormatted}, giao hàng toàn quốc, đóng ống PVC bảo vệ ngọn cần, hỗ trợ COD đồng kiểm & VietQR.`;
       ogType = 'product';
       if (product.imageUrl) ogImage = product.imageUrl;
       const productDescription = getProductDescription(product);
@@ -327,7 +329,7 @@ export function renderSeoPage(
         (product.referencePrice || 0) >= 300000 ||
         (product.category || '').toLowerCase().includes('cần') ||
         /\bcần\b/i.test(product.name || '');
-      seoBodyHtml = `<main><article><h1>${escapeHtml(product.name)} LK Hòa</h1><p>${escapeHtml(productDescription).replace(/\n\n/g, '</p><p>')}</p><p>Danh mục: ${escapeHtml(product.category)}. Giá bán: ${escapeHtml(priceFormatted)}. Hỗ trợ đặt trực tiếp COD đồng kiểm / VietQR hoặc qua Shopee &amp; TikTok Shop.</p><p><strong>Chính sách giao nhận &amp; bảo hành:</strong> ${isFreeShippingItem ? 'Miễn phí vận chuyển toàn quốc' : 'Miễn phí vận chuyển đơn từ 300.000đ (đồng giá 30.000đ đơn dưới 300.000đ)'}, đổi mới 1-1 trong 7 ngày.</p><p><a href="${DOMAIN}/danh-muc/${CATEGORIES.find(c => c.name === product.category)?.slug || 'can-cau'}">Xem thêm sản phẩm ${escapeHtml(product.category)} LK Hòa</a></p></article></main>`;
+      seoBodyHtml = `<main><article><h1>${escapeHtml(displayName)}</h1><p>${escapeHtml(productDescription).replace(/\n\n/g, '</p><p>')}</p><p>Danh mục: ${escapeHtml(product.category)}. Giá bán: ${escapeHtml(priceFormatted)}. Hỗ trợ đặt trực tiếp COD đồng kiểm / VietQR hoặc qua Shopee &amp; TikTok Shop.</p><p><strong>Chính sách giao nhận &amp; bảo hành:</strong> ${isFreeShippingItem ? 'Miễn phí vận chuyển toàn quốc' : 'Miễn phí vận chuyển đơn từ 300.000đ (đồng giá 30.000đ đơn dưới 300.000đ)'}, đổi mới 1-1 trong 7 ngày.</p><p><a href="${DOMAIN}/danh-muc/${CATEGORIES.find(c => c.name === product.category)?.slug || 'can-cau'}">Xem thêm sản phẩm ${escapeHtml(product.category)} LK Hòa</a></p></article></main>`;
 
       jsonLdData = [
         {
@@ -337,13 +339,13 @@ export function renderSeoPage(
             { '@type': 'ListItem', 'position': 1, 'name': 'Trang chủ', 'item': DOMAIN },
             { '@type': 'ListItem', 'position': 2, 'name': 'Sản phẩm', 'item': `${DOMAIN}/san-pham` },
             { '@type': 'ListItem', 'position': 3, 'name': product.category || 'Danh mục', 'item': `${DOMAIN}/danh-muc/${CATEGORIES.find(c => c.name === product.category)?.slug || 'can-cau'}` },
-            { '@type': 'ListItem', 'position': 4, 'name': product.name, 'item': canonicalUrl }
+            { '@type': 'ListItem', 'position': 4, 'name': displayName, 'item': canonicalUrl }
           ]
         },
         {
           '@context': 'https://schema.org',
           '@type': 'Product',
-          'name': product.name,
+          'name': displayName,
           'image': product.imageUrl ? [product.imageUrl] : [ogImage],
           'description': productDescription,
           ...(product.sku ? { 'sku': product.sku } : {}),

@@ -1,10 +1,11 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import type { Product } from '../types';
 import { ProductCard } from './ProductCard';
 import { CatalogControls } from './CatalogControls';
 import { InternalLink } from './InternalLink';
 import { productDiscount, selectProducts, type ProductSort } from '../utils/catalog';
 import { useHistoryState } from '../utils/useHistoryState';
+import { trackCommerceEvent } from '../utils/analyticsService';
 
 export function CatalogPage({
   products,
@@ -22,13 +23,23 @@ export function CatalogPage({
   const [showSaleOnly, setShowSaleOnly] = useHistoryState('catalog-sale', false);
   const [visibleCount, setVisibleCount] = useHistoryState('catalog-count', 16);
 
-  const filteredProducts = useMemo(
-    () => selectProducts(products, 'tat-ca', searchQuery, sortBy, showSaleOnly),
-    [products, searchQuery, sortBy, showSaleOnly]
-  );
   const saleCount = products.filter(
     (product) => product.status === 'active' && productDiscount(product) > 0
   ).length;
+  const effectiveSaleOnly = showSaleOnly && saleCount > 0;
+  const filteredProducts = useMemo(
+    () => selectProducts(products, 'tat-ca', searchQuery, sortBy, effectiveSaleOnly),
+    [products, searchQuery, sortBy, effectiveSaleOnly]
+  );
+
+  useEffect(() => {
+    const query = searchQuery.trim();
+    if (query.length < 2) return;
+    const timer = window.setTimeout(() => {
+      trackCommerceEvent('search', { search_term: query, results_count: filteredProducts.length });
+    }, 500);
+    return () => window.clearTimeout(timer);
+  }, [searchQuery, filteredProducts.length]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
@@ -61,7 +72,7 @@ export function CatalogPage({
           setSortBy(value);
           setVisibleCount(16);
         }}
-        showSaleOnly={showSaleOnly}
+        showSaleOnly={effectiveSaleOnly}
         onToggleSaleOnly={() => {
           setShowSaleOnly((value) => !value);
           setVisibleCount(16);
