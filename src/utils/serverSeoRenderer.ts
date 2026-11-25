@@ -157,6 +157,9 @@ export function generateSitemapXml(products: Product[]): string {
 
   xml += `  <url>\n    <loc>${DOMAIN}/gioi-thieu-phuong-phap-danh-gia</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.6</priority>\n  </url>\n`;
   xml += `  <url>\n    <loc>${DOMAIN}/quyen-rieng-tu</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>yearly</changefreq>\n    <priority>0.3</priority>\n  </url>\n`;
+  xml += `  <url>\n    <loc>${DOMAIN}/chinh-sach-bao-hanh-doi-tra</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.5</priority>\n  </url>\n`;
+  xml += `  <url>\n    <loc>${DOMAIN}/chinh-sach-van-chuyen</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.5</priority>\n  </url>\n`;
+  xml += `  <url>\n    <loc>${DOMAIN}/chinh-sach-thanh-toan</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.5</priority>\n  </url>\n`;
 
   for (const guide of GUIDE_ARTICLES) {
     xml += `  <url>\n    <loc>${DOMAIN}/cam-nang/${guide.slug}</loc>\n    <lastmod>${guide.date || today}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.75</priority>\n  </url>\n`;
@@ -459,6 +462,54 @@ export function renderSeoPage(
         'name': 'Đồ Câu LK Hòa',
         'url': DOMAIN
       }
+    };
+  }
+
+  // ROUTE 5b: Warranty & Return Policy
+  else if (reqPath === '/chinh-sach-bao-hanh-doi-tra') {
+    title = 'Chính Sách Bảo Hành & Đổi Trả 1-1 | Đồ Câu LK Hòa';
+    description = 'Chính sách bảo hành ngọn cần, đổi mới 1-1 trong 7 ngày và hướng dẫn kiểm tra hàng khi nhận tại Đồ Câu LK Hòa.';
+    keywords = 'bảo hành đồ câu lk hòa, đổi trả cần câu, thay lóng ngọn cần';
+    seoBodyHtml = `<main><article><h1>Chính sách bảo hành &amp; đổi trả Đồ Câu LK Hòa</h1><p>Đổi mới 1-1 trong 7 ngày nếu sản phẩm lỗi từ nhà sản xuất hoặc hư hỏng trong quá trình vận chuyển. Hỗ trợ thay thế lóng cần, ngọn cần chính hãng trọn đời cho khách hàng mua tại docaulkhoa.vn.</p></article></main>`;
+    jsonLdData = {
+      '@context': 'https://schema.org',
+      '@type': 'WebPage',
+      'name': 'Chính sách bảo hành & đổi trả',
+      'description': description,
+      'url': canonicalUrl,
+      'isPartOf': { '@type': 'WebSite', 'name': 'Đồ Câu LK Hòa', 'url': DOMAIN }
+    };
+  }
+
+  // ROUTE 5c: Shipping & Delivery Policy
+  else if (reqPath === '/chinh-sach-van-chuyen') {
+    title = 'Chính Sách Vận Chuyển & Đồng Kiểm | Đồ Câu LK Hòa';
+    description = 'Miễn phí vận chuyển đơn từ 300.000đ hoặc đơn có cần câu. Đóng gói ống nhựa PVC cứng chống gãy đọt và đồng kiểm toàn quốc.';
+    keywords = 'chính sách vận chuyển đồ câu lk hòa, freeship 300k, đóng ống nhựa pvc';
+    seoBodyHtml = `<main><article><h1>Chính sách vận chuyển &amp; giao nhận Đồ Câu LK Hòa</h1><p>Miễn phí vận chuyển toàn quốc cho đơn hàng từ 300.000đ hoặc đơn có chứa cần câu. Đồng giá 30.000đ cho đơn dưới 300.000đ. Cần câu được đóng gói trong ống nhựa PVC cứng chống va đập và cho phép đồng kiểm khi nhận hàng.</p></article></main>`;
+    jsonLdData = {
+      '@context': 'https://schema.org',
+      '@type': 'WebPage',
+      'name': 'Chính sách vận chuyển & giao nhận',
+      'description': description,
+      'url': canonicalUrl,
+      'isPartOf': { '@type': 'WebSite', 'name': 'Đồ Câu LK Hòa', 'url': DOMAIN }
+    };
+  }
+
+  // ROUTE 5d: Payment Policy
+  else if (reqPath === '/chinh-sach-thanh-toan') {
+    title = 'Chính Sách Thanh Toán COD & VietQR | Đồ Câu LK Hòa';
+    description = 'Hỗ trợ thanh toán khi nhận hàng (COD đồng kiểm) và chuyển khoản ngân hàng qua mã QR VietQR chính chủ Đồ Câu LK Hòa.';
+    keywords = 'chính sách thanh toán lk hòa, cod đồng kiểm, chuyển khoản vietqr';
+    seoBodyHtml = `<main><article><h1>Chính sách thanh toán Đồ Câu LK Hòa</h1><p>Khách hàng có thể lựa chọn thanh toán khi nhận hàng (COD) sau khi đồng kiểm hoặc chuyển khoản nhanh qua mã VietQR kèm nội dung mã đơn hàng.</p></article></main>`;
+    jsonLdData = {
+      '@context': 'https://schema.org',
+      '@type': 'WebPage',
+      'name': 'Chính sách thanh toán',
+      'description': description,
+      'url': canonicalUrl,
+      'isPartOf': { '@type': 'WebSite', 'name': 'Đồ Câu LK Hòa', 'url': DOMAIN }
     };
   }
 

@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 // Old SEO output in public must never overwrite the current compiled pages.
-const generated = new Set(['index.html', 'seo', 'san-pham', 'cam-nang', 'danh-muc', 'gioi-thieu-phuong-phap-danh-gia', 'quyen-rieng-tu']);
+const generated = new Set(['index.html', 'seo', 'san-pham', 'cam-nang', 'danh-muc', 'gioi-thieu-phuong-phap-danh-gia', 'quyen-rieng-tu', 'chinh-sach-bao-hanh-doi-tra', 'chinh-sach-van-chuyen', 'chinh-sach-thanh-toan']);
 await build({ configLoader: 'runner', build: { copyPublicDir: false } });
 for (const entry of fs.readdirSync('public')) {
   if (!generated.has(entry)) fs.cpSync(path.join('public', entry), path.join('dist', entry), { recursive: true });
