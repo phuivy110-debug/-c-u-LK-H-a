@@ -1,18 +1,18 @@
 export const FAQS = [
   {
-    question: 'Mua hàng và áp mã giảm giá ở đâu?',
-    answer: 'Chọn liên kết Shopee hoặc TikTok để xem sản phẩm hoặc gian hàng trên sàn. Bạn cần kiểm tra đúng phân loại, giá thanh toán và điều kiện voucher tại đó. Website không tự áp mã và không đảm bảo giá sau khi mở link.',
+    question: 'Tôi có thể đặt hàng trực tiếp trên website không?',
+    answer: 'Có. Bạn chọn đúng sản phẩm và phân loại, thêm vào giỏ hàng rồi thanh toán bằng COD đồng kiểm hoặc VietQR. Giá và tổng tiền được hiển thị lại tại trang thanh toán trước khi xác nhận đơn.',
+  },
+  {
+    question: 'Tôi có thể mua qua Shopee hoặc TikTok Shop không?',
+    answer: 'Có. Các nút Shopee và TikTok Shop là lựa chọn mua qua sàn dành cho khách muốn sử dụng voucher hoặc phương thức thanh toán của sàn. Giá, phân loại và điều kiện khuyến mãi trên sàn có thể khác với website.',
   },
   {
     question: 'Ai xử lý giao hàng, bảo hành và đổi trả?',
-    answer: 'Người bán và sàn xử lý đơn hàng theo chính sách hiển thị khi mua. Hãy đọc điều kiện bảo hành, đổi trả và trao đổi với người bán trước khi đặt hàng; website danh mục không cam kết bảo hành miễn phí, giao hỏa tốc hay đổi một lấy một.',
+    answer: 'Đồ Câu LK Hòa trực tiếp tiếp nhận và xử lý đơn đặt trên docaulkhoa.vn. Đơn mua qua Shopee hoặc TikTok Shop được xử lý theo chính sách của kênh tương ứng. Thông tin đổi trả, vận chuyển và thanh toán được công khai tại cuối website.',
   },
   {
-    question: 'Website có thu tiền hoặc yêu cầu mật khẩu không?',
-    answer: 'Website này dùng để tra cứu và giới thiệu liên kết, không thu tiền đơn hàng. Chỉ đăng nhập và thanh toán trên ứng dụng hoặc website của sàn sau khi kiểm tra địa chỉ. Không gửi mật khẩu hay mã OTP cho website hoặc người tư vấn.',
-  },
-  {
-    question: 'Website có nhận hoa hồng không?',
-    answer: 'Một số liên kết là liên kết tiếp thị. Website có thể nhận hoa hồng nếu giao dịch được ghi nhận qua các liên kết này. Nội dung và phạm vi bằng chứng được trình bày trong từng bài và trang phương pháp đánh giá.',
+    question: 'Website có yêu cầu mật khẩu hoặc mã OTP không?',
+    answer: 'Khách không cần tạo tài khoản để đặt hàng. Đồ Câu LK Hòa không yêu cầu khách cung cấp mật khẩu, mã OTP ngân hàng hoặc mã đăng nhập Shopee/TikTok qua website hay tin nhắn.',
   },
 ];

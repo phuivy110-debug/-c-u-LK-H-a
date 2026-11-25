@@ -37,8 +37,6 @@ import { mergeWithLocalAdditions } from './utils/mergeLocalProducts';
 import { CartProvider } from './utils/CartContext';
 
 const SHEET_URL_KEY = 'lkhoa_sheet_url_v2';
-const AffiliateGuideModal = lazy(() => import('./components/AffiliateGuideModal').then(module => ({ default: module.AffiliateGuideModal })));
-const SeoToolkitModal = lazy(() => import('./components/SeoToolkitModal').then(module => ({ default: module.SeoToolkitModal })));
 const CartPage = lazy(() => import('./components/CartPage').then(module => ({ default: module.CartPage })));
 const CheckoutPage = lazy(() => import('./components/CheckoutPage').then(module => ({ default: module.CheckoutPage })));
 const OrderManagementPage = lazy(() => import('./components/OrderManagementPage').then(module => ({ default: module.OrderManagementPage })));
@@ -174,31 +172,17 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
     setRouteVersion(value => value + 1);
   }, []);
 
-  const [sheetUrl, setSheetUrl] = useState<string>(() => {
+  const [sheetUrl] = useState<string>(() => {
     return typeof localStorage !== 'undefined' ? localStorage.getItem(SHEET_URL_KEY) || DEFAULT_SHEET_URL : DEFAULT_SHEET_URL;
   });
   const [isSyncing, setIsSyncing] = useState<boolean>(() => {
     return typeof window !== 'undefined' && !initialProducts;
   });
-  const [lastSyncTime, setLastSyncTime] = useState<string | null>(null);
+  const [, setLastSyncTime] = useState<string | null>(null);
   const [, setSyncError] = useState<string | null>(null);
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [isAdminOpen, setIsAdminOpen] = useState(false);
-  const [isSeoModalOpen, setIsSeoModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-
-  const [isAdmin] = useState<boolean>(() => {
-    try {
-      const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.get('admin') === 'true' || urlParams.get('admin') === '1') {
-        return true;
-      }
-      return localStorage.getItem('lkhoa_is_admin') === 'true';
-    } catch {
-      return false;
-    }
-  });
 
   useEffect(() => {
     if (typeof localStorage !== 'undefined') {
@@ -497,10 +481,10 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
     <CartProvider>
       <div className="min-h-screen bg-[#0F172A] flex flex-col text-slate-100">
         <Header
-          onOpenAdmin={() => setIsAdminOpen(true)}
+          onOpenAdmin={() => navigate('/quan-ly-don-hang')}
           productCount={activeProducts.length}
           products={activeProducts}
-          showAdminButton={isAdmin}
+          showAdminButton={false}
           categories={CATEGORIES.map((c) => ({ name: c.name, slug: c.slug }))}
           onNavigate={navigate}
           currentPath={currentPath}
@@ -513,38 +497,6 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
         <Footer onNavigate={navigate} />
 
         <CartDrawer products={activeProducts} onNavigate={navigate} />
-
-        {isSeoModalOpen && (
-          <Suspense fallback={null}>
-            <SeoToolkitModal
-              isOpen={isSeoModalOpen}
-              onClose={() => setIsSeoModalOpen(false)}
-              productCount={activeProducts.length}
-            />
-          </Suspense>
-        )}
-
-        {isAdminOpen && (
-          <Suspense fallback={null}>
-            <AffiliateGuideModal
-              isOpen={isAdminOpen}
-              onClose={() => setIsAdminOpen(false)}
-              products={products}
-              onUpdateProducts={setProducts}
-              onResetDefault={() => {}}
-              sheetUrl={sheetUrl}
-              onUpdateSheetUrl={setSheetUrl}
-              onTriggerSync={() => handleSyncGoogleSheet(sheetUrl)}
-              isSyncing={isSyncing}
-              lastSyncTime={lastSyncTime}
-              onOpenSeoModal={() => setIsSeoModalOpen(true)}
-              onOpenOrders={() => {
-                setIsAdminOpen(false);
-                navigate('/quan-ly-don-hang');
-              }}
-            />
-          </Suspense>
-        )}
 
         <ChatBot products={activeProducts} />
         <ScrollToTopButton />

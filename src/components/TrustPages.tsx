@@ -116,7 +116,10 @@ export const WarrantyReturnPolicyPage: React.FC = () => {
             <strong>Điều kiện đổi trả miễn phí (LK Hòa chịu 100% phí vận chuyển 2 chiều):</strong> Sản phẩm bị gãy đọt, nứt lóng, bung khoen do vận chuyển; giao nhầm mẫu, nhầm size/chiều dài cần; hoặc lỗi kỹ thuật từ nhà sản xuất.
           </li>
           <li>
-            <strong>Đổi kích thước/biến thể theo nhu cầu:</strong> Hỗ trợ đổi sang chiều dài hoặc độ cứng khác nếu sản phẩm còn nguyên tem mác, chưa qua sử dụng câu thực tế (khách hàng thanh toán phí vận chuyển đổi hàng).
+            <strong>Đổi hoặc trả theo nhu cầu:</strong> Trong 07 ngày, khách có thể đề nghị đổi phân loại hoặc trả hàng nếu sản phẩm còn nguyên tem mác, đầy đủ phụ kiện/quà tặng và chưa qua sử dụng thực tế. Khách thanh toán phí gửi hàng về; LK Hòa không thu phí nhập kho.
+          </li>
+          <li>
+            <strong>Trường hợp không áp dụng:</strong> Sản phẩm đã sử dụng, bị tự ý sửa chữa, thiếu phụ kiện/quà tặng, hư hỏng do dùng sai hướng dẫn hoặc gửi yêu cầu sau thời hạn 07 ngày. Quyền bảo hành lỗi kỹ thuật riêng vẫn được áp dụng theo mục 2.
           </li>
         </ul>
       </Section>
@@ -132,11 +135,19 @@ export const WarrantyReturnPolicyPage: React.FC = () => {
         </ul>
       </Section>
 
-      <Section icon={<Phone className="h-5 w-5" />} title="3. Quy trình tiếp nhận bảo hành & hoàn tiền">
-        <p>
-          Liên hệ Hotline/Zalo <strong className="text-white">{STORE_HOTLINE}</strong> hoặc email{' '}
-          <strong className="text-white">{STORE_EMAIL}</strong> kèm mã đơn hàng và ảnh/video tình trạng sản phẩm. Nếu khách hàng chọn hoàn tiền, LK Hòa hoàn chuyển khoản trong vòng 24 giờ kể từ khi xác nhận hàng hoàn.
-        </p>
+      <Section icon={<Phone className="h-5 w-5" />} title="3. Cách gửi trả hàng & hoàn tiền">
+        <ol className="list-decimal space-y-2 pl-5">
+          <li>
+            Liên hệ Hotline/Zalo <strong className="text-white">{STORE_HOTLINE}</strong> hoặc email{' '}
+            <strong className="text-white">{STORE_EMAIL}</strong>, cung cấp mã đơn hàng, lý do đổi trả và ảnh/video tình trạng sản phẩm.
+          </li>
+          <li>
+            Sau khi được xác nhận tiếp nhận, đóng gói đầy đủ sản phẩm và gửi về: <strong className="text-white">{STORE_ADDRESS}</strong>. Không tự gửi hàng thu tiền người nhận khi chưa được LK Hòa xác nhận.
+          </li>
+          <li>
+            LK Hòa kiểm tra hàng hoàn trong 01–02 ngày làm việc sau khi nhận. Khoản hoàn được chuyển về tài khoản khách cung cấp trong 01–03 ngày làm việc; thời gian ngân hàng ghi có có thể kéo dài thêm tùy ngân hàng.
+          </li>
+        </ol>
       </Section>
     </div>
   );

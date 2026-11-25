@@ -27,31 +27,40 @@ import {
 import { STORE_BANK_INFO, STORE_HOTLINE, ZALO_CHAT_URL } from '../utils/site';
 
 const VIETNAM_PROVINCES = [
-  'Nghệ An',
   'Hà Nội',
   'TP. Hồ Chí Minh',
-  'Thanh Hóa',
-  'Hà Tĩnh',
-  'Đà Nẵng',
   'Hải Phòng',
-  'Bình Dương',
-  'Đồng Nai',
+  'Đà Nẵng',
   'Cần Thơ',
-  'Quảng Ninh',
-  'Nam Định',
-  'Thái Bình',
-  'Bắc Ninh',
-  'Quảng Bình',
-  'Quảng Trị',
-  'Thừa Thiên Huế',
-  'Khánh Hòa',
-  'Đắk Lắk',
-  'Lâm Đồng',
-  'Kiên Giang',
-  'Cà Mau',
+  'Huế',
   'An Giang',
-  'Long An',
-  'Tỉnh/Thành khác',
+  'Bắc Ninh',
+  'Cà Mau',
+  'Cao Bằng',
+  'Đắk Lắk',
+  'Điện Biên',
+  'Đồng Nai',
+  'Đồng Tháp',
+  'Gia Lai',
+  'Hà Tĩnh',
+  'Hưng Yên',
+  'Khánh Hòa',
+  'Lai Châu',
+  'Lâm Đồng',
+  'Lạng Sơn',
+  'Lào Cai',
+  'Nghệ An',
+  'Ninh Bình',
+  'Phú Thọ',
+  'Quảng Ngãi',
+  'Quảng Ninh',
+  'Quảng Trị',
+  'Sơn La',
+  'Tây Ninh',
+  'Thái Nguyên',
+  'Thanh Hóa',
+  'Tuyên Quang',
+  'Vĩnh Long',
 ];
 
 interface CheckoutPageProps {
@@ -64,7 +73,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onNavigate }) => {
   const [customer, setCustomer] = useState<OrderCustomerInfo>({
     fullName: '',
     phone: '',
-    province: 'Nghệ An',
+    province: '',
     district: '',
     ward: '',
     address: '',
@@ -76,9 +85,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onNavigate }) => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [completedOrder, setCompletedOrder] = useState<OrderRecord | null>(null);
-  const [orderSyncState, setOrderSyncState] = useState<'synced' | 'local-only'>('synced');
-  const [orderSyncNote, setOrderSyncNote] = useState('');
-  const [retryingSync, setRetryingSync] = useState(false);
+  const [submitError, setSubmitError] = useState('');
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [qrImageError, setQrImageError] = useState(false);
 
@@ -169,28 +176,23 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onNavigate }) => {
     if (!validateForm()) return;
 
     setIsSubmitting(true);
+    setSubmitError('');
     const draftOrder = buildOrderRecord(customer, paymentMethod, items, couponCode);
     saveOrderLocally(draftOrder);
 
     const syncResult = await syncOrderToServer(draftOrder);
-    setOrderSyncState(syncResult.synced ? 'synced' : 'local-only');
-    setOrderSyncNote(syncResult.note);
-    setCompletedOrder(syncResult.savedOrder);
     setIsSubmitting(false);
+    if (!syncResult.synced) {
+      setSubmitError(
+        `Hệ thống chưa ghi nhận đơn hàng. Giỏ hàng vẫn được giữ nguyên. ${syncResult.note} Vui lòng thử lại hoặc liên hệ hotline/Zalo.`
+      );
+      return;
+    }
+    setCompletedOrder(syncResult.savedOrder);
     clearCart();
     if (typeof window !== 'undefined') {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-  };
-
-  const handleRetrySync = async () => {
-    if (!completedOrder) return;
-    setRetryingSync(true);
-    const syncResult = await syncOrderToServer(completedOrder);
-    setOrderSyncState(syncResult.synced ? 'synced' : 'local-only');
-    setOrderSyncNote(syncResult.note);
-    setCompletedOrder(syncResult.savedOrder);
-    setRetryingSync(false);
   };
 
   // ORDER SUCCESS STATE
@@ -205,7 +207,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onNavigate }) => {
         <div className="rounded-2xl border border-emerald-700/60 bg-[#14532D]/30 p-6 sm:p-8 text-center space-y-3">
           <CheckCircle2 className="w-14 h-14 text-[#FACC15] mx-auto" />
           <p className="text-xs font-bold uppercase tracking-widest text-emerald-300">
-            {orderSyncState === 'synced' ? 'Đã Ghi Nhận Đơn Hàng Lên Hệ Thống' : 'Đã Lưu Đơn Hàng Trên Trình Duyệt'}
+            Đã ghi nhận đơn hàng lên hệ thống
           </p>
           <h1 className="font-display text-2xl sm:text-3xl font-black text-white">
             Mã đơn hàng #{completedOrder.orderCode}
@@ -213,24 +215,6 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onNavigate }) => {
           <p className="text-sm text-slate-200 max-w-xl mx-auto">
             Cảm ơn <strong>{completedOrder.customer.fullName}</strong> đã đặt hàng tại Đồ Câu LK Hòa. Đơn hàng sẽ được đóng ống nhựa bảo vệ cẩn thận trước khi giao.
           </p>
-          {orderSyncState === 'local-only' && (
-            <div className="max-w-xl mx-auto mt-3 rounded-xl border border-amber-500/40 bg-amber-950/40 px-4 py-3 text-left text-xs text-amber-200 space-y-2">
-              <p className="font-bold text-[#FACC15]">
-                Lưu ý: Đơn mới được lưu trên trình duyệt hiện tại ({orderSyncNote})
-              </p>
-              <p>
-                Bạn hãy bấm nút <strong>Chat Zalo xác nhận đơn nhanh</strong> bên dưới để shop nhận đơn ngay, hoặc mở trang Quản lý đơn hàng → Chế độ Trình duyệt trên chính thiết bị này.
-              </p>
-              <button
-                type="button"
-                disabled={retryingSync}
-                onClick={handleRetrySync}
-                className="px-3 py-1.5 rounded-lg bg-[#FACC15] text-[#0F172A] font-extrabold cursor-pointer disabled:opacity-60"
-              >
-                {retryingSync ? 'Đang gửi lại...' : 'Thử đồng bộ lại lên máy chủ'}
-              </button>
-            </div>
-          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -484,6 +468,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onNavigate }) => {
                   onChange={(e) => setCustomer((c) => ({ ...c, province: e.target.value }))}
                   className="w-full h-11 px-3 rounded-xl bg-[#0F172A] border border-slate-700 text-sm text-white focus:border-[#FACC15] focus:outline-none"
                 >
+                  <option value="" disabled>Chọn tỉnh / thành phố</option>
                   {VIETNAM_PROVINCES.map((prov) => (
                     <option key={prov} value={prov}>
                       {prov}
@@ -757,6 +742,15 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onNavigate }) => {
               <span className="text-2xl text-[#FACC15] tabular-nums">{formatPrice(totals.total)}</span>
             </div>
           </div>
+
+          {submitError && (
+            <div
+              role="alert"
+              className="rounded-xl border border-red-500/50 bg-red-950/40 px-4 py-3 text-sm leading-relaxed text-red-200"
+            >
+              {submitError}
+            </div>
+          )}
 
           <button
             type="submit"

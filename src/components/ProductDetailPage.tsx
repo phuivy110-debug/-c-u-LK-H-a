@@ -26,7 +26,6 @@ import { useCart } from '../utils/CartContext';
 import { validateAffiliateUrl } from './AffiliateButtons';
 import { SHARED_TIKTOK_URL } from '../utils/googleSheetSync';
 import { trackAffiliateClick } from '../utils/analyticsService';
-import { DOMAIN } from '../utils/site';
 
 type TabKey = 'description' | 'specs' | 'rigging' | 'reviews';
 
@@ -138,76 +137,8 @@ export function ProductDetailPage({
     setReviewComment('');
   };
 
-  const productSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'Product',
-    name: product.name,
-    sku: selectedVariant.sku,
-    mpn: selectedVariant.sku,
-    image: detail.gallery.length > 0 ? detail.gallery : [`${DOMAIN}/favicon.svg`],
-    description: getProductDescription(product),
-    brand: {
-      '@type': 'Brand',
-      name: 'Đồ Câu LK Hòa',
-    },
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: detail.rating.toFixed(1),
-      reviewCount: detail.reviewCount + customReviews.length,
-    },
-    offers: {
-      '@type': 'Offer',
-      url: `${DOMAIN}/san-pham/${product.slug}`,
-      priceCurrency: 'VND',
-      price,
-      priceValidUntil: '2027-12-31',
-      itemCondition: 'https://schema.org/NewCondition',
-      availability: 'https://schema.org/InStock',
-      seller: {
-        '@type': 'Organization',
-        name: 'Đồ Câu LK Hòa',
-        url: DOMAIN,
-      },
-      shippingDetails: {
-        '@type': 'OfferShippingDetails',
-        shippingRate: {
-          '@type': 'MonetaryAmount',
-          value:
-            price >= 300000 ||
-            product.category.toLowerCase().includes('cần') ||
-            /\bcần\b/i.test(product.name)
-              ? 0
-              : 30000,
-          currency: 'VND',
-        },
-        shippingDestination: {
-          '@type': 'DefinedRegion',
-          addressCountry: 'VN',
-        },
-        deliveryTime: {
-          '@type': 'ShippingDeliveryTime',
-          handlingTime: { '@type': 'QuantitativeValue', minValue: 0, maxValue: 1, unitCode: 'DAY' },
-          transitTime: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 4, unitCode: 'DAY' },
-        },
-      },
-      hasMerchantReturnPolicy: {
-        '@type': 'MerchantReturnPolicy',
-        applicableCountry: 'VN',
-        returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
-        merchantReturnDays: 7,
-        returnMethod: 'https://schema.org/ReturnByMail',
-        returnFees: 'https://schema.org/FreeReturn',
-      },
-    },
-  };
-
   return (
     <div className="mx-auto max-w-7xl space-y-8 px-4 py-6 pb-24 sm:px-6 md:pb-10 lg:px-8">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
-      />
-
       <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-slate-400">
         <InternalLink href="/" onNavigate={onNavigate} className="hover:text-[#FACC15]">
           Trang Chủ
@@ -311,11 +242,19 @@ export function ProductDetailPage({
             <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400">
               <span className="font-bold text-emerald-400">Chính Hãng LK Hòa</span>
               <span aria-hidden="true">·</span>
-              <span className="font-mono-tabular">SKU: {selectedVariant.sku}</span>
-              <span aria-hidden="true">·</span>
+              {(product.sku || product.variants?.length) && (
+                <>
+                  <span className="font-mono-tabular">SKU: {selectedVariant.sku}</span>
+                  <span aria-hidden="true">·</span>
+                </>
+              )}
               <span className="inline-flex items-center gap-1 text-emerald-300 font-semibold">
                 <CheckCircle2 className="w-3.5 h-3.5" />
-                Còn hàng ({selectedVariant.stock})
+                {typeof selectedVariant.stock === 'number'
+                  ? selectedVariant.stock > 0
+                    ? `Còn hàng (${selectedVariant.stock})`
+                    : 'Tạm hết hàng'
+                  : 'Có thể đặt hàng'}
               </span>
             </div>
 
@@ -323,16 +262,24 @@ export function ProductDetailPage({
               {product.name}
             </h1>
 
-            <div className="flex flex-wrap items-center gap-3 text-xs text-slate-300">
-              <span className="inline-flex items-center gap-1 font-bold text-[#FACC15] tabular-nums">
-                <Star className="w-4 h-4 fill-[#FACC15] text-[#FACC15]" />
-                {detail.rating.toFixed(1)}
-              </span>
-              <span className="text-slate-600">·</span>
-              <span className="tabular-nums">{detail.reviewCount + customReviews.length} đánh giá</span>
-              <span className="text-slate-600">·</span>
-              <span className="tabular-nums">Đã bán {detail.soldCount}</span>
-            </div>
+            {(typeof detail.rating === 'number' ||
+              typeof detail.reviewCount === 'number' ||
+              typeof detail.soldCount === 'number') && (
+              <div className="flex flex-wrap items-center gap-3 text-xs text-slate-300">
+                {typeof detail.rating === 'number' && (
+                  <span className="inline-flex items-center gap-1 font-bold text-[#FACC15] tabular-nums">
+                    <Star className="w-4 h-4 fill-[#FACC15] text-[#FACC15]" />
+                    {detail.rating.toFixed(1)}
+                  </span>
+                )}
+                {typeof detail.reviewCount === 'number' && (
+                  <span className="tabular-nums">{detail.reviewCount} đánh giá</span>
+                )}
+                {typeof detail.soldCount === 'number' && (
+                  <span className="tabular-nums">Đã bán {detail.soldCount}</span>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Dynamic Price Panel */}

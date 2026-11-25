@@ -129,8 +129,8 @@ export function generateSeoProductDescription(product: Pick<Product, 'name' | 'c
   const liveGuidance = liveProductGuidance(product.category, product.name);
   const researchedDetail = product.shopeeUrl && RESEARCHED_PRODUCT_COPY[product.shopeeUrl]?.detail;
   const priceNote = product.referencePrice
-    ? `Mức giá tham khảo hiện được ghi nhận là ${new Intl.NumberFormat('vi-VN').format(product.referencePrice)}đ`
-    : 'Giá bán được cập nhật theo thông tin trên sàn';
+    ? `Giá bán hiện tại trên website là ${new Intl.NumberFormat('vi-VN').format(product.referencePrice)}đ`
+    : 'Giá bán sẽ được hiển thị trước khi khách xác nhận đơn';
 
   return [
     `${product.name} là ${itemType} LK Hòa dành cho người đang tìm sản phẩm có thông tin rõ ràng để cân nhắc trước khi mua. Nội dung dưới đây giúp bạn ${intent}.`,
@@ -139,8 +139,8 @@ export function generateSeoProductDescription(product: Pick<Product, 'name' | 'c
       : 'Thông tin nhận diện: sản phẩm được phân loại theo danh mục và tên đăng bán; các thông số như kích thước, trọng lượng, size hoặc phiên bản cần đối chiếu tại gian hàng.',
     researchedDetail || liveGuidance || 'Thông tin sử dụng thực tế: hãy đối chiếu nhu cầu câu, môi trường nước, loại cá và bộ đồ đang có với tư vấn của nhà bán trước khi chọn phiên bản.',
     usageGuide(product.category, product.name),
-    `${priceNote}. Tồn kho, phân loại, phí vận chuyển và mã giảm giá có thể thay đổi theo từng thời điểm hoặc chương trình của sàn.`,
-    'Trước khi đặt mua, hãy kiểm tra ảnh thật, bảng thông số, phân loại đang chọn, thành phần combo và chính sách đổi trả trên gian hàng LK Hòa tại Shopee hoặc TikTok Shop. Giá khách hàng thanh toán không tăng khi sử dụng liên kết giới thiệu trên website.',
+    `${priceNote}. Phân loại, phí vận chuyển và ưu đãi được hiển thị lại tại giỏ hàng và trang thanh toán.`,
+    'Trước khi đặt mua, hãy kiểm tra ảnh sản phẩm, bảng thông số, phân loại đang chọn, thành phần combo và chính sách đổi trả trên docaulkhoa.vn. Shopee và TikTok Shop là lựa chọn mua thay thế khi khách muốn sử dụng ưu đãi của sàn.',
   ].join('\n\n');
 }
 

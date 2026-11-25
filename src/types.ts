@@ -16,7 +16,7 @@ export interface ProductVariant {
   price: number;
   originalPrice?: number;
   sku: string;
-  stock: number;
+  stock?: number;
   weightLabel?: string;
 }
 

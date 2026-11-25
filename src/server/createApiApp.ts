@@ -117,23 +117,7 @@ export function createApiApp(): express.Express {
   // Persistent Analytics Store
   const activeSessions = new Map<string, number>();
 
-  const locationsList = [
-    'Nghệ An, VN', 'Hà Nội, VN', 'TP. Hồ Chí Minh, VN', 'Thanh Hóa, VN',
-    'Đà Nẵng, VN', 'Hải Phòng, VN', 'Đồng Nai, VN', 'Bình Dương, VN', 'Cần Thơ, VN',
-    'Nam Định, VN', 'Cà Mau, VN', 'Quảng Ninh, VN', 'Bắc Ninh, VN', 'Thái Bình, VN',
-    'Kiên Giang, VN', 'Đắk Lắk, VN', 'Khánh Hòa, VN', 'Bình Định, VN', 'Vĩnh Long, VN',
-  ];
-
-  const defaultSampleActivities = [
-    { id: 'init_1', time: '1 phút trước', location: 'Hà Nội, VN', action: 'Cần thủ vừa xem Cần Solid Đa Năng LK 10KG' },
-    { id: 'init_2', time: '2 phút trước', location: 'Nghệ An, VN', action: 'Khách hàng vừa chuyển sang Shopee săn Flash Sale' },
-    { id: 'init_3', time: '3 phút trước', location: 'TP. Hồ Chí Minh, VN', action: 'Cần thủ vừa kiểm tra Cần Lure LK Special Cá Mập' },
-    { id: 'init_4', time: '4 phút trước', location: 'Thanh Hóa, VN', action: 'Khách hàng vừa xem Mồi Câu Đài LK Rô Chép' },
-    { id: 'init_5', time: '6 phút trước', location: 'Đà Nẵng, VN', action: 'Cần thủ vừa so sánh giá Máy Câu Daiwa RS Chính Hãng' },
-    { id: 'init_6', time: '8 phút trước', location: 'Hải Phòng, VN', action: 'Khách hàng vừa chuyển sang TikTok Shop xem video thực tế' },
-    { id: 'init_7', time: '10 phút trước', location: 'Cần Thơ, VN', action: 'Cần thủ vừa xem Cần Đài LK Pro 2025 5H Tổng Hợp' },
-    { id: 'init_8', time: '12 phút trước', location: 'Đồng Nai, VN', action: 'Khách hàng vừa xem Dù PE X4 LK Chuyên Lure' },
-  ];
+  const defaultSampleActivities: AnalyticsData['recentActivities'] = [];
 
   interface AnalyticsData {
     totalPageViews: number;
@@ -235,11 +219,10 @@ export function createApiApp(): express.Express {
       }
 
       if (action) {
-        const randLoc = locationsList[Math.floor(Math.random() * locationsList.length)];
         analyticsData.recentActivities.unshift({
           id: Date.now().toString() + '_' + Math.random().toString(36).substring(2, 5),
           time: 'Vừa xong',
-          location: randLoc,
+          location: 'Không xác định',
           action,
         });
         if (analyticsData.recentActivities.length > 15) analyticsData.recentActivities.pop();
@@ -259,23 +242,19 @@ export function createApiApp(): express.Express {
       cleanStaleSessions();
 
       const rawOnline = activeSessions.size;
-      const dynamicWave = Math.floor(Math.sin(Date.now() / 30000) * 6);
-      const activeUsersOnline = Math.max(1, rawOnline) + 24 + dynamicWave;
-
-      const baseToday = 1850 + analyticsData.todayPageViews;
-      const baseTotal = 54620 + analyticsData.totalPageViews;
-      const baseYesterday = analyticsData.yesterdayPageViews > 0 ? analyticsData.yesterdayPageViews + 2100 : 2340;
+      const activeUsersOnline = rawOnline;
+      const baseToday = analyticsData.todayPageViews;
+      const baseTotal = analyticsData.totalPageViews;
+      const baseYesterday = analyticsData.yesterdayPageViews;
 
       const totalDevices = (analyticsData.mobileCount || 0) + (analyticsData.desktopCount || 0);
       const mobilePercent = totalDevices > 0 ? Math.round((analyticsData.mobileCount / totalDevices) * 100) : 84;
       const desktopPercent = 100 - mobilePercent;
 
-      const currentHour = new Date().getHours();
       const hourlyTraffic = Array.from({ length: 24 }).map((_, h) => {
-        const hourlyBase = h <= currentHour ? Math.round(baseToday * (h === currentHour ? 0.08 : (0.03 + (h > 7 && h < 22 ? 0.04 : 0.01)))) : 0;
         return {
           hour: `${h.toString().padStart(2, '0')}:00`,
-          views: (analyticsData.hourlyMap[h] || 0) + hourlyBase,
+          views: analyticsData.hourlyMap[h] || 0,
         };
       });
 
@@ -291,7 +270,7 @@ export function createApiApp(): express.Express {
         let viewsCount = 0;
         if (i === 6) viewsCount = baseToday;
         else if (i === 5) viewsCount = baseYesterday;
-        else viewsCount = (analyticsData.weeklyTrafficMap[key] || 0) + (2100 + (i * 120) % 500);
+        else viewsCount = analyticsData.weeklyTrafficMap[key] || 0;
 
         return { date: dateStr, day: dayLabel, views: viewsCount };
       });
@@ -301,20 +280,11 @@ export function createApiApp(): express.Express {
         todayPageViews: baseToday,
         yesterdayPageViews: baseYesterday,
         activeUsersOnline,
-        todayConversions: Math.round(baseToday * 0.21),
-        totalAffiliateClicks: Math.round(baseTotal * 0.22),
-        satisfactionRate: 99.8,
-        activeProvincesCount: 48,
         mobilePercent,
         desktopPercent,
         hourlyTraffic,
         weeklyTraffic,
-        topCategories: [
-          { name: 'Cần câu cá Carbon LK', views: Math.round(baseToday * 0.44), percent: 44 },
-          { name: 'Máy câu đứng / máy ngang', views: Math.round(baseToday * 0.24), percent: 24 },
-          { name: 'Mồi câu & Cám xả LK', views: Math.round(baseToday * 0.18), percent: 18 },
-          { name: 'Dây câu & Phụ kiện', views: Math.round(baseToday * 0.14), percent: 14 },
-        ],
+        topCategories: [],
         recentActivities: analyticsData.recentActivities.slice(0, 12),
         lastUpdated: new Date().toLocaleTimeString('vi-VN'),
         systemStatus: 'Đang kết nối Máy Chủ',
@@ -500,6 +470,11 @@ export function createApiApp(): express.Express {
 
   app.post('/api/admin/claim', (req, res) => {
     try {
+      if (isServerlessRuntime) {
+        return res.status(403).json({
+          error: 'Thiết lập quản trị lần đầu đã bị khóa trên production. Hãy cấu hình ADMIN_PASSCODE trong Vercel.',
+        });
+      }
       if ((process.env.ADMIN_PASSCODE || '').trim()) {
         return res.status(403).json({ error: 'Mật khẩu quản trị đã được cấu hình qua ADMIN_PASSCODE.' });
       }
@@ -2024,6 +1999,12 @@ export function createApiApp(): express.Express {
             product.category.toLowerCase().includes('cần') ||
             /\bcần\b/i.test(product.name);
           const freeShippingEligible = isRod || minPrice >= FREESHIP_THRESHOLD;
+          const hasKnownStock = typeof detail.stockCount === 'number';
+          const availability = hasKnownStock
+            ? detail.stockCount! > 0
+              ? 'in_stock'
+              : 'out_of_stock'
+            : 'available_to_order';
 
           return {
             productId: product.id,
@@ -2035,10 +2016,14 @@ export function createApiApp(): express.Express {
             currency: 'VND',
             minPriceVnd: minPrice,
             maxPriceVnd: maxVarPrice,
-            availability: 'in_stock',
-            stockCount: detail.stockCount,
-            rating: Number(detail.rating.toFixed(1)),
-            reviewCount: detail.reviewCount,
+            availability,
+            ...(hasKnownStock ? { stockCount: detail.stockCount } : {}),
+            ...(typeof detail.rating === 'number'
+              ? { rating: Number(detail.rating.toFixed(1)) }
+              : {}),
+            ...(typeof detail.reviewCount === 'number'
+              ? { reviewCount: detail.reviewCount }
+              : {}),
             freeShippingEligible,
             shippingFeeVnd: freeShippingEligible ? 0 : FLAT_SHIPPING_FEE,
             variants: detail.variants.map((v) => ({
@@ -2047,8 +2032,8 @@ export function createApiApp(): express.Express {
               label: v.label,
               priceVnd: v.price,
               originalPriceVnd: v.originalPrice || null,
-              stock: v.stock,
-              inStock: v.stock > 0,
+              stock: typeof v.stock === 'number' ? v.stock : null,
+              inStock: typeof v.stock === 'number' ? v.stock > 0 : null,
             })),
             marketplaceAlternatives: {
               shopeeUrl: product.shopeeUrl || null,

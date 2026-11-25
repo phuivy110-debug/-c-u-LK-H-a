@@ -84,8 +84,12 @@ export const ProductCard = ({
       <div className="flex flex-1 flex-col p-3 sm:p-4">
         <div className="mb-1.5 flex items-center gap-1.5 text-[11px] font-semibold text-emerald-400 truncate">
           <span>Chính Hãng LK Hòa</span>
-          <span aria-hidden="true" className="text-slate-600">·</span>
-          <span className="text-slate-400 tabular-nums">Đã bán {detail.soldCount}</span>
+          {typeof detail.soldCount === 'number' && (
+            <>
+              <span aria-hidden="true" className="text-slate-600">·</span>
+              <span className="text-slate-400 tabular-nums">Đã bán {detail.soldCount}</span>
+            </>
+          )}
         </div>
 
         <h3 className="mb-3 min-h-10 text-xs sm:text-sm font-bold leading-snug text-white">

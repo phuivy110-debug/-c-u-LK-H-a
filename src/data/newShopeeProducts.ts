@@ -17,7 +17,7 @@ const additions = [
       'https://down-vn.img.susercontent.com/file/vn-11134207-81ztc-mtdkk65q75z9d5',
       'https://down-vn.img.susercontent.com/file/vn-11134207-81ztc-mtdkk3zyfi8527',
     ],
-    description: 'Combo câu lure gồm cần LK SV và máy MG theo tên listing trong file Shopee. Giá xuất hiển thị 2,5 triệu đồng và chỉ dùng để tham khảo. Trước khi mua, kiểm tra danh sách thành phần, loại máy, phân loại cần và giá cuối cùng trên Shopee. Tên listing có nhắc quà tặng mũ; quà tặng thực tế cần xác nhận với người bán tại thời điểm đặt hàng.',
+    description: 'Combo câu lure LK gồm cần SV và máy MG. Khách có thể đặt trực tiếp trên website bằng COD đồng kiểm hoặc VietQR; vui lòng chọn đúng phân loại và kiểm tra thành phần combo hiển thị trước khi xác nhận đơn. Shopee và TikTok Shop là kênh mua thay thế khi khách muốn sử dụng ưu đãi của sàn.',
   },
   {
     itemId: '57368864059',
@@ -34,7 +34,7 @@ const additions = [
       'https://down-vn.img.susercontent.com/file/vn-11134207-81ztc-mu1i7gubv3t061',
       'https://down-vn.img.susercontent.com/file/vn-11134207-81ztc-mu1i7gtysjk837',
     ],
-    description: 'Cần lure Carbon Mono LK theo danh sách sản phẩm Shopee do chủ website cung cấp. Giá tham khảo trong file xuất hiển thị 2,0 triệu đồng, không phải báo giá theo thời gian thực. Cần kiểm tra chiều dài, độ cứng, tải mồi, chân máy và phân loại đang chọn trên Shopee; website chưa có bảng thông số để xác nhận các cấu hình này.',
+    description: 'Cần lure Carbon Mono LK dành cho nhu cầu câu lure thực chiến. Khách có thể đặt trực tiếp trên website bằng COD đồng kiểm hoặc VietQR. Chiều dài, độ cứng, tải mồi và loại chân máy cần được chọn theo phân loại thực tế đang hiển thị trước khi xác nhận đơn.',
   },
   {
     itemId: '28827886331',
@@ -51,7 +51,7 @@ const additions = [
       'https://down-vn.img.susercontent.com/file/vn-11134207-7ra0g-m6s4gwnz0cwo42',
       'https://down-vn.img.susercontent.com/file/vn-11134207-7ra0g-m6s4gwnz0cvs2b',
     ],
-    description: 'Listing combo cần Cheap và máy Daiwa MG, mã sản phẩm Shopee 28827886331. Đây là listing riêng với combo cùng tên đã có trong danh mục; không mặc định hai listing có cùng phân loại, phụ kiện hoặc giá. File xuất hiển thị giá tham khảo 1,9 triệu đồng. Hãy đọc đầy đủ thành phần bộ sản phẩm, loại máy và điều kiện của người bán trước khi đặt.',
+    description: 'Combo cần Cheap LK và máy Daiwa MG dành cho người mới bắt đầu hoặc cần một bộ câu lure đồng bộ. Đây là một cấu hình sản phẩm riêng; khách cần kiểm tra đúng thành phần combo, loại máy và phụ kiện hiển thị trước khi đặt trực tiếp trên website.',
   },
   {
     itemId: '57718929625',
@@ -68,7 +68,7 @@ const additions = [
       'https://down-vn.img.susercontent.com/file/vn-11134207-81ztc-mu2xex0k5f5y7b',
       'https://down-vn.img.susercontent.com/file/vn-11134207-81ztc-mu2xex0j943k36',
     ],
-    description: 'Mũ lưỡi trai LK, mã sản phẩm Shopee 57718929625, thuộc nhóm phụ kiện đi câu. File xuất ghi giá tham khảo 250.000 đồng. Kiểm tra màu sắc, kích thước, cách điều chỉnh, chất liệu và hướng dẫn vệ sinh trên gian hàng trước khi chọn; website chưa xác minh thông số chất liệu hoặc các tính năng chống nắng, chống nước.',
+    description: 'Mũ lưỡi trai LK thuộc nhóm phụ kiện đi câu. Khách có thể đặt trực tiếp trên website; vui lòng chọn đúng màu sắc và phiên bản đang hiển thị. Các đặc tính chưa được công bố như chống nước hoặc chỉ số chống nắng sẽ không được mặc định cam kết.',
   },
   {
     itemId: '52713792350',
@@ -83,7 +83,7 @@ const additions = [
       'https://down-vn.img.susercontent.com/file/vn-11134207-81ztc-mqiez575bpql11',
       'https://down-vn.img.susercontent.com/file/vn-11134207-81ztc-mqiez57dk3k056',
     ],
-    description: 'Cần lure LK gấp gọn 5 khúc theo tên listing, mã sản phẩm Shopee 52713792350. Listing này khác mã với cần suối 5 khúc đang có trên website. Giá trong file xuất hiển thị 1,9 triệu đồng và chỉ mang tính tham khảo. Khi chọn cần, kiểm tra chiều dài lắp và thu gọn, loại máy, tải mồi, độ cứng, các khớp nối và phụ kiện đi kèm trên Shopee.',
+    description: 'Cần lure LK gấp gọn 5 khúc thuận tiện mang theo khi di chuyển. Đây là sản phẩm riêng với dòng cần suối 5 khúc. Khách cần kiểm tra chiều dài lắp, chiều dài thu gọn, loại máy, tải mồi, độ cứng và phụ kiện hiển thị trước khi đặt trực tiếp trên website.',
   },
 ];
 
