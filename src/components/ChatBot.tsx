@@ -35,6 +35,7 @@ interface ChatMessage {
 
 interface ChatBotProps {
   products: Product[];
+  initiallyOpen?: boolean;
 }
 
 const QUICK_QUESTIONS = [
@@ -51,8 +52,8 @@ const MODEL_OPTIONS = [
   { id: 'gemini-3.1-flash-lite', name: 'Gemini 3.1 Flash Lite', desc: 'Tốc Độ Cao' },
 ];
 
-export const ChatBot: React.FC<ChatBotProps> = ({ products }) => {
-  const [isOpen, setIsOpen] = useState(false);
+export const ChatBot: React.FC<ChatBotProps> = ({ products, initiallyOpen = false }) => {
+  const [isOpen, setIsOpen] = useState(initiallyOpen);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [selectedModel, setSelectedModel] = useState('gemini-3.5-flash');
