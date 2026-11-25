@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowUp } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
 
 export const ScrollToTopButton: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -30,14 +29,9 @@ export const ScrollToTopButton: React.FC = () => {
     });
   };
 
+  if (!isVisible) return null;
   return (
-    <AnimatePresence>
-      {isVisible && (
-        <motion.button
-          initial={{ opacity: 0, scale: 0.8, y: 15 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.8, y: 15 }}
-          transition={{ duration: 0.2 }}
+        <button
           onClick={scrollToTop}
           data-cta="true"
           className="cta-btn fixed bottom-20 right-4 sm:right-6 z-40 bg-slate-900/90 hover:bg-[#EE4D2D] text-white border border-slate-700/80 hover:border-orange-500 shadow-xl px-3.5 py-2.5 rounded-2xl flex items-center gap-2 backdrop-blur-md cursor-pointer group"
@@ -50,8 +44,6 @@ export const ScrollToTopButton: React.FC = () => {
           <span className="text-xs font-bold tracking-tight hidden sm:inline-block pr-0.5">
             Quay lại đầu trang
           </span>
-        </motion.button>
-      )}
-    </AnimatePresence>
+        </button>
   );
 };

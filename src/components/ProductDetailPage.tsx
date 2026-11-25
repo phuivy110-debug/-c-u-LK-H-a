@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   CheckCircle2,
+  BadgeCheck,
   ExternalLink,
   ImageOff,
   Minus,
@@ -18,7 +19,7 @@ import {
 import type { Product, ProductReview } from '../types';
 import { ProductCard } from './ProductCard';
 import { InternalLink } from './InternalLink';
-import { formatPrice, isPromotedProduct, productDisplayName, productPromoLabel } from '../utils/catalog';
+import { formatPrice, isPromotedProduct, productDisplayName, productPrice, productPromoLabel } from '../utils/catalog';
 import { NotFoundPage } from './NotFoundPage';
 import { getProductDescription } from '../utils/productDescription';
 import { getProductDetailData } from '../data/productVariants';
@@ -56,6 +57,16 @@ export function ProductDetailPage({
   const [reviewAuthor, setReviewAuthor] = useState('');
   const [reviewComment, setReviewComment] = useState('');
   const [reviewRating, setReviewRating] = useState(5);
+
+  const verifiedFields = useMemo(() => {
+    if (!product) return [];
+    return [
+      product.imageUrl ? 'Ảnh sản phẩm' : null,
+      productPrice(product) > 0 ? 'Giá website' : null,
+      product.variants?.length ? 'Phân loại & SKU' : null,
+      product.specs?.length ? 'Thông số kỹ thuật' : null,
+    ].filter((item): item is string => Boolean(item));
+  }, [product]);
 
   useEffect(() => {
     if (detail?.variants?.[0]) {
@@ -339,6 +350,21 @@ export function ProductDetailPage({
             </p>
           </div>
 
+          <div className="rounded-xl border border-emerald-900/70 bg-emerald-950/20 p-4">
+            <div className="flex items-start gap-2.5">
+              <BadgeCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" aria-hidden="true" />
+              <div>
+                <p className="text-xs font-extrabold text-emerald-300">Dữ liệu mua hàng đã đối soát</p>
+                <p className="mt-1 text-xs leading-relaxed text-slate-300">
+                  {verifiedFields.join(' · ')}
+                  {!product.specs?.length
+                    ? '. Thông số chi tiết chưa có nguồn chính thức sẽ không được tự suy đoán; vui lòng xác nhận với LK Hòa trước khi đặt.'
+                    : '. Vui lòng chọn đúng phiên bản trước khi thêm vào giỏ.'}
+                </p>
+              </div>
+            </div>
+          </div>
+
           {/* Variant Selector */}
           <div className="space-y-2.5">
             <div className="flex items-center justify-between text-xs">
@@ -451,7 +477,11 @@ export function ProductDetailPage({
                 }
                 className="min-h-11 px-3 py-2.5 rounded-xl bg-[#0F172A] border border-slate-700 hover:border-slate-500 text-slate-200 text-xs font-bold flex items-center justify-center gap-1.5 text-center"
               >
-                <span>Mua qua TikTok Shop</span>
+                <span>
+                  {product.tiktokLinkStatus === 'verified-product'
+                    ? 'Mua qua TikTok Shop'
+                    : 'Xem gian hàng TikTok Shop'}
+                </span>
                 <ExternalLink className="w-3.5 h-3.5 shrink-0" />
               </a>
             </div>

@@ -18,7 +18,6 @@ import { WhyUsSection } from './components/WhyUsSection';
 import { FaqSection } from './components/FaqSection';
 import { Footer } from './components/Footer';
 import { Toast } from './components/Toast';
-import { ChatBot } from './components/ChatBot';
 import { ScrollToTopButton } from './components/ScrollToTopButton';
 import { HomeGuidesSection } from './components/HomeGuidesSection';
 import { ProductSkeletonGrid } from './components/ProductSkeleton';
@@ -27,7 +26,7 @@ import { GUIDE_ARTICLES } from './data/guides';
 import { Product } from './types';
 import { CATEGORIES, MENU_CATEGORIES } from './data/products';
 import { FALLBACK_PRODUCTS } from './data/fallbackProducts';
-import { Flame, ArrowRight, ChevronRight, ShieldCheck, Fish, Compass, Feather, Waves, Anchor, ShoppingBag } from 'lucide-react';
+import { Flame, ArrowRight, ChevronRight, Fish, Compass, Feather, Waves, Anchor, ShoppingBag, MessageCircle } from 'lucide-react';
 import { fetchProductsFromGoogleSheet, DEFAULT_SHEET_URL, loadProductsCache, saveProductsCache, ensureUniqueProductIds } from './utils/googleSheetSync';
 import { trackAffiliateClick, trackPageView } from './utils/analyticsService';
 import { normalizeInternalPath, publicRoutes } from './utils/routes';
@@ -35,11 +34,14 @@ import { NotFoundPage } from './components/NotFoundPage';
 import { DOMAIN } from './utils/site';
 import { mergeWithLocalAdditions } from './utils/mergeLocalProducts';
 import { CartProvider } from './utils/CartContext';
+import { ShopByNeedSection } from './components/ShopByNeedSection';
+import { pickFeaturedProducts } from './data/productVariants';
 
 const SHEET_URL_KEY = 'lkhoa_sheet_url_v2';
 const CartPage = lazy(() => import('./components/CartPage').then(module => ({ default: module.CartPage })));
 const CheckoutPage = lazy(() => import('./components/CheckoutPage').then(module => ({ default: module.CheckoutPage })));
 const OrderManagementPage = lazy(() => import('./components/OrderManagementPage').then(module => ({ default: module.OrderManagementPage })));
+const ChatBot = lazy(() => import('./components/ChatBot').then(module => ({ default: module.ChatBot })));
 
 export default function App({ initialPath, initialProducts }: { initialPath?: string; initialProducts?: Product[] } = {}) {
   const [products, setProductsState] = useState<Product[]>(() => {
@@ -183,6 +185,7 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
 
   const [searchQuery, setSearchQuery] = useState('');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [supportLoaded, setSupportLoaded] = useState(false);
 
   useEffect(() => {
     if (typeof localStorage !== 'undefined') {
@@ -247,7 +250,7 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
   }, [products]);
 
   const homepageProducts = useMemo(() => {
-    return activeProducts.slice(0, 8);
+    return pickFeaturedProducts(activeProducts, 8);
   }, [activeProducts]);
 
   const renderContent = () => {
@@ -369,6 +372,8 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
           onSearchChange={setSearchQuery}
           activeCount={activeProducts.length}
         />
+
+        <ShopByNeedSection products={activeProducts} onNavigate={navigate} />
 
         {/* Featured 7 Standard Tactical Categories */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
@@ -498,7 +503,20 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
 
         <CartDrawer products={activeProducts} onNavigate={navigate} />
 
-        <ChatBot products={activeProducts} />
+        {supportLoaded ? (
+          <Suspense fallback={null}>
+            <ChatBot products={activeProducts} initiallyOpen />
+          </Suspense>
+        ) : (
+          <button
+            type="button"
+            aria-label="Mở hỗ trợ LK Hòa"
+            onClick={() => setSupportLoaded(true)}
+            className="fixed bottom-3 right-3 z-40 flex h-11 w-11 items-center justify-center rounded-full border border-white bg-slate-900 text-white shadow-md hover:bg-black cursor-pointer"
+          >
+            <MessageCircle className="h-5 w-5" aria-hidden="true" />
+          </button>
+        )}
         <ScrollToTopButton />
         <Toast message={toastMessage} onClose={() => setToastMessage(null)} />
       </div>
