@@ -29,8 +29,6 @@ import { NotFoundPage } from './components/NotFoundPage';
 import { DOMAIN } from './utils/site';
 import { mergeWithLocalAdditions } from './utils/mergeLocalProducts';
 
-const SHEET_URL_KEY = 'lkhoa_sheet_url_v2';
-const AffiliateGuideModal = lazy(() => import('./components/AffiliateGuideModal').then(module => ({ default: module.AffiliateGuideModal })));
 const SeoToolkitModal = lazy(() => import('./components/SeoToolkitModal').then(module => ({ default: module.SeoToolkitModal })));
 
 export default function App({ initialPath, initialProducts }: { initialPath?: string; initialProducts?: Product[] } = {}) {
@@ -171,9 +169,7 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
   }, []);
 
   // Google Sheet Sync State
-  const [sheetUrl, setSheetUrl] = useState<string>(() => {
-    return typeof localStorage !== 'undefined' ? localStorage.getItem(SHEET_URL_KEY) || DEFAULT_SHEET_URL : DEFAULT_SHEET_URL;
-  });
+  const [sheetUrl] = useState<string>(DEFAULT_SHEET_URL);
   const [isSyncing, setIsSyncing] = useState<boolean>(() => {
     return typeof window !== 'undefined' && !initialProducts;
   });
@@ -184,26 +180,8 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
   const [searchQuery, setSearchQuery] = useState('');
 
   // Modals & Feedback
-  const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [isSeoModalOpen, setIsSeoModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-
-  // Admin status toggle (URL ?admin=true or double click logo)
-  const [isAdmin, setIsAdmin] = useState<boolean>(() => {
-    try {
-      const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.get('admin') === 'true' || urlParams.get('admin') === '1') {
-        return true;
-      }
-      return localStorage.getItem('lkhoa_is_admin') === 'true';
-    } catch {
-      return false;
-    }
-  });
-
-  useEffect(() => {
-    localStorage.setItem(SHEET_URL_KEY, sheetUrl);
-  }, [sheetUrl]);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -485,9 +463,9 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
     <div className="min-h-screen bg-[#F6F7FB] flex flex-col text-slate-800">
       {/* Header */}
       <Header
-        onOpenAdmin={() => setIsAdminOpen(true)}
+        onOpenAdmin={() => {}}
         productCount={activeProducts.length}
-        showAdminButton={isAdmin}
+        showAdminButton={false}
         categories={CATEGORIES.map((c) => ({ name: c.name, slug: c.slug }))}
         onNavigate={navigate}
         currentPath={currentPath}
@@ -506,25 +484,6 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
             isOpen={isSeoModalOpen}
             onClose={() => setIsSeoModalOpen(false)}
             productCount={activeProducts.length}
-          />
-        </Suspense>
-      )}
-
-      {/* Admin Google Sheet Configuration Modal */}
-      {isAdminOpen && (
-        <Suspense fallback={null}>
-          <AffiliateGuideModal
-            isOpen={isAdminOpen}
-            onClose={() => setIsAdminOpen(false)}
-            products={products}
-            onUpdateProducts={setProducts}
-            onResetDefault={() => {}}
-            sheetUrl={sheetUrl}
-            onUpdateSheetUrl={setSheetUrl}
-            onTriggerSync={() => handleSyncGoogleSheet(sheetUrl)}
-            isSyncing={isSyncing}
-            lastSyncTime={lastSyncTime}
-            onOpenSeoModal={() => setIsSeoModalOpen(true)}
           />
         </Suspense>
       )}

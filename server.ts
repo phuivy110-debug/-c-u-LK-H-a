@@ -391,7 +391,7 @@ async function startServer() {
 
   // Admin Auth & Session Signing (Server-Side Scrypt + Bearer HMAC)
   const adminAuthFilePath = path.join(process.cwd(), 'admin_auth.json');
-  const sessionSecretKey = process.env.ADMIN_SESSION_SECRET || crypto.randomBytes(32).toString('hex');
+  const sessionSecretKey = (process.env.ADMIN_SESSION_SECRET || '').trim();
 
   interface StoredAdminAuth {
     salt: string;
@@ -423,6 +423,7 @@ async function startServer() {
   };
 
   const signAdminToken = (): string => {
+    if (!sessionSecretKey) throw new Error('ADMIN_SESSION_SECRET is required');
     const exp = Date.now() + 12 * 60 * 60 * 1000;
     const payload = Buffer.from(JSON.stringify({ role: 'admin', exp })).toString('base64url');
     const sig = crypto.createHmac('sha256', sessionSecretKey).update(payload).digest('base64url');
@@ -430,7 +431,7 @@ async function startServer() {
   };
 
   const verifyAdminToken = (token: string | undefined): boolean => {
-    if (!token || !token.includes('.')) return false;
+    if (!sessionSecretKey || !token || !token.includes('.')) return false;
     const [payload, sig] = token.split('.');
     if (!payload || !sig) return false;
     const expectedSig = crypto.createHmac('sha256', sessionSecretKey).update(payload).digest('base64url');
@@ -452,68 +453,55 @@ async function startServer() {
     return next();
   };
 
+  const adminLoginAttempts = new Map<string, { count: number; resetAt: number }>();
+
   app.get('/api/admin/status', (req, res) => {
     const envPasscode = (process.env.ADMIN_PASSCODE || '').trim();
-    const stored = loadAdminAuth();
     const authHeader = req.headers.authorization || '';
     const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
+    const configured = Boolean(envPasscode && sessionSecretKey);
     return res.json({
-      hasConfiguredPasscode: Boolean(envPasscode || stored),
+      hasConfiguredPasscode: configured,
       usingEnvPasscode: Boolean(envPasscode),
-      authenticated: verifyAdminToken(token),
+      authenticated: configured && verifyAdminToken(token),
     });
   });
 
-  app.post('/api/admin/claim', (req, res) => {
-    try {
-      if ((process.env.ADMIN_PASSCODE || '').trim()) {
-        return res.status(403).json({ error: 'Mật khẩu quản trị đã được cấu hình qua ADMIN_PASSCODE.' });
-      }
-      if (loadAdminAuth()) {
-        return res.status(409).json({ error: 'Tài khoản quản trị đã được thiết lập trước đó. Vui lòng đăng nhập.' });
-      }
-      const passcode = String(req.body?.passcode || '').trim();
-      if (passcode.length < 6) {
-        return res.status(400).json({ error: 'Mật khẩu quản trị phải có ít nhất 6 ký tự.' });
-      }
-      const salt = crypto.randomBytes(16).toString('hex');
-      const record: StoredAdminAuth = {
-        salt,
-        hash: hashPasscode(passcode, salt),
-        claimedAt: new Date().toISOString(),
-      };
-      fs.writeFileSync(adminAuthFilePath, JSON.stringify(record, null, 2), 'utf-8');
-      return res.status(201).json({ success: true, token: signAdminToken() });
-    } catch (err: any) {
-      return res.status(500).json({ error: err.message || 'Không thể thiết lập mật khẩu quản trị.' });
-    }
+  app.post('/api/admin/claim', (_req, res) => {
+    return res.status(403).json({
+      error: 'Thiết lập quản trị từ Internet đã bị vô hiệu hóa. Hãy cấu hình ADMIN_PASSCODE và ADMIN_SESSION_SECRET trên máy chủ.',
+    });
   });
 
   app.post('/api/admin/login', (req, res) => {
     try {
-      const passcode = String(req.body?.passcode || '').trim();
-      if (!passcode) {
-        return res.status(400).json({ error: 'Vui lòng nhập mật khẩu quản trị.' });
-      }
       const envPasscode = (process.env.ADMIN_PASSCODE || '').trim();
-      if (envPasscode) {
-        if (!safeCompare(passcode, envPasscode)) {
-          return res.status(401).json({ error: 'Mật khẩu quản trị không chính xác.' });
-        }
-        return res.json({ success: true, token: signAdminToken() });
+      if (!envPasscode || !sessionSecretKey) {
+        return res.status(503).json({ error: 'Quản trị chưa được cấu hình an toàn trên máy chủ.' });
       }
 
-      const stored = loadAdminAuth();
-      if (!stored) {
-        return res.status(404).json({ error: 'Chưa thiết lập mật khẩu quản trị lần đầu.' });
+      const ip = req.ip || req.socket.remoteAddress || 'unknown';
+      const now = Date.now();
+      const attempt = adminLoginAttempts.get(ip);
+      if (attempt && attempt.resetAt > now && attempt.count >= 5) {
+        res.setHeader('Retry-After', '900');
+        return res.status(429).json({ error: 'Đăng nhập thất bại quá nhiều lần. Vui lòng thử lại sau 15 phút.' });
       }
-      const incomingHash = hashPasscode(passcode, stored.salt);
-      if (!safeCompare(incomingHash, stored.hash)) {
+      if (!attempt || attempt.resetAt <= now) {
+        adminLoginAttempts.set(ip, { count: 0, resetAt: now + 15 * 60 * 1000 });
+      }
+
+      const passcode = String(req.body?.passcode || '').trim();
+      if (!passcode || !safeCompare(passcode, envPasscode)) {
+        const current = adminLoginAttempts.get(ip)!;
+        current.count += 1;
         return res.status(401).json({ error: 'Mật khẩu quản trị không chính xác.' });
       }
+
+      adminLoginAttempts.delete(ip);
       return res.json({ success: true, token: signAdminToken() });
-    } catch (err: any) {
-      return res.status(500).json({ error: err.message || 'Lỗi xác thực quản trị.' });
+    } catch {
+      return res.status(500).json({ error: 'Lỗi xác thực quản trị.' });
     }
   });
 
@@ -1484,257 +1472,32 @@ async function startServer() {
   });
 
   // Google Sheet Proxy Sync API
-  app.get('/api/sync-sheet', async (req, res) => {
+  app.get('/api/sync-sheet', async (_req, res) => {
+    const csvUrl =
+      'https://docs.google.com/spreadsheets/d/e/2PACX-1vRoGVq7tIOSj8pAr-80FuQxNYY_JHVtyZdk6SJd59baBkVlMllh-hDwvm0Zen4FHAcmjtpYQPai9S_w/pub?output=csv&gid=0';
+
     try {
-      const rawUrl = (req.query.url as string) || '';
-      if (!rawUrl) {
-        return res.status(400).json({ error: 'Thiếu url Google Sheet' });
-      }
-
       res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
-      res.setHeader('Pragma', 'no-cache');
-      res.setHeader('Expires', '0');
-
-      let csvUrl = rawUrl.trim();
-      if (csvUrl.includes('/pubhtml') || csvUrl.includes('/pub')) {
-        if (csvUrl.includes('/pubhtml')) {
-          csvUrl = csvUrl.replace('/pubhtml', '/pub');
-        }
-        if (!csvUrl.includes('output=csv')) {
-          csvUrl += csvUrl.includes('?') ? '&output=csv' : '?output=csv';
-        }
-      } else {
-        const docIdMatch = csvUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
-        if (docIdMatch && docIdMatch[1]) {
-          const docId = docIdMatch[1];
-          if (docId === '1KO_7U5VJJNKBphq_NNM4MnwbsfDq1GEg6mRGxz4y3B8') {
-            csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRoGVq7tIOSj8pAr-80FuQxNYY_JHVtyZdk6SJd59baBkVlMllh-hDwvm0Zen4FHAcmjtpYQPai9S_w/pub?output=csv&gid=0';
-          } else {
-            let gid = '0';
-            const gidMatch = csvUrl.match(/[?&]gid=(\d+)/) || csvUrl.match(/#gid=(\d+)/);
-            if (gidMatch && gidMatch[1]) {
-              gid = gidMatch[1];
-            }
-            csvUrl = `https://docs.google.com/spreadsheets/d/${docId}/export?format=csv&gid=${gid}`;
-          }
-        }
-      }
-
       const response = await fetch(csvUrl, {
         cache: 'no-store',
-        headers: {
-          'User-Agent':
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-          Accept: 'text/csv,text/plain,*/*',
-        },
+        headers: { Accept: 'text/csv,text/plain,*/*' },
       });
-
       if (!response.ok) {
-        return res.status(response.status).json({ error: `Không thể tải Google Sheet (mã ${response.status})` });
+        return res.status(502).json({ error: 'Không thể tải danh mục sản phẩm công khai.' });
       }
-
       const csvText = await response.text();
       res.setHeader('Content-Type', 'text/csv; charset=utf-8');
       return res.send(csvText);
-    } catch (err: any) {
-      return res.status(500).json({ error: err.message || 'Lỗi kết nối máy chủ đồng bộ Google Sheet' });
+    } catch {
+      return res.status(502).json({ error: 'Lỗi kết nối danh mục sản phẩm công khai.' });
     }
   });
 
-  // Extract product image directly from Shopee affiliate link
-  app.post('/api/extract-shopee-image', async (req, res) => {
-    try {
-      const { url } = req.body;
-      if (!url || typeof url !== 'string') {
-        return res.status(400).json({ error: 'URL không hợp lệ' });
-      }
-
-      const targetUrl = url.trim();
-
-      if (
-        targetUrl.match(/\.(jpeg|jpg|gif|png|webp)($|\?)/i) ||
-        ((targetUrl.includes('susercontent.com') || targetUrl.includes('cf.shopee.vn')) && targetUrl.includes('/file/'))
-      ) {
-        return res.json({ success: true, imageUrl: targetUrl });
-      }
-
-      let currentUrl = targetUrl;
-      let redirectCount = 0;
-      const visitedUrls: string[] = [targetUrl];
-      let htmlContent = '';
-
-      while (redirectCount < 8) {
-        const response = await fetch(currentUrl, {
-          redirect: 'manual',
-          headers: {
-            'User-Agent':
-              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-            Accept:
-              'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-            'Accept-Language': 'vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7',
-          },
-        });
-
-        const location = response.headers.get('location');
-        if (response.status >= 300 && response.status < 400 && location) {
-          currentUrl = location.startsWith('http') ? location : new URL(location, currentUrl).href;
-          visitedUrls.push(currentUrl);
-          redirectCount++;
-        } else {
-          htmlContent = await response.text();
-          if (htmlContent.length < 5000) {
-            const jsLocMatch =
-              htmlContent.match(/location\.href\s*=\s*["']([^"']+)["']/i) ||
-              htmlContent.match(/window\.location\s*=\s*["']([^"']+)["']/i) ||
-              htmlContent.match(/meta[^>]*http-equiv=["']refresh["'][^>]*content=["'][^"']*url=([^"']+)["']/i);
-            if (jsLocMatch && jsLocMatch[1]) {
-              const nextUrl = jsLocMatch[1].startsWith('http')
-                ? jsLocMatch[1]
-                : new URL(jsLocMatch[1], currentUrl).href;
-              if (!visitedUrls.includes(nextUrl)) {
-                currentUrl = nextUrl;
-                visitedUrls.push(currentUrl);
-                redirectCount++;
-                continue;
-              }
-            }
-          }
-          break;
-        }
-      }
-
-      let shopid: string | null = null;
-      let itemid: string | null = null;
-
-      for (const u of visitedUrls) {
-        const itemMatch1 = u.match(/i\.(\d+)\.(\d+)/);
-        const itemMatch2 = u.match(/\/product\/(\d+)\/(\d+)/);
-        const itemMatch3 = u.match(/itemid=(\d+)/) && u.match(/shopid=(\d+)/);
-
-        if (itemMatch1) {
-          shopid = itemMatch1[1];
-          itemid = itemMatch1[2];
-          break;
-        } else if (itemMatch2) {
-          shopid = itemMatch2[1];
-          itemid = itemMatch2[2];
-          break;
-        } else if (itemMatch3) {
-          const sm = u.match(/shopid=(\d+)/);
-          const im = u.match(/itemid=(\d+)/);
-          if (sm && im) {
-            shopid = sm[1];
-            itemid = im[1];
-            break;
-          }
-        }
-      }
-
-      if (shopid && itemid) {
-        const apiUrls = [
-          `https://shopee.vn/api/v4/item/get?itemid=${itemid}&shopid=${shopid}`,
-          `https://shopee.vn/api/v2/item/get?itemid=${itemid}&shopid=${shopid}`,
-          `https://shopee.vn/api/v4/pdp/get_pc?item_id=${itemid}&shop_id=${shopid}`,
-        ];
-
-        for (const apiUrl of apiUrls) {
-          try {
-            const apiRes = await fetch(apiUrl, {
-              headers: {
-                'User-Agent':
-                  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-                Referer: currentUrl,
-                'X-Requested-With': 'XMLHttpRequest',
-              },
-            });
-            if (apiRes.ok) {
-              const data = await apiRes.json();
-              const imgHash =
-                data?.data?.image ||
-                data?.item?.image ||
-                data?.data?.images?.[0] ||
-                data?.item?.images?.[0] ||
-                data?.data?.item?.image;
-              if (imgHash && typeof imgHash === 'string' && imgHash.length >= 20) {
-                return res.json({
-                  success: true,
-                  imageUrl: `https://down-vn.img.susercontent.com/file/${imgHash}`,
-                });
-              }
-            }
-          } catch (e) {
-            // continue
-          }
-        }
-      }
-
-      if (!shopid) {
-        for (const u of visitedUrls) {
-          const shopMatch = u.match(/\/shop\/(\d+)/) || u.match(/shopid=(\d+)/);
-          if (shopMatch) {
-            shopid = shopMatch[1];
-            break;
-          }
-        }
-      }
-
-      if (shopid) {
-        try {
-          const shopApiRes = await fetch(`https://shopee.vn/api/v4/shop/get_shop_detail?shopid=${shopid}`, {
-            headers: {
-              'User-Agent':
-                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-              Referer: currentUrl,
-              'X-Requested-With': 'XMLHttpRequest',
-            },
-          });
-          if (shopApiRes.ok) {
-            const sData = await shopApiRes.json();
-            const cover = sData?.data?.cover || sData?.data?.portrait;
-            if (cover && typeof cover === 'string' && cover.length >= 20) {
-              return res.json({
-                success: true,
-                imageUrl: `https://down-vn.img.susercontent.com/file/${cover}`,
-              });
-            }
-          }
-        } catch (e) {
-          // continue
-        }
-      }
-
-      if (htmlContent) {
-        const ogMatch =
-          htmlContent.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i) ||
-          htmlContent.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["']/i) ||
-          htmlContent.match(/<meta[^>]*name=["']twitter:image["'][^>]*content=["']([^"']+)["']/i) ||
-          htmlContent.match(/<meta[^>]*content=["']([^"']+)["'][^>]*name=["']twitter:image["']/i);
-
-        if (ogMatch && ogMatch[1] && !ogMatch[1].includes('deo.shopeemobile.com')) {
-          return res.json({ success: true, imageUrl: ogMatch[1] });
-        }
-
-        const cdnMatch = htmlContent.match(
-          /https:\/\/(down-vn\.img\.susercontent\.com|down-tx-vn\.img\.susercontent\.com|cf\.shopee\.vn)\/file\/[a-zA-Z0-9_-]+/
-        );
-        if (cdnMatch && cdnMatch[0]) {
-          return res.json({ success: true, imageUrl: cdnMatch[0] });
-        }
-
-        const hashMatch = htmlContent.match(/"image"\s*:\s*"([a-zA-Z0-9_-]{32})"/);
-        if (hashMatch && hashMatch[1]) {
-          return res.json({
-            success: true,
-            imageUrl: `https://down-vn.img.susercontent.com/file/${hashMatch[1]}`,
-          });
-        }
-      }
-
-      return res.status(404).json({ error: 'Không tìm thấy ảnh sản phẩm từ link Shopee này.' });
-    } catch (error: any) {
-      console.error('Extract Shopee Image Error:', error);
-      return res.status(500).json({ error: error.message || 'Lỗi khi trích xuất ảnh Shopee.' });
-    }
+  // Disabled: the legacy implementation followed user-controlled URLs and could be abused for SSRF.
+  app.post('/api/extract-shopee-image', (_req, res) => {
+    return res.status(410).json({
+      error: 'Tính năng lấy ảnh qua URL đã được vô hiệu hóa vì lý do bảo mật.',
+    });
   });
 
   // Helper function to generate smart fishing gear expert responses

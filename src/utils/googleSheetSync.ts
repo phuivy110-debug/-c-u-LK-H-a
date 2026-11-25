@@ -6,11 +6,10 @@ import { FALLBACK_PRICE_MAP, FALLBACK_PRODUCTS } from '../data/fallbackProducts'
 import { generateSeoProductDescription } from './productDescription';
 import { getMecuabinShopeeUrl } from './shopeeAffiliateLinks';
 
-export const DEFAULT_SHEET_URL =
-  'https://docs.google.com/spreadsheets/d/1KO_7U5VJJNKBphq_NNM4MnwbsfDq1GEg6mRGxz4y3B8/edit?gid=0#gid=0';
-
 export const PUBLISHED_FALLBACK_CSV_URL =
   'https://docs.google.com/spreadsheets/d/e/2PACX-1vRoGVq7tIOSj8pAr-80FuQxNYY_JHVtyZdk6SJd59baBkVlMllh-hDwvm0Zen4FHAcmjtpYQPai9S_w/pub?output=csv&gid=0';
+
+export const DEFAULT_SHEET_URL = PUBLISHED_FALLBACK_CSV_URL;
 
 export const PRODUCT_CACHE_KEY = 'lkhoa_products_google_sheet_v6';
 export const SHARED_TIKTOK_URL = 'https://vt.tiktok.com/ZS9kJHJuDnoUp-AeYDB/';
@@ -43,10 +42,11 @@ export const SHOPEE_HOSTNAMES = [
 ];
 
 export function extractSpreadsheetId(url: string): string {
-  if (!url) return '1KO_7U5VJJNKBphq_NNM4MnwbsfDq1GEg6mRGxz4y3B8';
+  if (!url) return 'lkhoa-published-catalog';
+  const publishedMatch = url.match(/\/d\/e\/([a-zA-Z0-9-_]+)/);
+  if (publishedMatch?.[1]) return publishedMatch[1];
   const match = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
-  if (match && match[1]) return match[1];
-  return '1KO_7U5VJJNKBphq_NNM4MnwbsfDq1GEg6mRGxz4y3B8';
+  return match?.[1] || 'lkhoa-published-catalog';
 }
 
 export function convertSheetUrlToCsvUrl(url: string): string {
@@ -66,9 +66,6 @@ export function convertSheetUrlToCsvUrl(url: string): string {
   const docIdMatch = cleanUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
   if (docIdMatch && docIdMatch[1]) {
     const docId = docIdMatch[1];
-    if (docId === '1KO_7U5VJJNKBphq_NNM4MnwbsfDq1GEg6mRGxz4y3B8') {
-      return PUBLISHED_FALLBACK_CSV_URL;
-    }
     let gid = '0';
     const gidMatch = cleanUrl.match(/[?&]gid=(\d+)/) || cleanUrl.match(/#gid=(\d+)/);
     if (gidMatch && gidMatch[1]) {
