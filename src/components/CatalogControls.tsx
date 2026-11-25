@@ -4,46 +4,123 @@ import { CATEGORIES } from '../data/products';
 import type { ProductSort } from '../utils/catalog';
 
 interface Props {
-  searchQuery: string; onSearchChange: (q: string) => void;
-  selectedCategorySlug: string; onCategorySelect: (slug: string) => void;
-  sortBy: ProductSort; onSortChange: (sort: ProductSort) => void;
-  showSaleOnly?: boolean; onToggleSaleOnly?: () => void;
-  totalFiltered: number; saleCount?: number;
+  searchQuery: string;
+  onSearchChange: (q: string) => void;
+  selectedCategorySlug: string;
+  onCategorySelect: (slug: string) => void;
+  sortBy: ProductSort;
+  onSortChange: (sort: ProductSort) => void;
+  showSaleOnly?: boolean;
+  onToggleSaleOnly?: () => void;
+  totalFiltered: number;
+  saleCount?: number;
 }
-export function CatalogControls({ searchQuery, onSearchChange, selectedCategorySlug, onCategorySelect,
-  sortBy, onSortChange, showSaleOnly, onToggleSaleOnly, totalFiltered, saleCount }: Props) {
-  return <div className="space-y-4 rounded-3xl border border-slate-200/80 bg-white p-4 shadow-sm sm:p-6">
-    <div className="flex flex-col sm:flex-row gap-3">
-      <div className="relative flex-1 min-w-0">
-        <Search aria-hidden="true" className="w-4 h-4 absolute left-3 top-4 text-slate-500" />
-        <input id="catalog-search" aria-label="Tìm sản phẩm" type="search" value={searchQuery} onChange={event => onSearchChange(event.target.value)}
-          placeholder="Tên sản phẩm, loại đồ câu…" className="w-full min-h-11 pl-10 pr-12 py-3 rounded-xl border border-slate-300 text-base" />
-        {searchQuery && <button aria-label="Xóa từ khóa" onClick={() => onSearchChange('')} className="absolute right-0 top-0 min-w-11 min-h-11 flex items-center justify-center"><X className="w-4 h-4" /></button>}
+
+export function CatalogControls({
+  searchQuery,
+  onSearchChange,
+  selectedCategorySlug,
+  onCategorySelect,
+  sortBy,
+  onSortChange,
+  showSaleOnly,
+  onToggleSaleOnly,
+  totalFiltered,
+  saleCount,
+}: Props) {
+  return (
+    <div className="space-y-4 rounded-2xl border border-slate-800 bg-[#111827] p-4 sm:p-6">
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1 min-w-0">
+          <Search aria-hidden="true" className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input
+            id="catalog-search"
+            aria-label="Tìm sản phẩm"
+            type="search"
+            value={searchQuery}
+            onChange={(event) => onSearchChange(event.target.value)}
+            placeholder="Tìm Chuột LK, Cần Solid, Dù PE, Cám chép..."
+            className="w-full min-h-11 pl-10 pr-12 py-2.5 rounded-xl bg-[#0F172A] border border-slate-700 text-sm sm:text-base text-white placeholder:text-slate-400 focus:border-[#FACC15] focus:outline-none"
+          />
+          {searchQuery && (
+            <button
+              type="button"
+              aria-label="Xóa từ khóa"
+              onClick={() => onSearchChange('')}
+              className="absolute right-0 top-0 min-w-11 min-h-11 flex items-center justify-center text-slate-400 hover:text-white cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+        <label className="flex items-center gap-2 text-xs sm:text-sm font-bold text-slate-300">
+          <SlidersHorizontal className="hidden h-4 w-4 sm:block text-[#FACC15]" aria-hidden="true" />
+          <span>Sắp xếp</span>
+          <select
+            value={sortBy}
+            onChange={(event) => onSortChange(event.target.value as ProductSort)}
+            className="min-h-11 flex-1 min-w-0 rounded-xl bg-[#0F172A] border border-slate-700 px-3 text-sm text-white focus:border-[#FACC15] focus:outline-none"
+          >
+            <option value="default">Mặc định</option>
+            <option value="discount-desc">Giảm giá nhiều nhất</option>
+            <option value="price-asc">Giá: Thấp đến Cao</option>
+            <option value="price-desc">Giá: Cao đến Thấp</option>
+            <option value="name-asc">Tên: A - Z</option>
+          </select>
+        </label>
       </div>
-      <label className="flex items-center gap-2 text-sm font-bold text-slate-700">
-        <SlidersHorizontal className="hidden h-4 w-4 sm:block" aria-hidden="true" />Sắp xếp
-        <select value={sortBy} onChange={event => onSortChange(event.target.value as ProductSort)} className="min-h-11 flex-1 min-w-0 rounded-xl border border-slate-300 px-3 text-sm">
-          <option value="default">Mặc định</option>
-          <option value="discount-desc">🔥 Giảm giá nhiều nhất</option>
-          <option value="price-asc">Giá: Thấp đến Cao</option>
-          <option value="price-desc">Giá: Cao đến Thấp</option>
-          <option value="name-asc">Tên: A - Z</option>
-        </select>
-      </label>
+
+      <div className="flex gap-2 overflow-x-auto pb-1" aria-label="Lọc sản phẩm">
+        {onToggleSaleOnly && (
+          <button
+            type="button"
+            aria-pressed={Boolean(showSaleOnly)}
+            onClick={onToggleSaleOnly}
+            className={`inline-flex min-h-11 items-center gap-1.5 whitespace-nowrap rounded-xl border px-3.5 text-xs sm:text-sm font-bold transition-colors cursor-pointer ${
+              showSaleOnly
+                ? 'border-[#F97316] bg-[#F97316] text-white'
+                : 'border-slate-700 bg-[#0F172A] text-[#F97316] hover:border-[#F97316]'
+            }`}
+          >
+            <Flame className="h-4 w-4 fill-current" aria-hidden="true" />
+            <span>Đang giảm giá ({saleCount || 0})</span>
+          </button>
+        )}
+        {CATEGORIES.map((category) => (
+          <button
+            key={category.slug}
+            type="button"
+            aria-pressed={selectedCategorySlug === category.slug}
+            onClick={() => onCategorySelect(category.slug)}
+            className={`min-h-11 px-3.5 rounded-xl whitespace-nowrap text-xs sm:text-sm font-bold border transition-colors cursor-pointer ${
+              selectedCategorySlug === category.slug
+                ? 'bg-[#FACC15] border-[#FACC15] text-[#0F172A]'
+                : 'bg-[#0F172A] border-slate-700 text-slate-300 hover:border-slate-500 hover:text-white'
+            }`}
+          >
+            {category.name}
+          </button>
+        ))}
+      </div>
+
+      <div className="flex flex-wrap items-center justify-between gap-2 text-xs sm:text-sm text-slate-400">
+        <span role="status">
+          Hiển thị <strong className="text-white tabular-nums">{totalFiltered}</strong> sản phẩm chính hãng LK Hòa
+        </span>
+        {(searchQuery || sortBy !== 'default' || showSaleOnly) && (
+          <button
+            type="button"
+            className="min-h-10 text-[#FACC15] font-bold hover:underline cursor-pointer"
+            onClick={() => {
+              onSearchChange('');
+              onSortChange('default');
+              if (showSaleOnly) onToggleSaleOnly?.();
+            }}
+          >
+            Xóa bộ lọc
+          </button>
+        )}
+      </div>
     </div>
-    <div className="flex gap-2 overflow-x-auto pb-1" aria-label="Lọc sản phẩm">
-      {onToggleSaleOnly && <button aria-pressed={Boolean(showSaleOnly)} onClick={onToggleSaleOnly}
-        className={`inline-flex min-h-11 items-center gap-1.5 whitespace-nowrap rounded-2xl border px-3.5 text-sm font-bold transition-all ${showSaleOnly ? 'border-red-600 bg-gradient-to-r from-red-600 to-[#EE4D2D] text-white shadow-sm' : 'border-red-200 bg-red-50 text-red-700 hover:bg-red-100'}`}>
-        <Flame className="h-4 w-4 fill-current" aria-hidden="true" />Deal đang giảm giá ({saleCount || 0})
-      </button>}
-      {CATEGORIES.map(category => <button key={category.slug} aria-pressed={selectedCategorySlug === category.slug}
-        onClick={() => onCategorySelect(category.slug)} className={`min-h-11 px-3 rounded-xl whitespace-nowrap text-sm ${selectedCategorySlug === category.slug ? 'bg-[#EE4D2D] text-white' : 'bg-slate-100 text-slate-700'}`}>{category.name}</button>)}
-    </div>
-    <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-slate-600">
-      <span role="status">Hiển thị <strong>{totalFiltered}</strong> sản phẩm · Giá tham khảo, kiểm tra lại trên sàn</span>
-      {(searchQuery || sortBy !== 'default' || showSaleOnly) && <button className="min-h-11 text-[#EE4D2D] font-semibold" onClick={() => {
-        onSearchChange(''); onSortChange('default'); if (showSaleOnly) onToggleSaleOnly?.();
-      }}>Xóa bộ lọc</button>}
-    </div>
-  </div>;
+  );
 }

@@ -2,6 +2,8 @@ import express from 'express';
 import http from 'http';
 import path from 'path';
 import fs from 'fs';
+import crypto from 'crypto';
+import net from 'net';
 import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI } from '@google/genai';
 import dotenv from 'dotenv';
@@ -382,6 +384,1035 @@ async function startServer() {
         products,
         syncedAt: new Date().toISOString(),
       });
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
+  // Admin Auth & Session Signing (Server-Side Scrypt + Bearer HMAC)
+  const adminAuthFilePath = path.join(process.cwd(), 'admin_auth.json');
+  const sessionSecretKey = process.env.ADMIN_SESSION_SECRET || crypto.randomBytes(32).toString('hex');
+
+  interface StoredAdminAuth {
+    salt: string;
+    hash: string;
+    claimedAt: string;
+  }
+
+  const loadAdminAuth = (): StoredAdminAuth | null => {
+    try {
+      if (fs.existsSync(adminAuthFilePath)) {
+        const parsed = JSON.parse(fs.readFileSync(adminAuthFilePath, 'utf-8'));
+        if (parsed?.salt && parsed?.hash) return parsed;
+      }
+    } catch {
+      // Ignore corrupt file
+    }
+    return null;
+  };
+
+  const hashPasscode = (passcode: string, salt: string): string => {
+    return crypto.scryptSync(passcode, salt, 64).toString('hex');
+  };
+
+  const safeCompare = (a: string, b: string): boolean => {
+    const bufA = Buffer.from(a);
+    const bufB = Buffer.from(b);
+    if (bufA.length !== bufB.length) return false;
+    return crypto.timingSafeEqual(bufA, bufB);
+  };
+
+  const signAdminToken = (): string => {
+    const exp = Date.now() + 12 * 60 * 60 * 1000;
+    const payload = Buffer.from(JSON.stringify({ role: 'admin', exp })).toString('base64url');
+    const sig = crypto.createHmac('sha256', sessionSecretKey).update(payload).digest('base64url');
+    return `${payload}.${sig}`;
+  };
+
+  const verifyAdminToken = (token: string | undefined): boolean => {
+    if (!token || !token.includes('.')) return false;
+    const [payload, sig] = token.split('.');
+    if (!payload || !sig) return false;
+    const expectedSig = crypto.createHmac('sha256', sessionSecretKey).update(payload).digest('base64url');
+    if (!safeCompare(sig, expectedSig)) return false;
+    try {
+      const decoded = JSON.parse(Buffer.from(payload, 'base64url').toString('utf-8'));
+      return decoded?.role === 'admin' && typeof decoded?.exp === 'number' && decoded.exp > Date.now();
+    } catch {
+      return false;
+    }
+  };
+
+  const requireAdmin: express.RequestHandler = (req, res, next) => {
+    const authHeader = req.headers.authorization || '';
+    const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
+    if (!verifyAdminToken(token)) {
+      return res.status(401).json({ error: 'Vui lòng đăng nhập quản trị viên để truy cập đơn hàng.' });
+    }
+    return next();
+  };
+
+  app.get('/api/admin/status', (req, res) => {
+    const envPasscode = (process.env.ADMIN_PASSCODE || '').trim();
+    const stored = loadAdminAuth();
+    const authHeader = req.headers.authorization || '';
+    const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
+    return res.json({
+      hasConfiguredPasscode: Boolean(envPasscode || stored),
+      usingEnvPasscode: Boolean(envPasscode),
+      authenticated: verifyAdminToken(token),
+    });
+  });
+
+  app.post('/api/admin/claim', (req, res) => {
+    try {
+      if ((process.env.ADMIN_PASSCODE || '').trim()) {
+        return res.status(403).json({ error: 'Mật khẩu quản trị đã được cấu hình qua ADMIN_PASSCODE.' });
+      }
+      if (loadAdminAuth()) {
+        return res.status(409).json({ error: 'Tài khoản quản trị đã được thiết lập trước đó. Vui lòng đăng nhập.' });
+      }
+      const passcode = String(req.body?.passcode || '').trim();
+      if (passcode.length < 6) {
+        return res.status(400).json({ error: 'Mật khẩu quản trị phải có ít nhất 6 ký tự.' });
+      }
+      const salt = crypto.randomBytes(16).toString('hex');
+      const record: StoredAdminAuth = {
+        salt,
+        hash: hashPasscode(passcode, salt),
+        claimedAt: new Date().toISOString(),
+      };
+      fs.writeFileSync(adminAuthFilePath, JSON.stringify(record, null, 2), 'utf-8');
+      return res.status(201).json({ success: true, token: signAdminToken() });
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message || 'Không thể thiết lập mật khẩu quản trị.' });
+    }
+  });
+
+  app.post('/api/admin/login', (req, res) => {
+    try {
+      const passcode = String(req.body?.passcode || '').trim();
+      if (!passcode) {
+        return res.status(400).json({ error: 'Vui lòng nhập mật khẩu quản trị.' });
+      }
+      const envPasscode = (process.env.ADMIN_PASSCODE || '').trim();
+      if (envPasscode) {
+        if (!safeCompare(passcode, envPasscode)) {
+          return res.status(401).json({ error: 'Mật khẩu quản trị không chính xác.' });
+        }
+        return res.json({ success: true, token: signAdminToken() });
+      }
+
+      const stored = loadAdminAuth();
+      if (!stored) {
+        return res.status(404).json({ error: 'Chưa thiết lập mật khẩu quản trị lần đầu.' });
+      }
+      const incomingHash = hashPasscode(passcode, stored.salt);
+      if (!safeCompare(incomingHash, stored.hash)) {
+        return res.status(401).json({ error: 'Mật khẩu quản trị không chính xác.' });
+      }
+      return res.json({ success: true, token: signAdminToken() });
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message || 'Lỗi xác thực quản trị.' });
+    }
+  });
+
+  // Persistent Orders Store (COD & VietQR Checkout)
+  const ordersFilePath = path.join(process.cwd(), 'orders_store.json');
+
+  const loadOrdersStore = (): any[] => {
+    try {
+      if (fs.existsSync(ordersFilePath)) {
+        const raw = fs.readFileSync(ordersFilePath, 'utf-8');
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      }
+    } catch (err) {
+      console.warn('Failed to load orders_store.json:', err);
+    }
+    return [];
+  };
+
+  const saveOrdersStore = (orders: any[]) => {
+    fs.writeFileSync(ordersFilePath, JSON.stringify(orders.slice(0, 500), null, 2), 'utf-8');
+  };
+
+  // Connector Gateway Config Store (Non-secret metadata only; tokens live in process.env or runtime memory)
+  type ConnectorProvider = 'pancake' | 'ghn' | 'ghtk' | 'viettelpost' | 'webhook';
+  const ALLOWED_CONNECTORS: ConnectorProvider[] = ['pancake', 'ghn', 'ghtk', 'viettelpost', 'webhook'];
+  const CONNECTOR_LABELS: Record<ConnectorProvider, string> = {
+    pancake: 'Pancake POS',
+    ghn: 'Giao Hàng Nhanh (GHN)',
+    ghtk: 'Giao Hàng Tiết Kiệm (GHTK)',
+    viettelpost: 'Viettel Post (VTP)',
+    webhook: 'Webhook POS Mở Rộng (Sapo / KiotViet / n8n)',
+  };
+
+  interface StoredConnectorConfig {
+    autoSync?: boolean;
+    shopId?: string;
+    warehouseId?: string;
+    webhookUrl?: string;
+    maskedToken?: string;
+    lastTestedAt?: string;
+    lastTestOk?: boolean;
+    lastTestMessage?: string;
+  }
+
+  const connectorsFilePath = path.join(process.cwd(), 'connectors_store.json');
+  const runtimeConnectorTokens = new Map<ConnectorProvider, string>();
+
+  const loadConnectorsConfig = (): Partial<Record<ConnectorProvider, StoredConnectorConfig>> => {
+    try {
+      if (fs.existsSync(connectorsFilePath)) {
+        const parsed = JSON.parse(fs.readFileSync(connectorsFilePath, 'utf-8'));
+        if (parsed && typeof parsed === 'object') return parsed;
+      }
+    } catch (err) {
+      console.warn('Failed to load connectors_store.json:', err);
+    }
+    return {};
+  };
+
+  const saveConnectorsConfig = (cfg: Partial<Record<ConnectorProvider, StoredConnectorConfig>>) => {
+    fs.writeFileSync(connectorsFilePath, JSON.stringify(cfg, null, 2), 'utf-8');
+  };
+
+  const maskSecretToken = (token: string): string => {
+    const clean = token.trim();
+    if (!clean) return '';
+    if (clean.length <= 6) return '••••••';
+    return `••••${clean.slice(-4)}`;
+  };
+
+  const isSafeExternalHttpsUrl = (rawUrl: string): { ok: true; url: URL } | { ok: false; reason: string } => {
+    try {
+      const parsed = new URL(rawUrl.trim());
+      if (parsed.protocol !== 'https:') {
+        return { ok: false, reason: 'Webhook URL bắt buộc sử dụng giao thức HTTPS.' };
+      }
+      const host = parsed.hostname.toLowerCase();
+      if (
+        !host ||
+        host === 'localhost' ||
+        host.endsWith('.localhost') ||
+        host.endsWith('.local') ||
+        host.endsWith('.internal') ||
+        host === 'metadata.google.internal'
+      ) {
+        return { ok: false, reason: 'Không cho phép trỏ Webhook tới localhost hoặc tên miền nội bộ.' };
+      }
+      const normalizedHost = host.startsWith('[') && host.endsWith(']') ? host.slice(1, -1) : host;
+      if (net.isIP(normalizedHost) !== 0) {
+        return { ok: false, reason: 'Webhook URL phải dùng tên miền HTTPS công khai, không dùng địa chỉ IP trực tiếp.' };
+      }
+      return { ok: true, url: parsed };
+    } catch {
+      return { ok: false, reason: 'Định dạng Webhook URL không hợp lệ.' };
+    }
+  };
+
+  const resolveConnectorCredentials = (provider: ConnectorProvider) => {
+    const allCfg = loadConnectorsConfig();
+    const cfg = allCfg[provider] || {};
+    let envToken = '';
+    let envShopId = '';
+
+    if (provider === 'pancake') {
+      envToken = (process.env.PANCAKE_API_KEY || '').trim();
+      envShopId = (process.env.PANCAKE_SHOP_ID || '').trim();
+    } else if (provider === 'ghn') {
+      envToken = (process.env.GHN_TOKEN || '').trim();
+      envShopId = (process.env.GHN_SHOP_ID || '').trim();
+    } else if (provider === 'ghtk') {
+      envToken = (process.env.GHTK_TOKEN || '').trim();
+    } else if (provider === 'viettelpost') {
+      envToken = (process.env.VTP_TOKEN || '').trim();
+    }
+
+    const runtimeToken = (runtimeConnectorTokens.get(provider) || '').trim();
+    const effectiveToken = envToken || runtimeToken;
+    const effectiveShopId = envShopId || (cfg.shopId || '').trim();
+    const effectiveWebhookUrl = (cfg.webhookUrl || '').trim();
+
+    let connected = false;
+    if (provider === 'pancake' || provider === 'ghn') {
+      connected = Boolean(effectiveToken && effectiveShopId);
+    } else if (provider === 'ghtk' || provider === 'viettelpost') {
+      connected = Boolean(effectiveToken);
+    } else if (provider === 'webhook') {
+      connected = Boolean(effectiveWebhookUrl && isSafeExternalHttpsUrl(effectiveWebhookUrl).ok);
+    }
+
+    const source: 'env' | 'admin-ui' | 'none' = envToken
+      ? 'env'
+      : runtimeToken || (provider === 'webhook' && connected)
+        ? 'admin-ui'
+        : 'none';
+
+    return {
+      provider,
+      token: effectiveToken,
+      shopId: effectiveShopId,
+      warehouseId: (cfg.warehouseId || '').trim(),
+      webhookUrl: effectiveWebhookUrl,
+      autoSync: Boolean(cfg.autoSync),
+      maskedToken: envToken ? maskSecretToken(envToken) : runtimeToken ? cfg.maskedToken || maskSecretToken(runtimeToken) : undefined,
+      connected,
+      source,
+      lastTestedAt: cfg.lastTestedAt,
+      lastTestOk: cfg.lastTestOk,
+      lastTestMessage: cfg.lastTestMessage,
+    };
+  };
+
+  const buildConnectorSummary = (provider: ConnectorProvider) => {
+    const resolved = resolveConnectorCredentials(provider);
+    return {
+      provider: resolved.provider,
+      name: CONNECTOR_LABELS[provider],
+      connected: resolved.connected,
+      source: resolved.source,
+      autoSync: resolved.autoSync,
+      shopId: resolved.shopId || undefined,
+      warehouseId: resolved.warehouseId || undefined,
+      webhookUrl: resolved.webhookUrl || undefined,
+      maskedToken: resolved.maskedToken,
+      lastTestedAt: resolved.lastTestedAt,
+      lastTestOk: resolved.lastTestOk,
+      lastTestMessage: resolved.lastTestMessage,
+    };
+  };
+
+  const pushOrderToPancakeInternal = async (order: any) => {
+    const creds = resolveConnectorCredentials('pancake');
+    if (!creds.token || !creds.shopId) {
+      return {
+        ok: false as const,
+        status: 400,
+        error: 'Chưa kết nối Pancake POS (cần API Key và Shop ID trong Kết nối POS hoặc PANCAKE_API_KEY / PANCAKE_SHOP_ID).',
+      };
+    }
+
+    const fullAddress = `${order.customer.address}, ${order.customer.ward}, ${order.customer.district}, ${order.customer.province}`;
+    const codAmount = order.paymentMethod === 'cod' ? Math.round(order.total || 0) : 0;
+    const shopIdNum = Number(creds.shopId);
+
+    const payload: Record<string, any> = {
+      shop_id: Number.isFinite(shopIdNum) && shopIdNum > 0 ? shopIdNum : creds.shopId,
+      bill_full_name: order.customer.fullName,
+      bill_phone_number: order.customer.phone,
+      shipping_address: {
+        full_name: order.customer.fullName,
+        phone_number: order.customer.phone,
+        address: order.customer.address,
+        province_name: order.customer.province,
+        district_name: order.customer.district,
+        commune_name: order.customer.ward,
+        full_address: fullAddress,
+      },
+      note: `[Web docaulkhoa.vn] ${order.customer.note || 'Đóng ống nhựa PVC, cho khách đồng kiểm.'}`.trim(),
+      custom_id: order.orderCode,
+      order_currency: 'VND',
+      shipping_fee: Math.round(order.shippingFee || 0),
+      total_discount: Math.round(order.discountAmount || 0),
+      cash: 0,
+      cod: codAmount,
+      items: (order.items || []).map((item: any) => ({
+        variation_info: {
+          name: `${item.name} (${item.variantLabel || 'Tiêu chuẩn'})`,
+          retail_price: Math.round(item.price || 0),
+          display_id: item.sku || item.productId,
+        },
+        quantity: Math.max(1, Number(item.quantity) || 1),
+      })),
+    };
+
+    if (creds.warehouseId) {
+      payload.warehouse_id = creds.warehouseId;
+    }
+
+    const pancakeUrl = `https://pos.pages.fm/api/v1/shops/${encodeURIComponent(creds.shopId)}/orders?api_key=${encodeURIComponent(creds.token)}`;
+    const resp = await fetch(pancakeUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(10000),
+    });
+    const data: any = await resp.json().catch(() => ({}));
+    const pancakeId = data?.data?.id || data?.id || data?.order_id;
+    if (!resp.ok || data?.success === false || !pancakeId) {
+      return {
+        ok: false as const,
+        status: 502,
+        error: data?.message || data?.error || 'Pancake POS từ chối tạo đơn. Kiểm tra lại API Key và Shop ID.',
+      };
+    }
+
+    return {
+      ok: true as const,
+      pancakeOrderId: String(pancakeId),
+    };
+  };
+
+  const pushOrderToWebhookInternal = async (order: any) => {
+    const creds = resolveConnectorCredentials('webhook');
+    if (!creds.webhookUrl) return { ok: false as const, error: 'Chưa cấu hình Webhook URL.' };
+    const safeCheck = isSafeExternalHttpsUrl(creds.webhookUrl);
+    if ('reason' in safeCheck) {
+      return { ok: false as const, error: safeCheck.reason };
+    }
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      'User-Agent': 'DocauLKHoa-OrderWebhook/1.0',
+    };
+    if (creds.token) {
+      headers['X-Webhook-Secret'] = creds.token;
+    }
+    const resp = await fetch(safeCheck.url.toString(), {
+      method: 'POST',
+      headers,
+      redirect: 'error',
+      body: JSON.stringify({
+        event: 'order.created',
+        source: 'docaulkhoa.vn',
+        order,
+        timestamp: new Date().toISOString(),
+      }),
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!resp.ok) {
+      return { ok: false as const, error: `Webhook trả về HTTP ${resp.status}` };
+    }
+    return { ok: true as const };
+  };
+
+  app.post('/api/orders', (req, res) => {
+    try {
+      const order = req.body;
+      if (!order || !Array.isArray(order.items) || order.items.length === 0 || !order.customer) {
+        return res.status(400).json({ error: 'Thông tin đơn hàng hoặc giỏ hàng không hợp lệ.' });
+      }
+      const cleanPhone = String(order.customer.phone || '').replace(/\D/g, '');
+      if (!/^0[35789][0-9]{8}$/.test(cleanPhone)) {
+        return res.status(400).json({ error: 'Số điện thoại Việt Nam phải gồm đúng 10 chữ số hợp lệ.' });
+      }
+      if (!String(order.customer.fullName || '').trim()) {
+        return res.status(400).json({ error: 'Vui lòng nhập họ tên người nhận hàng.' });
+      }
+
+      const orders = loadOrdersStore();
+      const record = {
+        ...order,
+        orderCode: order.orderCode || `LKH-${Date.now().toString().slice(-6)}`,
+        customer: {
+          ...order.customer,
+          phone: cleanPhone,
+        },
+        createdAt: order.createdAt || new Date().toISOString(),
+        status: 'confirmed',
+      };
+      orders.unshift(record);
+      saveOrdersStore(orders);
+
+      // Non-blocking auto-sync to Pancake POS or Custom POS Webhook if enabled by Admin
+      void (async () => {
+        try {
+          const pancakeCreds = resolveConnectorCredentials('pancake');
+          if (pancakeCreds.connected && pancakeCreds.autoSync) {
+            const pRes = await pushOrderToPancakeInternal(record);
+            if (pRes.ok) {
+              const latest = loadOrdersStore();
+              const idx = latest.findIndex((o) => o.orderCode === record.orderCode);
+              if (idx !== -1) {
+                latest[idx] = {
+                  ...latest[idx],
+                  pancakeOrderId: pRes.pancakeOrderId,
+                  pancakeSyncedAt: new Date().toISOString(),
+                  updatedAt: new Date().toISOString(),
+                };
+                saveOrdersStore(latest);
+              }
+            }
+          }
+          const webhookCreds = resolveConnectorCredentials('webhook');
+          if (webhookCreds.connected && webhookCreds.autoSync) {
+            await pushOrderToWebhookInternal(record);
+          }
+        } catch (syncErr) {
+          console.warn('Auto-sync order background error:', syncErr);
+        }
+      })();
+
+      return res.status(201).json({ success: true, order: record });
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message || 'Không thể lưu đơn hàng.' });
+    }
+  });
+
+  app.get('/api/orders', requireAdmin, (req, res) => {
+    try {
+      res.setHeader('Cache-Control', 'no-store');
+      const orders = loadOrdersStore();
+      return res.json({ success: true, count: orders.length, orders });
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.get('/api/orders/:orderCode', requireAdmin, (req, res) => {
+    try {
+      const orders = loadOrdersStore();
+      const found = orders.find((o) => o.orderCode === req.params.orderCode);
+      if (!found) {
+        return res.status(404).json({ error: 'Không tìm thấy đơn hàng.' });
+      }
+      return res.json({ success: true, order: found });
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
+  const ALLOWED_ORDER_STATUSES = new Set(['pending', 'confirmed', 'packing', 'shipping', 'delivered', 'cancelled']);
+  const ALLOWED_CARRIERS = new Set(['ghn', 'ghtk', 'viettelpost', 'manual']);
+
+  app.patch('/api/orders/:orderCode', requireAdmin, (req, res) => {
+    try {
+      const orders = loadOrdersStore();
+      const idx = orders.findIndex((o) => o.orderCode === req.params.orderCode);
+      if (idx === -1) {
+        return res.status(404).json({ error: 'Không tìm thấy đơn hàng.' });
+      }
+      const { status, shippingCarrier, trackingCode, packageWeightGrams } = req.body || {};
+      const nextOrder = { ...orders[idx], updatedAt: new Date().toISOString() };
+
+      if (typeof status === 'string') {
+        if (!ALLOWED_ORDER_STATUSES.has(status)) {
+          return res.status(400).json({ error: 'Trạng thái đơn hàng không hợp lệ.' });
+        }
+        nextOrder.status = status;
+      }
+      if (typeof shippingCarrier === 'string') {
+        if (!ALLOWED_CARRIERS.has(shippingCarrier)) {
+          return res.status(400).json({ error: 'Đơn vị vận chuyển không hợp lệ.' });
+        }
+        nextOrder.shippingCarrier = shippingCarrier;
+      }
+      if (typeof trackingCode === 'string') {
+        nextOrder.trackingCode = trackingCode.trim().slice(0, 64);
+      }
+      if (typeof packageWeightGrams === 'number' && Number.isFinite(packageWeightGrams) && packageWeightGrams > 0) {
+        nextOrder.packageWeightGrams = Math.round(packageWeightGrams);
+      }
+
+      orders[idx] = nextOrder;
+      saveOrdersStore(orders);
+      return res.json({ success: true, order: nextOrder });
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message || 'Không thể cập nhật đơn hàng.' });
+    }
+  });
+
+  // POS & Shipping Connectors Management API (Admin Authenticated)
+  app.get('/api/connectors', requireAdmin, (_req, res) => {
+    res.setHeader('Cache-Control', 'no-store');
+    return res.json({
+      success: true,
+      connectors: ALLOWED_CONNECTORS.map((p) => buildConnectorSummary(p)),
+    });
+  });
+
+  app.post('/api/connectors/:provider', requireAdmin, (req, res) => {
+    try {
+      const provider = req.params.provider as ConnectorProvider;
+      if (!ALLOWED_CONNECTORS.includes(provider)) {
+        return res.status(400).json({ error: 'Cổng kết nối không hợp lệ.' });
+      }
+      const { token, shopId, warehouseId, webhookUrl, autoSync } = req.body || {};
+      const allCfg = loadConnectorsConfig();
+      const prevCfg = allCfg[provider] || {};
+
+      if (provider === 'webhook') {
+        const cleanWebhook = String(webhookUrl || '').trim();
+        const check = isSafeExternalHttpsUrl(cleanWebhook);
+        if ('reason' in check) {
+          return res.status(400).json({ error: check.reason });
+        }
+      }
+
+      const cleanToken = typeof token === 'string' ? token.trim() : '';
+      if (cleanToken) {
+        runtimeConnectorTokens.set(provider, cleanToken);
+      }
+
+      const nextCfg: StoredConnectorConfig = {
+        ...prevCfg,
+        autoSync: typeof autoSync === 'boolean' ? autoSync : Boolean(prevCfg.autoSync),
+        shopId: typeof shopId === 'string' ? shopId.trim().slice(0, 80) : prevCfg.shopId,
+        warehouseId: typeof warehouseId === 'string' ? warehouseId.trim().slice(0, 80) : prevCfg.warehouseId,
+        webhookUrl:
+          provider === 'webhook' && typeof webhookUrl === 'string'
+            ? webhookUrl.trim().slice(0, 300)
+            : prevCfg.webhookUrl,
+        maskedToken: cleanToken ? maskSecretToken(cleanToken) : prevCfg.maskedToken,
+      };
+
+      allCfg[provider] = nextCfg;
+      saveConnectorsConfig(allCfg);
+
+      return res.json({
+        success: true,
+        connector: buildConnectorSummary(provider),
+        message: `Đã lưu cấu hình ${CONNECTOR_LABELS[provider]}.`,
+      });
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message || 'Không thể lưu cấu hình kết nối.' });
+    }
+  });
+
+  app.post('/api/connectors/:provider/test', requireAdmin, async (req, res) => {
+    try {
+      const provider = req.params.provider as ConnectorProvider;
+      if (!ALLOWED_CONNECTORS.includes(provider)) {
+        return res.status(400).json({ error: 'Cổng kết nối không hợp lệ.' });
+      }
+      const creds = resolveConnectorCredentials(provider);
+      let ok = false;
+      let message = '';
+
+      if (provider === 'pancake') {
+        if (!creds.token) {
+          return res.status(400).json({ error: 'Vui lòng nhập API Key Pancake POS trước khi kiểm tra.' });
+        }
+        const resp = await fetch(
+          `https://pos.pages.fm/api/v1/shops?api_key=${encodeURIComponent(creds.token)}`,
+          { signal: AbortSignal.timeout(8000) }
+        );
+        const data: any = await resp.json().catch(() => ({}));
+        if (resp.ok && data?.success !== false && Array.isArray(data?.shops)) {
+          const matchedShop = creds.shopId
+            ? data.shops.find((s: any) => String(s.id) === String(creds.shopId))
+            : data.shops[0];
+          if (creds.shopId && !matchedShop) {
+            ok = false;
+            message = `Kết nối API Key thành công (${data.shops.length} shop) nhưng không khớp Shop ID "${creds.shopId}".`;
+          } else {
+            ok = true;
+            message = matchedShop
+              ? `Kết nối Pancake POS thành công · Shop: ${matchedShop.name || matchedShop.id}`
+              : `Kết nối Pancake POS thành công (${data.shops.length} shop).`;
+          }
+        } else {
+          ok = false;
+          message = data?.message || `Pancake POS trả về lỗi (HTTP ${resp.status}). Kiểm tra lại API Key.`;
+        }
+      } else if (provider === 'ghn') {
+        if (!creds.token) {
+          return res.status(400).json({ error: 'Vui lòng nhập Token GHN trước khi kiểm tra.' });
+        }
+        const resp = await fetch('https://online-gateway.ghn.vn/shiip/public-api/v2/shop/all', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Token: creds.token },
+          body: JSON.stringify({ offset: 0, limit: 50, client_phone: '' }),
+          signal: AbortSignal.timeout(8000),
+        });
+        const data: any = await resp.json().catch(() => ({}));
+        if (resp.ok && data?.code === 200) {
+          ok = true;
+          const shops = data?.data?.shops || [];
+          message = `Kết nối GHN thành công (${shops.length} cửa hàng hoạt động).`;
+        } else {
+          ok = false;
+          message = data?.message || `GHN từ chối kết nối (HTTP ${resp.status}).`;
+        }
+      } else if (provider === 'ghtk') {
+        if (!creds.token) {
+          return res.status(400).json({ error: 'Vui lòng nhập API Token GHTK trước khi kiểm tra.' });
+        }
+        const resp = await fetch(
+          'https://services.giaohangtietkiem.vn/services/shipment/fee?pick_province=Ngh%E1%BB%87+An&pick_district=Huy%E1%BB%87n+Ngh%C4%A9a+%C4%90%C3%A0n&province=H%C3%A0+N%E1%BB%99i&district=Qu%E1%BA%ADn+C%E1%BA%A7u+Gi%E1%BA%A5y&weight=500',
+          {
+            headers: { Token: creds.token },
+            signal: AbortSignal.timeout(8000),
+          }
+        );
+        const data: any = await resp.json().catch(() => ({}));
+        if (resp.ok && data?.success) {
+          ok = true;
+          message = 'Kết nối GHTK thành công · Token hợp lệ.';
+        } else {
+          ok = false;
+          message = data?.message || `GHTK từ chối kết nối (HTTP ${resp.status}).`;
+        }
+      } else if (provider === 'viettelpost') {
+        if (!creds.token) {
+          return res.status(400).json({ error: 'Vui lòng nhập Token Viettel Post trước khi kiểm tra.' });
+        }
+        const resp = await fetch('https://partner.viettelpost.vn/v2/categories/listProvince', {
+          headers: { Token: creds.token },
+          signal: AbortSignal.timeout(8000),
+        });
+        const data: any = await resp.json().catch(() => ({}));
+        if (resp.ok && !data?.error && Array.isArray(data?.data)) {
+          ok = true;
+          message = 'Kết nối Viettel Post thành công · Token hợp lệ.';
+        } else {
+          ok = false;
+          message = data?.message || `Viettel Post từ chối kết nối (HTTP ${resp.status}).`;
+        }
+      } else if (provider === 'webhook') {
+        if (!creds.webhookUrl) {
+          return res.status(400).json({ error: 'Vui lòng nhập Webhook URL trước khi kiểm tra.' });
+        }
+        const safeCheck = isSafeExternalHttpsUrl(creds.webhookUrl);
+        if ('reason' in safeCheck) {
+          return res.status(400).json({ error: safeCheck.reason });
+        }
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json',
+          'User-Agent': 'DocauLKHoa-OrderWebhook/1.0',
+        };
+        if (creds.token) headers['X-Webhook-Secret'] = creds.token;
+        const resp = await fetch(safeCheck.url.toString(), {
+          method: 'POST',
+          headers,
+          redirect: 'error',
+          body: JSON.stringify({
+            event: 'lkhoa.ping',
+            shop: 'Đồ Câu LK Hòa',
+            timestamp: new Date().toISOString(),
+          }),
+          signal: AbortSignal.timeout(8000),
+        });
+        ok = resp.ok;
+        message = ok
+          ? `Ping Webhook thành công (HTTP ${resp.status}).`
+          : `Webhook trả về HTTP ${resp.status}.`;
+      }
+
+      const allCfg = loadConnectorsConfig();
+      allCfg[provider] = {
+        ...(allCfg[provider] || {}),
+        lastTestedAt: new Date().toISOString(),
+        lastTestOk: ok,
+        lastTestMessage: message,
+      };
+      saveConnectorsConfig(allCfg);
+
+      return res.status(ok ? 200 : 502).json({
+        success: ok,
+        message,
+        connector: buildConnectorSummary(provider),
+      });
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message || 'Lỗi khi kiểm tra kết nối.' });
+    }
+  });
+
+  app.delete('/api/connectors/:provider', requireAdmin, (req, res) => {
+    try {
+      const provider = req.params.provider as ConnectorProvider;
+      if (!ALLOWED_CONNECTORS.includes(provider)) {
+        return res.status(400).json({ error: 'Cổng kết nối không hợp lệ.' });
+      }
+      runtimeConnectorTokens.delete(provider);
+      const allCfg = loadConnectorsConfig();
+      allCfg[provider] = {
+        ...(allCfg[provider] || {}),
+        autoSync: false,
+        maskedToken: undefined,
+        webhookUrl: provider === 'webhook' ? undefined : allCfg[provider]?.webhookUrl,
+        lastTestOk: undefined,
+        lastTestMessage: 'Đã ngắt kết nối bởi quản trị viên.',
+      };
+      saveConnectorsConfig(allCfg);
+      return res.json({
+        success: true,
+        connector: buildConnectorSummary(provider),
+      });
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message || 'Không thể ngắt kết nối.' });
+    }
+  });
+
+  app.post('/api/pos/pancake/push-order', requireAdmin, async (req, res) => {
+    try {
+      const { orderCode } = req.body || {};
+      if (!orderCode) {
+        return res.status(400).json({ error: 'Thiếu mã đơn hàng.' });
+      }
+      const orders = loadOrdersStore();
+      const idx = orders.findIndex((o) => o.orderCode === orderCode);
+      if (idx === -1) {
+        return res.status(404).json({ error: 'Không tìm thấy đơn hàng.' });
+      }
+
+      const result = await pushOrderToPancakeInternal(orders[idx]);
+      if (!result.ok) {
+        return res.status(result.status).json({ error: result.error });
+      }
+
+      const updatedOrder = {
+        ...orders[idx],
+        pancakeOrderId: result.pancakeOrderId,
+        pancakeSyncedAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      orders[idx] = updatedOrder;
+      saveOrdersStore(orders);
+
+      return res.json({
+        success: true,
+        pancakeOrderId: result.pancakeOrderId,
+        order: updatedOrder,
+      });
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message || 'Lỗi kết nối Pancake POS.' });
+    }
+  });
+
+  // Shipping Carrier Integration Status & Direct Push API (GHN, GHTK, Viettel Post)
+  app.get('/api/shipping/status', requireAdmin, (_req, res) => {
+    return res.json({
+      ghnConfigured: resolveConnectorCredentials('ghn').connected,
+      ghtkConfigured: resolveConnectorCredentials('ghtk').connected,
+      vtpConfigured: resolveConnectorCredentials('viettelpost').connected,
+      pancakeConfigured: resolveConnectorCredentials('pancake').connected,
+      webhookProtected: Boolean(process.env.SHIPPING_WEBHOOK_SECRET),
+    });
+  });
+
+  app.post('/api/shipping/push-order', requireAdmin, async (req, res) => {
+    try {
+      const {
+        orderCode,
+        carrier,
+        weightGrams = 700,
+        lengthCm = 120,
+        widthCm = 8,
+        heightCm = 8,
+        requiredNote = 'CHOXEMHANGKHONGTHU',
+      } = req.body || {};
+
+      if (!orderCode || !['ghn', 'ghtk', 'viettelpost'].includes(carrier)) {
+        return res.status(400).json({ error: 'Thiếu mã đơn hàng hoặc đơn vị vận chuyển không hợp lệ.' });
+      }
+
+      const orders = loadOrdersStore();
+      const idx = orders.findIndex((o) => o.orderCode === orderCode);
+      if (idx === -1) {
+        return res.status(404).json({ error: 'Không tìm thấy đơn hàng.' });
+      }
+
+      const order = orders[idx];
+      const codAmount = order.paymentMethod === 'cod' ? Math.round(order.total || 0) : 0;
+      const fullAddress = `${order.customer.address}, ${order.customer.ward}, ${order.customer.district}, ${order.customer.province}`;
+      const noteText = order.customer.note || 'Đồ câu LK Hòa - Đóng ống nhựa PVC, cho khách đồng kiểm.';
+
+      let trackingCode = '';
+
+      if (carrier === 'ghn') {
+        const ghnCreds = resolveConnectorCredentials('ghn');
+        const ghnToken = ghnCreds.token;
+        const ghnShopId = ghnCreds.shopId;
+        if (!ghnToken || !ghnShopId) {
+          return res.status(400).json({
+            error: 'Chưa kết nối GHN (nhập Token & Shop ID trong tab Kết nối POS/Vận chuyển hoặc cài Secret GHN_TOKEN, GHN_SHOP_ID).',
+            missingEnv: ['GHN_TOKEN', 'GHN_SHOP_ID'],
+          });
+        }
+        const ghnResp = await fetch('https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/create', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Token: ghnToken,
+            ShopId: String(ghnShopId),
+          },
+          body: JSON.stringify({
+            payment_type_id: order.shippingFee === 0 ? 1 : 2,
+            note: noteText,
+            required_note: requiredNote,
+            client_order_code: order.orderCode,
+            to_name: order.customer.fullName,
+            to_phone: order.customer.phone,
+            to_address: fullAddress,
+            to_ward_name: order.customer.ward,
+            to_district_name: order.customer.district,
+            to_province_name: order.customer.province,
+            cod_amount: codAmount,
+            content: order.items.map((i: any) => `${i.name} (${i.variantLabel}) x${i.quantity}`).join(', ').slice(0, 200),
+            weight: Math.max(100, Number(weightGrams) || 700),
+            length: Math.max(10, Number(lengthCm) || 120),
+            width: Math.max(5, Number(widthCm) || 8),
+            height: Math.max(5, Number(heightCm) || 8),
+            service_type_id: 2,
+            items: order.items.map((i: any) => ({
+              name: String(i.name || '').slice(0, 100),
+              code: i.sku || i.productId,
+              quantity: Math.max(1, Number(i.quantity) || 1),
+              price: Math.round(i.price || 0),
+            })),
+          }),
+          signal: AbortSignal.timeout(10000),
+        });
+        const ghnData: any = await ghnResp.json().catch(() => ({}));
+        if (!ghnResp.ok || ghnData?.code !== 200 || !ghnData?.data?.order_code) {
+          return res.status(502).json({
+            error: ghnData?.message || 'GHN từ chối tạo vận đơn. Kiểm tra lại Token / Shop ID và địa chỉ tỉnh/huyện/xã.',
+          });
+        }
+        trackingCode = String(ghnData.data.order_code);
+      } else if (carrier === 'ghtk') {
+        const ghtkToken = resolveConnectorCredentials('ghtk').token;
+        if (!ghtkToken) {
+          return res.status(400).json({
+            error: 'Chưa kết nối GHTK (nhập API Token trong tab Kết nối POS/Vận chuyển hoặc cài Secret GHTK_TOKEN).',
+            missingEnv: ['GHTK_TOKEN'],
+          });
+        }
+        const ghtkResp = await fetch('https://services.giaohangtietkiem.vn/services/shipment/order', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Token: ghtkToken,
+          },
+          body: JSON.stringify({
+            products: order.items.map((i: any) => ({
+              name: `${i.name} (${i.variantLabel})`,
+              weight: Math.max(0.1, (Number(weightGrams) || 700) / 1000 / order.items.length),
+              quantity: Math.max(1, Number(i.quantity) || 1),
+              product_code: i.sku || i.productId,
+            })),
+            order: {
+              id: order.orderCode,
+              pick_name: 'Đồ Câu LK Hòa',
+              pick_address: 'Đường mòn Hồ Chí Minh, Xóm Yên Lâm, Nghĩa Lâm',
+              pick_province: 'Nghệ An',
+              pick_district: 'Huyện Nghĩa Đàn',
+              pick_ward: 'Xã Nghĩa Lâm',
+              pick_tel: '0933040999',
+              tel: order.customer.phone,
+              name: order.customer.fullName,
+              address: order.customer.address,
+              province: order.customer.province,
+              district: order.customer.district,
+              ward: order.customer.ward,
+              hamlet: 'Khác',
+              is_freeship: order.shippingFee === 0 ? '1' : '0',
+              pick_money: codAmount,
+              note: noteText,
+              value: Math.round(order.subtotal || order.total || 0),
+              transport: 'road',
+            },
+          }),
+          signal: AbortSignal.timeout(10000),
+        });
+        const ghtkData: any = await ghtkResp.json().catch(() => ({}));
+        if (!ghtkResp.ok || !ghtkData?.success || !ghtkData?.order?.label) {
+          return res.status(502).json({
+            error: ghtkData?.message || 'GHTK từ chối tạo vận đơn. Kiểm tra lại API Token và địa chỉ.',
+          });
+        }
+        trackingCode = String(ghtkData.order.label);
+      } else if (carrier === 'viettelpost') {
+        const vtpToken = resolveConnectorCredentials('viettelpost').token;
+        if (!vtpToken) {
+          return res.status(400).json({
+            error: 'Chưa kết nối Viettel Post (nhập Token trong tab Kết nối POS/Vận chuyển hoặc cài Secret VTP_TOKEN).',
+            missingEnv: ['VTP_TOKEN'],
+          });
+        }
+        const vtpResp = await fetch('https://partner.viettelpost.vn/v2/order/createOrder', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Token: vtpToken,
+          },
+          body: JSON.stringify({
+            ORDER_NUMBER: order.orderCode,
+            SENDER_FULLNAME: 'Đồ Câu LK Hòa',
+            SENDER_ADDRESS: 'Đường mòn Hồ Chí Minh, Xóm Yên Lâm, Xã Nghĩa Lâm, Nghĩa Đàn, Nghệ An',
+            SENDER_PHONE: '0933040999',
+            RECEIVER_FULLNAME: order.customer.fullName,
+            RECEIVER_ADDRESS: fullAddress,
+            RECEIVER_PHONE: order.customer.phone,
+            PRODUCT_NAME: order.items.map((i: any) => `${i.name} (${i.variantLabel})`).join(', ').slice(0, 200),
+            PRODUCT_WEIGHT: Math.max(100, Number(weightGrams) || 700),
+            PRODUCT_PRICE: Math.round(order.subtotal || order.total || 0),
+            MONEY_COLLECTION: codAmount,
+            ORDER_PAYMENT: codAmount > 0 ? 3 : 1,
+            ORDER_SERVICE: 'VCN',
+            ORDER_NOTE: noteText,
+          }),
+          signal: AbortSignal.timeout(10000),
+        });
+        const vtpData: any = await vtpResp.json().catch(() => ({}));
+        if (!vtpResp.ok || vtpData?.error || !vtpData?.data?.ORDER_NUMBER) {
+          return res.status(502).json({
+            error: vtpData?.message || 'Viettel Post từ chối tạo vận đơn. Kiểm tra lại Token.',
+          });
+        }
+        trackingCode = String(vtpData.data.ORDER_NUMBER);
+      }
+
+      const updatedOrder = {
+        ...order,
+        status: 'shipping',
+        shippingCarrier: carrier,
+        trackingCode,
+        packageWeightGrams: Math.round(Number(weightGrams) || 700),
+        pushedToCarrierAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      orders[idx] = updatedOrder;
+      saveOrdersStore(orders);
+
+      return res.json({ success: true, order: updatedOrder, trackingCode });
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message || 'Lỗi kết nối API đơn vị vận chuyển.' });
+    }
+  });
+
+  // Carrier Webhook Receiver (GHN / GHTK / Viettel Post delivery status sync)
+  app.post('/api/shipping/webhook/:carrier', (req, res) => {
+    try {
+      const expectedSecret = (process.env.SHIPPING_WEBHOOK_SECRET || '').trim();
+      if (expectedSecret) {
+        const providedSecret = String(req.headers['x-webhook-secret'] || req.query.secret || '').trim();
+        if (!safeCompare(providedSecret, expectedSecret)) {
+          return res.status(401).json({ error: 'Invalid webhook secret' });
+        }
+      }
+      const payload = req.body || {};
+      const orderCode = String(payload.ClientOrderCode || payload.partner_id || payload.ORDER_REFERENCE || payload.orderCode || '').trim();
+      const trackingCode = String(payload.OrderCode || payload.label_id || payload.ORDER_NUMBER || payload.trackingCode || '').trim();
+      const rawStatus = String(payload.Status || payload.status_id || payload.ORDER_STATUS || payload.status || '').toLowerCase();
+
+      if (!orderCode && !trackingCode) {
+        return res.status(400).json({ error: 'Missing orderCode or trackingCode' });
+      }
+
+      const orders = loadOrdersStore();
+      const idx = orders.findIndex(
+        (o) => (orderCode && o.orderCode === orderCode) || (trackingCode && o.trackingCode === trackingCode)
+      );
+      if (idx === -1) {
+        return res.status(404).json({ error: 'Order not found' });
+      }
+
+      let mappedStatus = orders[idx].status;
+      if (/delivered|finish|hoan_tat|5|501/.test(rawStatus)) mappedStatus = 'delivered';
+      else if (/cancel|huy|6|-1/.test(rawStatus)) mappedStatus = 'cancelled';
+      else if (/transport|delivering|picking|shipping|3|4/.test(rawStatus)) mappedStatus = 'shipping';
+
+      orders[idx] = {
+        ...orders[idx],
+        status: mappedStatus,
+        trackingCode: trackingCode || orders[idx].trackingCode,
+        updatedAt: new Date().toISOString(),
+      };
+      saveOrdersStore(orders);
+      return res.json({ success: true, orderCode: orders[idx].orderCode, status: mappedStatus });
     } catch (err: any) {
       return res.status(500).json({ error: err.message });
     }
@@ -967,7 +1998,8 @@ ${productContext}`;
     const vite = await createViteServer({
       server: {
         middlewareMode: true,
-        hmr: { server: httpServer },
+        hmr: false,
+        ws: false,
       },
       appType: 'custom',
     });

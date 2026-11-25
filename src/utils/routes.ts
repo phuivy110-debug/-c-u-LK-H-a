@@ -21,7 +21,14 @@ export function normalizeInternalPath(href: string): string {
 
 export function publicRoutes(products: Product[]): string[] {
   return [...new Set([
-    '/', '/san-pham', '/cam-nang', '/gioi-thieu-phuong-phap-danh-gia', '/quyen-rieng-tu',
+    '/',
+    '/san-pham',
+    '/cam-nang',
+    '/gioi-thieu-phuong-phap-danh-gia',
+    '/quyen-rieng-tu',
+    '/chinh-sach-bao-hanh-doi-tra',
+    '/chinh-sach-van-chuyen',
+    '/chinh-sach-thanh-toan',
     ...CATEGORIES.filter(category => category.slug !== 'tat-ca').map(category => `/danh-muc/${category.slug}`),
     ...products.filter(product => product.status === 'active').map(product => `/san-pham/${product.slug}`),
     ...GUIDE_ARTICLES.map(guide => `/cam-nang/${guide.slug}`),

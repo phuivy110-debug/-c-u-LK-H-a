@@ -1,180 +1,207 @@
 import React from 'react';
-import { ShieldCheck, ArrowUp, Phone, MessageCircle, MapPin, Store, Share2, Compass } from 'lucide-react';
+import {
+  ArrowUp,
+  Clock,
+  Compass,
+  Mail,
+  MapPin,
+  MessageCircle,
+  Phone,
+  ShieldCheck,
+  Store,
+} from 'lucide-react';
 import { LkHoaLogo } from './LkHoaLogo';
 import { SHARED_TIKTOK_URL } from '../utils/googleSheetSync';
-import { GOOGLE_MAPS_STORE_URL } from '../utils/site';
+import {
+  GOOGLE_MAPS_STORE_URL,
+  STORE_ADDRESS,
+  STORE_EMAIL,
+  STORE_HOTLINE,
+  STORE_HOURS,
+  STORE_NAME,
+  ZALO_CHAT_URL,
+} from '../utils/site';
 
-interface FooterProps {}
+interface FooterProps {
+  onNavigate?: (path: string) => void;
+}
 
-const TikTokIcon: React.FC<{ className?: string }> = ({ className = 'w-3.5 h-3.5' }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+const TikTokIcon: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
     <path d="M19.589 6.686a4.793 4.793 0 0 1-3.77-4.245V2h-3.445v13.672a2.896 2.896 0 0 1-2.901 2.89 2.893 2.893 0 0 1-2.89-2.89 2.893 2.893 0 0 1 2.89-2.89c.28 0 .543.044.793.122v-3.52a6.333 6.333 0 0 0-.793-.05A6.338 6.338 0 0 0 3.125 15.68 6.338 6.338 0 0 0 9.463 22a6.338 6.338 0 0 0 6.338-6.32V9.043a8.163 8.163 0 0 0 4.788 1.536V7.134a4.832 4.832 0 0 1-1.000-.448z" />
   </svg>
 );
 
-export const Footer: React.FC<FooterProps> = () => {
+export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleLink = (e: React.MouseEvent, path: string) => {
+    if (onNavigate && e.button === 0 && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey) {
+      e.preventDefault();
+      onNavigate(path);
+    }
+  };
+
   return (
-    <footer className="bg-slate-950 text-slate-400 pt-16 pb-12 border-t border-slate-900">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-        
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 pb-12 border-b border-slate-900">
-          
-          {/* Brand Info */}
-          <div className="md:col-span-5 space-y-4">
-            <div className="flex items-center gap-2.5">
-              <LkHoaLogo variant="white" size={40} />
-            </div>
-
+    <footer className="bg-[#0B1120] text-slate-300 pt-14 pb-24 md:pb-12 border-t border-slate-800">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 pb-10 border-b border-slate-800">
+          {/* Column 1: Official Brand & Store Info */}
+          <div className="md:col-span-4 space-y-4">
+            <LkHoaLogo variant="tactical" size={36} />
             <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
-              Danh mục đồ câu và nội dung hướng dẫn của docaulkhoa.vn. Website giới thiệu liên kết sản phẩm, không trực tiếp xử lý đơn hàng trên Shopee hoặc TikTok Shop.
+              Hệ thống bán lẻ trang bị câu cá thực chiến chính hãng <strong>{STORE_NAME}</strong> (docaulkhoa.vn). Giao hàng toàn quốc, đóng ống PVC bảo vệ ngọn cần, hỗ trợ COD đồng kiểm &amp; VietQR.
             </p>
-
-            <div className="flex flex-wrap items-center gap-2 pt-1">
-              <div className="inline-flex items-center gap-2 bg-slate-900 border border-slate-800 text-slate-300 text-xs px-3.5 py-1.5 rounded-full font-semibold">
-                <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                <span>Danh mục & Cẩm nang LK Hòa</span>
-              </div>
+            <div className="flex items-center gap-2 text-xs font-semibold text-emerald-400">
+              <ShieldCheck className="w-4 h-4 shrink-0" />
+              <span>Đổi mới 1-1 trong 7 ngày · Bảo hành ngọn cần</span>
             </div>
           </div>
 
-          {/* Contact Info */}
+          {/* Column 2: Contact Info Matching Google Maps */}
           <div className="md:col-span-4 space-y-3">
-            <h4 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
-              <Phone className="w-3.5 h-3.5 text-[#EE4D2D]" />
-              <span>Thông Tin Liên Hệ</span>
-            </h4>
+            <h3 className="text-xs font-black text-white uppercase tracking-wider">
+              Thông Tin Cửa Hàng Chính Chủ
+            </h3>
             <div className="space-y-2.5 text-xs text-slate-300">
-              <div className="flex items-start gap-2">
-                <Phone className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                <div>
-                  <span className="text-slate-500 block text-[11px]">SĐT / Hotline:</span>
-                  <a href="tel:0933040999" className="font-extrabold text-white hover:text-[#EE4D2D]">
-                    0933 040 999
-                  </a>
-                </div>
+              <div className="flex items-start gap-2.5">
+                <MapPin className="w-4 h-4 text-[#FACC15] shrink-0 mt-0.5" />
+                <a
+                  href={GOOGLE_MAPS_STORE_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-[#FACC15] transition-colors leading-relaxed"
+                >
+                  {STORE_ADDRESS}
+                </a>
               </div>
-
-              <div className="flex items-start gap-2">
-                <MessageCircle className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
-                <div>
-                  <span className="text-slate-500 block text-[11px]">Zalo Hỗ Trợ:</span>
-                  <a
-                    href="https://zalo.me/3835730533921276555"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="font-extrabold text-blue-400 hover:underline"
-                  >
-                    Chat Zalo Đồ Câu LK Hòa
-                  </a>
-                </div>
+              <div className="flex items-center gap-2.5">
+                <Phone className="w-4 h-4 text-emerald-400 shrink-0" />
+                <a href={`tel:${STORE_HOTLINE.replace(/\s+/g, '')}`} className="font-bold text-white hover:text-[#FACC15]">
+                  Hotline / Đặt hàng: {STORE_HOTLINE}
+                </a>
               </div>
-
-              <div className="flex items-start gap-2">
-                <MapPin className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
-                <div>
-                  <span className="text-slate-500 block text-[11px]">Địa chỉ Cửa Hàng:</span>
-                  <a
-                    href={GOOGLE_MAPS_STORE_URL}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-slate-300 hover:text-blue-400 font-medium leading-relaxed block transition-colors group"
-                    title="Mở bản đồ Google Maps chỉ đường"
-                  >
-                    Đường mòn Hồ Chí Minh, Xóm Yên Lâm, Nghĩa Lâm, Nghĩa Đàn, Nghệ An
-                    <span className="block text-[11px] text-blue-400 underline font-semibold mt-0.5 group-hover:text-blue-300">
-                      📍 Xem vị trí trên Google Maps (Chỉ đường)
-                    </span>
-                  </a>
-                </div>
+              <div className="flex items-center gap-2.5">
+                <Mail className="w-4 h-4 text-[#F97316] shrink-0" />
+                <a href={`mailto:${STORE_EMAIL}`} className="hover:text-[#FACC15]">
+                  Email hỗ trợ: {STORE_EMAIL}
+                </a>
+              </div>
+              <div className="flex items-center gap-2.5">
+                <Clock className="w-4 h-4 text-slate-400 shrink-0" />
+                <span>Giờ làm việc: {STORE_HOURS}</span>
+              </div>
+              <div className="flex items-center gap-2.5">
+                <MessageCircle className="w-4 h-4 text-sky-400 shrink-0" />
+                <a
+                  href={ZALO_CHAT_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-bold text-sky-400 hover:underline"
+                >
+                  Chat Zalo Hỗ Trợ Kỹ Thuật
+                </a>
               </div>
             </div>
           </div>
 
-          {/* Store Links */}
-          <div className="md:col-span-3 space-y-3">
-            <h4 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
-              <Share2 className="w-3.5 h-3.5 text-orange-400" />
-              <span>Liên Kết & Vị Trí</span>
-            </h4>
-            
+          {/* Column 3: 4 Mandatory Google Merchant Center Policies */}
+          <div className="md:col-span-2 space-y-3">
+            <h3 className="text-xs font-black text-white uppercase tracking-wider">
+              Chính Sách Mua Hàng
+            </h3>
+            <nav aria-label="Chính sách Google Merchant Center" className="flex flex-col gap-2.5 text-xs">
+              <a
+                href="/chinh-sach-bao-hanh-doi-tra"
+                onClick={(e) => handleLink(e, '/chinh-sach-bao-hanh-doi-tra')}
+                className="text-slate-300 hover:text-[#FACC15] transition-colors"
+              >
+                Chính sách bảo hành &amp; Đổi trả
+              </a>
+              <a
+                href="/chinh-sach-van-chuyen"
+                onClick={(e) => handleLink(e, '/chinh-sach-van-chuyen')}
+                className="text-slate-300 hover:text-[#FACC15] transition-colors"
+              >
+                Chính sách vận chuyển &amp; Giao nhận
+              </a>
+              <a
+                href="/chinh-sach-thanh-toan"
+                onClick={(e) => handleLink(e, '/chinh-sach-thanh-toan')}
+                className="text-slate-300 hover:text-[#FACC15] transition-colors"
+              >
+                Chính sách thanh toán
+              </a>
+              <a
+                href="/quyen-rieng-tu"
+                onClick={(e) => handleLink(e, '/quyen-rieng-tu')}
+                className="text-slate-300 hover:text-[#FACC15] transition-colors"
+              >
+                Chính sách bảo mật thông tin
+              </a>
+              <a
+                href="/gioi-thieu-phuong-phap-danh-gia"
+                onClick={(e) => handleLink(e, '/gioi-thieu-phuong-phap-danh-gia')}
+                className="text-slate-300 hover:text-[#FACC15] transition-colors"
+              >
+                Giới thiệu &amp; Kiểm nghiệm
+              </a>
+            </nav>
+          </div>
+
+          {/* Column 4: Store Channels */}
+          <div className="md:col-span-2 space-y-3">
+            <h3 className="text-xs font-black text-white uppercase tracking-wider">
+              Kênh Chính Hãng
+            </h3>
             <div className="flex flex-col gap-2 text-xs">
               <a
                 href={GOOGLE_MAPS_STORE_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 bg-blue-950/40 hover:bg-blue-900/50 border border-blue-800/40 p-2.5 rounded-xl font-bold text-blue-400 transition-colors cursor-pointer"
-                title="Xem chỉ đường Google Maps đến Đồ Câu LK Hòa"
+                className="flex items-center gap-2 rounded-lg border border-slate-800 bg-[#111827] hover:border-slate-600 p-2.5 font-semibold text-slate-200"
               >
-                <Compass className="w-4 h-4 shrink-0 text-blue-400" />
-                <span>Bản đồ Google Maps (Chỉ đường)</span>
+                <Compass className="w-4 h-4 text-[#FACC15] shrink-0" />
+                <span>Google Maps Cửa Hàng</span>
               </a>
-
               <a
                 href="https://s.shopee.vn/7fYvAFHqaP"
                 target="_blank"
-                rel="sponsored nofollow noopener noreferrer"
-                data-cta="true"
-                className="cta-btn flex items-center gap-2 bg-slate-900 hover:bg-slate-800 p-2.5 rounded-xl font-bold text-orange-400 cursor-pointer"
+                rel="nofollow sponsored noopener"
+                className="flex items-center gap-2 rounded-lg border border-slate-800 bg-[#111827] hover:border-[#F97316] p-2.5 font-semibold text-[#F97316]"
               >
                 <Store className="w-4 h-4 shrink-0" />
                 <span>Gian hàng Shopee</span>
               </a>
-
               <a
                 href={SHARED_TIKTOK_URL}
                 target="_blank"
-                rel="sponsored nofollow noopener noreferrer"
-                data-cta="true"
-                className="cta-btn flex items-center gap-2 bg-slate-900 hover:bg-slate-800 p-2.5 rounded-xl font-bold text-white cursor-pointer"
+                rel="nofollow sponsored noopener"
+                className="flex items-center gap-2 rounded-lg border border-slate-800 bg-[#111827] hover:border-slate-600 p-2.5 font-semibold text-white"
               >
-                <TikTokIcon className="w-4 h-4 fill-current text-white shrink-0" />
-                <span>Xem gian hàng TikTok</span>
+                <TikTokIcon className="w-4 h-4 shrink-0" />
+                <span>Gian hàng TikTok Shop</span>
               </a>
             </div>
           </div>
-
         </div>
 
-        {/* Disclaimer & Copyright */}
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-500 text-center md:text-left">
-          <div>
-            <p className="font-semibold text-slate-400">
-              Trang Chủ Danh Mục Sản Phẩm Đồ Câu LK Hòa.
-            </p>
-            <p className="text-[11px] mt-0.5">
-              Một số liên kết là tiếp thị liên kết. Website có thể nhận hoa hồng nếu giao dịch được ghi nhận qua liên kết.
-            </p>
-            <nav aria-label="Thông tin website" className="mt-3 flex flex-wrap justify-center gap-x-4 gap-y-2 md:justify-start">
-              <a
-                href="/gioi-thieu-phuong-phap-danh-gia"
-                className="font-bold text-slate-300 transition-colors hover:text-white"
-              >
-                Giới thiệu & phương pháp đánh giá
-              </a>
-              <a
-                href="/quyen-rieng-tu"
-                className="font-bold text-slate-300 transition-colors hover:text-white"
-              >
-                Quyền riêng tư
-              </a>
-            </nav>
-          </div>
-
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
+          <p>
+            © {new Date().getFullYear()} {STORE_NAME} (docaulkhoa.vn). Tất cả sản phẩm và liên kết sàn đều được xác thực chính chủ.
+          </p>
           <button
+            type="button"
             onClick={scrollToTop}
-            className="flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white px-3.5 py-2 rounded-2xl text-xs font-bold transition-colors cursor-pointer shrink-0"
+            className="flex items-center gap-1.5 rounded-lg border border-slate-800 bg-[#111827] hover:bg-slate-800 text-slate-200 px-3.5 py-2 text-xs font-bold cursor-pointer shrink-0"
           >
             <span>Về Đầu Trang</span>
             <ArrowUp className="w-4 h-4" />
           </button>
         </div>
-
       </div>
     </footer>
   );
 };
-

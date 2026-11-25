@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Product } from '../types';
-import { X, Code, FileCode, Copy, Save, HelpCircle, Check, ExternalLink, RefreshCw, FileSpreadsheet, Image as ImageIcon, Sparkles, Loader2 } from 'lucide-react';
+import { X, Code, FileCode, Copy, Save, HelpCircle, Check, ExternalLink, RefreshCw, FileSpreadsheet, Image as ImageIcon, Sparkles, Loader2, Truck } from 'lucide-react';
 import { extractShopeeImageFromLink } from '../utils/googleSheetSync';
 
 interface AffiliateGuideModalProps {
@@ -15,6 +15,7 @@ interface AffiliateGuideModalProps {
   isSyncing: boolean;
   lastSyncTime: string | null;
   onOpenSeoModal?: () => void;
+  onOpenOrders?: () => void;
 }
 
 export const AffiliateGuideModal: React.FC<AffiliateGuideModalProps> = ({
@@ -29,6 +30,7 @@ export const AffiliateGuideModal: React.FC<AffiliateGuideModalProps> = ({
   isSyncing,
   lastSyncTime,
   onOpenSeoModal,
+  onOpenOrders,
 }) => {
   const [activeTab, setActiveTab] = useState<'sheet' | 'editor' | 'guide'>('sheet');
   const [editingProducts, setEditingProducts] = useState<Product[]>(products);
@@ -181,15 +183,30 @@ export const PRODUCTS_LIST: Product[] = ${JSON.stringify(editingProducts, null, 
             <span>Hướng Dẫn File Code</span>
           </button>
 
-          {onOpenSeoModal && (
-            <button
-              onClick={onOpenSeoModal}
-              className="ml-auto px-3.5 py-1.5 rounded-xl text-xs font-bold text-slate-700 bg-white hover:bg-orange-50 hover:text-[#EE4D2D] border border-slate-200 transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
-            >
-              <Code className="w-3.5 h-3.5 text-[#EE4D2D]" />
-              <span>Công Cụ SEO & GSC</span>
-            </button>
-          )}
+          <div className="ml-auto flex items-center gap-2">
+            {onOpenOrders && (
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  onOpenOrders();
+                }}
+                className="px-3.5 py-1.5 rounded-xl text-xs font-extrabold text-white bg-emerald-700 hover:bg-emerald-800 transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
+              >
+                <Truck className="w-3.5 h-3.5" />
+                <span>Đơn Hàng &amp; Vận Chuyển</span>
+              </button>
+            )}
+            {onOpenSeoModal && (
+              <button
+                onClick={onOpenSeoModal}
+                className="px-3.5 py-1.5 rounded-xl text-xs font-bold text-slate-700 bg-white hover:bg-orange-50 hover:text-[#EE4D2D] border border-slate-200 transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
+              >
+                <Code className="w-3.5 h-3.5 text-[#EE4D2D]" />
+                <span>Công Cụ SEO &amp; GSC</span>
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Tab Contents */}

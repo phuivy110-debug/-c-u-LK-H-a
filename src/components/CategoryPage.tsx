@@ -1,9 +1,9 @@
 import { selectProducts, type ProductSort } from '../utils/catalog';
 import { useHistoryState } from '../utils/useHistoryState';
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { Product } from '../types';
 import { CATEGORIES } from '../data/products';
-import { ChevronRight, ArrowLeft, AlertCircle, BookOpen, HelpCircle, CheckCircle2, Table, Info } from 'lucide-react';
+import { ChevronRight, AlertCircle, BookOpen, HelpCircle, CheckCircle2, Table, Info } from 'lucide-react';
 import { ProductCard } from './ProductCard';
 import { CatalogControls } from './CatalogControls';
 
@@ -30,133 +30,133 @@ export const CategoryPage: React.FC<CategoryPageProps> = ({
   const categoryName = currentCategory ? currentCategory.name : 'Danh Mục Sản Phẩm';
   const categoryDesc = currentCategory ? currentCategory.description : '';
 
-  const filteredProducts = useMemo(() => selectProducts(products, categorySlug, searchQuery, sortBy), [products, categorySlug, searchQuery, sortBy]);
+  const filteredProducts = useMemo(
+    () => selectProducts(products, categorySlug, searchQuery, sortBy),
+    [products, categorySlug, searchQuery, sortBy]
+  );
 
-  // Top 3 real products for comparison table
   const sampleComparisonProducts = useMemo(() => {
     return filteredProducts.slice(0, 3);
   }, [filteredProducts]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-8">
-      {/* Breadcrumb */}
-      <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs sm:text-sm text-slate-500 font-medium flex-wrap">
+      <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs sm:text-sm text-slate-400 font-medium flex-wrap">
         <a
           href="/"
           onClick={(e) => {
             e.preventDefault();
             onNavigate('/');
           }}
-          className="hover:text-[#EE4D2D] transition-colors"
+          className="hover:text-[#FACC15] transition-colors"
         >
           Trang Chủ
         </a>
-        <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+        <ChevronRight className="w-3.5 h-3.5 text-slate-500" />
         <a
           href="/san-pham"
           onClick={(e) => {
             e.preventDefault();
             onNavigate('/san-pham');
           }}
-          className="hover:text-[#EE4D2D] transition-colors"
+          className="hover:text-[#FACC15] transition-colors"
         >
           Sản Phẩm
         </a>
-        <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-        <span className="text-slate-900 font-bold">{categoryName}</span>
+        <ChevronRight className="w-3.5 h-3.5 text-slate-500" />
+        <span className="text-white font-bold">{categoryName}</span>
       </nav>
 
-      <header className="space-y-2"><h1 className="text-2xl sm:text-3xl font-black">{categoryName} LK Hòa</h1>{categoryDesc && <p className="text-sm text-slate-600">{categoryDesc}</p>}</header>
+      <header className="space-y-2">
+        <h1 className="font-display text-2xl sm:text-3xl font-black text-white">{categoryName} LK Hòa</h1>
+        {categoryDesc && <p className="text-sm text-slate-300">{categoryDesc}</p>}
+      </header>
 
-      {/* Controls */}
       <CatalogControls
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         selectedCategorySlug={categorySlug}
-        onCategorySelect={(slug) => onNavigate(`/danh-muc/${slug}`)}
+        onCategorySelect={(slug) => onNavigate(slug === 'tat-ca' ? '/san-pham' : `/danh-muc/${slug}`)}
         sortBy={sortBy}
         onSortChange={setSortBy}
         totalFiltered={filteredProducts.length}
       />
 
-      {/* Product Grid */}
       {filteredProducts.length > 0 ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5">
           {filteredProducts.map((product) => (
             <ProductCard
               key={product.id}
               product={product}
               onOpenDetail={onOpenDetail}
+              onQuickBuy={() => onNavigate('/thanh-toan')}
               placement="category"
             />
           ))}
         </div>
       ) : (
-        <div className="bg-white p-12 rounded-3xl border border-slate-200/80 text-center space-y-4">
-          <div className="w-12 h-12 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mx-auto">
+        <div className="bg-[#111827] p-12 rounded-2xl border border-slate-800 text-center space-y-4">
+          <div className="w-12 h-12 bg-slate-800 text-slate-400 rounded-full flex items-center justify-center mx-auto">
             <AlertCircle className="w-6 h-6" />
           </div>
-          <h3 className="text-lg font-bold text-slate-800">Không có sản phẩm nào</h3>
-          <p className="text-xs text-slate-500 max-w-sm mx-auto">
+          <h3 className="text-lg font-bold text-white">Không có sản phẩm nào</h3>
+          <p className="text-xs text-slate-400 max-w-sm mx-auto">
             Hiện chưa có sản phẩm phù hợp với bộ lọc trong danh mục này.
           </p>
           <button
+            type="button"
             onClick={() => {
               setSearchQuery('');
               onNavigate('/san-pham');
             }}
             data-cta="true"
-            className="cta-btn bg-[#EE4D2D] hover:bg-orange-600 text-white text-xs font-bold px-4 py-2 rounded-xl cursor-pointer"
+            className="cta-btn bg-[#FACC15] text-[#0F172A] text-xs font-black px-4 py-2.5 rounded-xl cursor-pointer"
           >
             Xem tất cả sản phẩm
           </button>
         </div>
       )}
 
-      {/* RICH CATEGORY SEO CONTENT SECTION */}
-      <section className="bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-10 space-y-8 mt-12 text-slate-800">
-        <div className="space-y-3">
-          <div className="text-xs font-extrabold text-[#EE4D2D] uppercase tracking-wider flex items-center gap-1.5">
+      <section className="bg-[#111827] rounded-2xl border border-slate-800 p-6 sm:p-8 space-y-6 text-slate-200">
+        <div className="space-y-2">
+          <p className="text-xs font-bold text-[#FACC15] uppercase tracking-wider flex items-center gap-1.5">
             <Info className="w-4 h-4" />
-            <span>Kinh Nghiệm & Hướng Dẫn Mua Sắm</span>
-          </div>
-          <h2 className="text-xl sm:text-3xl font-black text-slate-900 tracking-tight">
+            <span>Kinh Nghiệm &amp; Hướng Dẫn Mua Sắm</span>
+          </p>
+          <h2 className="font-display text-xl sm:text-2xl font-black text-white tracking-tight">
             Tổng Quan Danh Mục {categoryName} LK Hòa
           </h2>
-          <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-            Danh mục {categoryName} tại cửa hàng LK Hòa được tuyển chọn kỹ lưỡng, phục vụ từ cần thủ mới gia nhập cho đến các cần thủ chuyên nghiệp câu giải trí, câu thi đấu. Dưới đây là phân tích chi tiết và bảng so sánh các sản phẩm tiêu biểu trong danh mục này.
+          <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+            Danh mục {categoryName} tại Đồ Câu LK Hòa được kiểm nghiệm thực tế trước khi xuất kho, hỗ trợ đặt hàng trực tiếp COD đồng kiểm / VietQR hoặc qua Shopee &amp; TikTok Shop.
           </p>
         </div>
 
-        {/* Real Product Comparison Table */}
         {sampleComparisonProducts.length > 0 && (
           <div className="space-y-3">
-            <h3 className="text-lg font-extrabold text-slate-900 flex items-center gap-2">
-              <Table className="w-4 h-4 text-[#EE4D2D]" />
-              <span>Bảng So Sánh Mẫu Sản Phẩm Thật Trong Danh Mục</span>
+            <h3 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+              <Table className="w-4 h-4 text-[#FACC15]" />
+              <span>Bảng So Sánh Sản Phẩm Tiêu Biểu</span>
             </h3>
-            <div className="overflow-x-auto border border-slate-200 rounded-2xl">
+            <div className="overflow-x-auto border border-slate-800 rounded-xl">
               <table className="w-full text-left text-xs sm:text-sm border-collapse">
                 <thead>
-                  <tr className="bg-slate-100 text-slate-900 font-extrabold">
-                    <th className="p-3 border-b border-slate-200">Tên Sản Phẩm</th>
-                    <th className="p-3 border-b border-slate-200">Phân Loại</th>
-                    <th className="p-3 border-b border-slate-200">Giá Tham Khảo</th>
-                    <th className="p-3 border-b border-slate-200">Nơi Mua Chính Hãng</th>
+                  <tr className="bg-[#0F172A] text-white font-bold">
+                    <th className="p-3 border-b border-slate-800">Tên Sản Phẩm</th>
+                    <th className="p-3 border-b border-slate-800">Phân Loại</th>
+                    <th className="p-3 border-b border-slate-800">Giá Bán</th>
+                    <th className="p-3 border-b border-slate-800">Kênh Mua</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-200 text-slate-700">
+                <tbody className="divide-y divide-slate-800 text-slate-300">
                   {sampleComparisonProducts.map((prod) => (
-                    <tr key={prod.id} className="hover:bg-slate-50">
-                      <td className="p-3 font-bold text-slate-900">{prod.name}</td>
+                    <tr key={prod.id} className="hover:bg-slate-900/60">
+                      <td className="p-3 font-bold text-white">{prod.name}</td>
                       <td className="p-3">{prod.category}</td>
-                      <td className="p-3 font-semibold text-[#EE4D2D]">
-                        {prod.referencePrice ? `${prod.referencePrice.toLocaleString('vi-VN')}đ` : 'Kiểm tra trên sàn'}
+                      <td className="p-3 font-bold text-[#FACC15] tabular-nums">
+                        {prod.referencePrice ? `${prod.referencePrice.toLocaleString('vi-VN')}đ` : 'Xem chi tiết'}
                       </td>
-                      <td className="p-3">
-                        <span className="inline-flex items-center gap-1 text-[11px] font-extrabold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-md">
-                          Shopee Mall & TikTok
-                        </span>
+                      <td className="p-3 text-emerald-400 font-semibold">
+                        COD / VietQR / Shopee
                       </td>
                     </tr>
                   ))}
@@ -166,60 +166,32 @@ export const CategoryPage: React.FC<CategoryPageProps> = ({
           </div>
         )}
 
-        {/* Buying Tips & Price Explanation */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-2">
-            <h3 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-[#EE4D2D]" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="bg-[#0F172A] p-5 rounded-xl border border-slate-800 space-y-2">
+            <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
               <span>Hướng Dẫn Lựa Chọn Chuẩn Kỹ Thuật</span>
             </h3>
-            <p className="text-xs text-slate-600 leading-relaxed">
-              Khi chọn sản phẩm thuộc nhóm {categoryName}, hãy cân nhắc kỹ nhu cầu sử dụng thực tế (câu bờ sông, hồ dịch vụ, cá lóc, cá chép, hay cá trắm lớn) để chọn đúng phân loại và kích thước phù hợp nhất.
+            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              Hãy chọn đúng chiều dài, độ cứng cần hoặc size dây phù hợp môi trường câu (sông, đập thủy điện hay hồ dịch vụ). Liên hệ Zalo LK Hòa nếu cần tư vấn phối bộ đồng bộ.
             </p>
           </div>
 
-          <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-2">
-            <h3 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
-              <Info className="w-4 h-4 text-[#EE4D2D]" />
-              <span>Giải Thích Về Giá Tham Khảo</span>
+          <div className="bg-[#0F172A] p-5 rounded-xl border border-slate-800 space-y-2">
+            <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
+              <HelpCircle className="w-4 h-4 text-[#FACC15]" />
+              <span>Giao Hàng &amp; Đồng Kiểm</span>
             </h3>
-            <p className="text-xs text-slate-600 leading-relaxed">
-              Mức giá niêm yết trên website là giá tham khảo từ nguồn Google Sheet chính thức của thương hiệu LK Hòa. Mức giá này có thể thay đổi tùy thuộc vào các chương trình khuyến mãi, voucher giảm giá diễn ra trực tiếp trên Shopee Mall & TikTok Shop.
+            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              Miễn phí vận chuyển toàn quốc cho đơn từ 300.000đ hoặc đơn có kèm cần câu. Tất cả cần câu đều được đóng ống nhựa cứng PVC chống gãy đọt.
             </p>
           </div>
         </div>
 
-        {/* Category FAQ */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-extrabold text-slate-900 flex items-center gap-2">
-            <HelpCircle className="w-4 h-4 text-[#EE4D2D]" />
-            <span>Câu Hỏi Thường Gặp Về {categoryName} LK Hòa</span>
-          </h3>
-          <div className="space-y-3">
-            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-1">
-              <h4 className="text-xs sm:text-sm font-extrabold text-slate-900">
-                1. Sản phẩm trong danh mục {categoryName} có mua trực tiếp trên website được không?
-              </h4>
-              <p className="text-xs text-slate-600 leading-relaxed">
-                Website LK Hòa cung cấp thông tin chi tiết và dẫn trực tiếp liên kết chính thức sang gian hàng Shopee Mall và TikTok Shop để đảm bảo anh em mua hàng chính hãng và được bảo vệ thanh toán.
-              </p>
-            </div>
-            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-1">
-              <h4 className="text-xs sm:text-sm font-extrabold text-slate-900">
-                2. Làm sao để kiểm tra tình trạng còn hàng và khuyến mãi mới nhất?
-              </h4>
-              <p className="text-xs text-slate-600 leading-relaxed">
-                Bấm nút "Shopee" hoặc "Tiktok" tại từng sản phẩm để xem số lượng tồn kho theo thời gian thực và áp mã giảm giá vận chuyển.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Guides Internal Links */}
-        <div className="pt-4 border-t border-slate-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="pt-4 border-t border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h4 className="text-sm font-black text-slate-900">Xem thêm bài viết kinh nghiệm liên quan</h4>
-            <p className="text-xs text-slate-500">Tham khảo cẩm nang hướng dẫn sử dụng và bảo quản đồ câu LK Hòa</p>
+            <h4 className="text-sm font-bold text-white">Xem thêm bài viết kinh nghiệm liên quan</h4>
+            <p className="text-xs text-slate-400">Tham khảo cẩm nang hướng dẫn sử dụng và phối mồi LK Hòa</p>
           </div>
           <a
             href="/cam-nang"
@@ -227,7 +199,7 @@ export const CategoryPage: React.FC<CategoryPageProps> = ({
               e.preventDefault();
               onNavigate('/cam-nang');
             }}
-            className="inline-flex items-center gap-1.5 bg-slate-900 hover:bg-black text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-all"
+            className="inline-flex items-center gap-1.5 bg-[#14532D] hover:bg-emerald-800 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-colors"
           >
             <BookOpen className="w-3.5 h-3.5" />
             <span>Đọc Cẩm Nang Câu Cá</span>
