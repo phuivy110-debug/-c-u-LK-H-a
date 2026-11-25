@@ -7,7 +7,13 @@ import { CatalogPage } from './components/CatalogPage';
 import { CategoryPage } from './components/CategoryPage';
 import { GuidePage } from './components/GuidePage';
 import { GuideDetailPage } from './components/GuideDetailPage';
-import { AboutReviewPage, PrivacyPage } from './components/TrustPages';
+import {
+  AboutReviewPage,
+  PaymentPolicyPage,
+  PrivacyPage,
+  ShippingPolicyPage,
+  WarrantyReturnPolicyPage,
+} from './components/TrustPages';
 import { WhyUsSection } from './components/WhyUsSection';
 import { FaqSection } from './components/FaqSection';
 import { Footer } from './components/Footer';
@@ -16,23 +22,28 @@ import { ChatBot } from './components/ChatBot';
 import { ScrollToTopButton } from './components/ScrollToTopButton';
 import { HomeGuidesSection } from './components/HomeGuidesSection';
 import { ProductSkeletonGrid } from './components/ProductSkeleton';
-import { ShopeeVoucherSection } from './components/ShopeeVoucherSection';
+import { CartDrawer } from './components/CartDrawer';
 import { GUIDE_ARTICLES } from './data/guides';
 import { Product } from './types';
-import { CATEGORIES } from './data/products';
+import { CATEGORIES, MENU_CATEGORIES } from './data/products';
 import { FALLBACK_PRODUCTS } from './data/fallbackProducts';
-import { Flame, ArrowRight, RefreshCw, FileSpreadsheet, ChevronRight, ShieldCheck, Fish, Compass, Feather, Waves, Anchor } from 'lucide-react';
+import { Flame, ArrowRight, ChevronRight, ShieldCheck, Fish, Compass, Feather, Waves, Anchor, ShoppingBag } from 'lucide-react';
 import { fetchProductsFromGoogleSheet, DEFAULT_SHEET_URL, loadProductsCache, saveProductsCache, ensureUniqueProductIds } from './utils/googleSheetSync';
 import { trackAffiliateClick, trackPageView } from './utils/analyticsService';
 import { normalizeInternalPath, publicRoutes } from './utils/routes';
 import { NotFoundPage } from './components/NotFoundPage';
 import { DOMAIN } from './utils/site';
 import { mergeWithLocalAdditions } from './utils/mergeLocalProducts';
+import { CartProvider } from './utils/CartContext';
 
+const SHEET_URL_KEY = 'lkhoa_sheet_url_v2';
+const AffiliateGuideModal = lazy(() => import('./components/AffiliateGuideModal').then(module => ({ default: module.AffiliateGuideModal })));
 const SeoToolkitModal = lazy(() => import('./components/SeoToolkitModal').then(module => ({ default: module.SeoToolkitModal })));
+const CartPage = lazy(() => import('./components/CartPage').then(module => ({ default: module.CartPage })));
+const CheckoutPage = lazy(() => import('./components/CheckoutPage').then(module => ({ default: module.CheckoutPage })));
+const OrderManagementPage = lazy(() => import('./components/OrderManagementPage').then(module => ({ default: module.OrderManagementPage })));
 
 export default function App({ initialPath, initialProducts }: { initialPath?: string; initialProducts?: Product[] } = {}) {
-  // Products state (defaults to cached or fallback products with active discounts)
   const [products, setProductsState] = useState<Product[]>(() => {
     if (initialProducts) return ensureUniqueProductIds(initialProducts);
     const cached = loadProductsCache(DEFAULT_SHEET_URL);
@@ -52,7 +63,6 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
     });
   }, []);
 
-  // Client Routing State
   const [currentPath, setCurrentPath] = useState<string>(() => {
     return normalizeInternalPath(initialPath ?? (typeof window !== 'undefined' ? window.location.pathname : '/'));
   });
@@ -60,7 +70,6 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
   const restoreScroll = useRef<number | null>(null);
   const activeLocation = useRef(typeof window === 'undefined' ? initialPath || '/' : window.location.pathname + window.location.search);
 
-  // Listen to popstate (browser back/forward buttons)
   useEffect(() => {
     const previousRestoration = window.history.scrollRestoration;
     window.history.scrollRestoration = 'manual';
@@ -73,7 +82,7 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
     }
     const handlePopState = () => {
       const location = window.location.pathname + window.location.search;
-      if (location === activeLocation.current) return; // Native in-page anchors keep their own scroll/history.
+      if (location === activeLocation.current) return;
       activeLocation.current = location;
       restoreScroll.current = window.history.state?.scrollY ?? 0;
       setCurrentPath(normalizeInternalPath(window.location.pathname || '/'));
@@ -106,7 +115,6 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
   const metadataPath = useRef(currentPath);
   useEffect(() => {
     if (metadataPath.current !== currentPath) {
-      // Do not keep the previous page's structured data after an SPA navigation.
       document.querySelectorAll('head script[type="application/ld+json"]').forEach(node => node.remove());
       metadataPath.current = currentPath;
     }
@@ -126,12 +134,10 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
     }
   }, [currentPath]);
 
-  // Track every SPA route once, including browser back/forward navigation.
   useEffect(() => {
     trackPageView(currentPath);
   }, [currentPath]);
 
-  // Track affiliate links rendered inside editorial content.
   useEffect(() => {
     const handleAffiliateLink = (event: MouseEvent) => {
       const target = event.target as Element | null;
@@ -168,20 +174,37 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
     setRouteVersion(value => value + 1);
   }, []);
 
-  // Google Sheet Sync State
-  const [sheetUrl] = useState<string>(DEFAULT_SHEET_URL);
+  const [sheetUrl, setSheetUrl] = useState<string>(() => {
+    return typeof localStorage !== 'undefined' ? localStorage.getItem(SHEET_URL_KEY) || DEFAULT_SHEET_URL : DEFAULT_SHEET_URL;
+  });
   const [isSyncing, setIsSyncing] = useState<boolean>(() => {
     return typeof window !== 'undefined' && !initialProducts;
   });
   const [lastSyncTime, setLastSyncTime] = useState<string | null>(null);
-  const [syncError, setSyncError] = useState<string | null>(null);
+  const [, setSyncError] = useState<string | null>(null);
 
-  // Search & Filter State in Hero
   const [searchQuery, setSearchQuery] = useState('');
-
-  // Modals & Feedback
+  const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [isSeoModalOpen, setIsSeoModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const [isAdmin] = useState<boolean>(() => {
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('admin') === 'true' || urlParams.get('admin') === '1') {
+        return true;
+      }
+      return localStorage.getItem('lkhoa_is_admin') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  useEffect(() => {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(SHEET_URL_KEY, sheetUrl);
+    }
+  }, [sheetUrl]);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -190,8 +213,6 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
     }, 3500);
   };
 
-
-  // Sync Google Sheet Function
   const handleSyncGoogleSheet = useCallback(
     async (targetUrl?: string, quiet = false) => {
       const urlToFetch = targetUrl || sheetUrl;
@@ -218,7 +239,6 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
       } catch (err: any) {
         console.error('Failed to sync Google Sheet:', err);
         setSyncError(err.message || 'Không thể kết nối Google Sheet.');
-        // Fall back to cache if available
         const cached = loadProductsCache(urlToFetch);
         if (cached && cached.products.length > 0) {
           setProducts(mergeWithLocalAdditions(cached.products));
@@ -227,10 +247,9 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
         setIsSyncing(false);
       }
     },
-    [mergeWithLocalAdditions, sheetUrl]
+    [setProducts, sheetUrl]
   );
 
-  // The published sheet is the data source; no simulated live-price endpoint.
   useEffect(() => {
     handleSyncGoogleSheet(sheetUrl, true);
   }, []);
@@ -239,19 +258,41 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
     navigate(`/san-pham/${product.slug}`);
   };
 
-  // Filter active products
   const activeProducts = useMemo(() => {
     return products.filter((p) => p.status === 'active');
   }, [products]);
 
-  // Featured/New active products for homepage
   const homepageProducts = useMemo(() => {
     return activeProducts.slice(0, 8);
   }, [activeProducts]);
 
-  // Handle route matching
   const renderContent = () => {
+    if (currentPath === '/gio-hang') {
+      return (
+        <Suspense fallback={<div className="max-w-7xl mx-auto px-4 py-12 text-center text-sm text-slate-400">Đang tải giỏ hàng...</div>}>
+          <CartPage products={activeProducts} onNavigate={navigate} />
+        </Suspense>
+      );
+    }
+
+    if (currentPath === '/thanh-toan') {
+      return (
+        <Suspense fallback={<div className="max-w-7xl mx-auto px-4 py-12 text-center text-sm text-slate-400">Đang tải trang thanh toán...</div>}>
+          <CheckoutPage onNavigate={navigate} />
+        </Suspense>
+      );
+    }
+
+    if (currentPath === '/quan-ly-don-hang') {
+      return (
+        <Suspense fallback={<div className="max-w-7xl mx-auto px-4 py-12 text-center text-sm text-slate-400">Đang tải cổng quản trị đơn hàng...</div>}>
+          <OrderManagementPage onNavigate={navigate} />
+        </Suspense>
+      );
+    }
+
     if (!publicRoutes(products).includes(currentPath)) return <NotFoundPage />;
+
     if (currentPath === '/gioi-thieu-phuong-phap-danh-gia') {
       return <AboutReviewPage />;
     }
@@ -260,7 +301,18 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
       return <PrivacyPage />;
     }
 
-    // 1. Route: /san-pham/:productSlug
+    if (currentPath === '/chinh-sach-bao-hanh-doi-tra') {
+      return <WarrantyReturnPolicyPage />;
+    }
+
+    if (currentPath === '/chinh-sach-van-chuyen') {
+      return <ShippingPolicyPage />;
+    }
+
+    if (currentPath === '/chinh-sach-thanh-toan') {
+      return <PaymentPolicyPage />;
+    }
+
     if (currentPath.startsWith('/san-pham/')) {
       const productSlug = currentPath.replace('/san-pham/', '').trim();
       return (
@@ -273,7 +325,6 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
       );
     }
 
-    // 2. Route: /danh-muc/:categorySlug
     if (currentPath.startsWith('/danh-muc/')) {
       const categorySlug = currentPath.replace('/danh-muc/', '').trim();
       return (
@@ -286,7 +337,6 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
       );
     }
 
-    // 3. Route: /cam-nang/:guideSlug
     if (currentPath.startsWith('/cam-nang/')) {
       const guideSlug = currentPath.replace('/cam-nang/', '').trim();
       return (
@@ -299,12 +349,10 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
       );
     }
 
-    // 4. Route: /cam-nang
     if (currentPath === '/cam-nang') {
       return <GuidePage onNavigate={navigate} />;
     }
 
-    // Direct Guide Slug route (e.g., /cach-cau-ca-loc-bang-lure)
     const directGuide = GUIDE_ARTICLES.find((g) => `/${g.slug}` === currentPath);
     if (directGuide) {
       return (
@@ -317,7 +365,6 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
       );
     }
 
-    // 5. Route: /san-pham
     if (currentPath === '/san-pham') {
       return (
         <CatalogPage
@@ -329,99 +376,85 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
       );
     }
 
-    // 4. Default Route: / (Homepage)
     return (
-      <div className="space-y-10 sm:space-y-16 pb-12">
-        {/* Hero */}
+      <div className="space-y-10 sm:space-y-14 pb-12">
         <Hero
-          onScrollToCatalog={() => {
-            navigate('/san-pham');
-          }}
+          onScrollToCatalog={() => navigate('/san-pham')}
           onSearch={() => navigate(`/san-pham?q=${encodeURIComponent(searchQuery.trim())}#catalog-search`)}
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
           activeCount={activeProducts.length}
         />
 
-        <ShopeeVoucherSection />
-
-        {/* Featured Category Section */}
+        {/* Featured 7 Standard Tactical Categories */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-4">
             <div>
-              <div className="text-xs font-extrabold text-[#EE4D2D] uppercase tracking-wider mb-1">
-                Danh Mục Nổi Bật
-              </div>
-              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-                Khám Phá Theo Nhu Cầu Câu Cá
+              <p className="text-xs font-extrabold text-[#FACC15] uppercase tracking-wider mb-1">
+                7 Danh Mục Thực Chiến Chính Hãng
+              </p>
+              <h2 className="font-display text-2xl sm:text-3xl font-black text-white tracking-tight">
+                Khám Phá Trang Bị Theo Địa Hình Câu
               </h2>
             </div>
             <button
+              type="button"
               onClick={() => navigate('/san-pham')}
-              className="text-xs sm:text-sm font-bold text-[#EE4D2D] hover:underline flex items-center gap-1 cursor-pointer"
+              className="text-xs sm:text-sm font-bold text-[#FACC15] hover:underline flex items-center gap-1 cursor-pointer shrink-0"
             >
               <span>Xem tất cả ({activeProducts.length})</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
-            {CATEGORIES.filter((c) => c.slug !== 'tat-ca').map((cat) => {
-              const catCount = activeProducts.filter((p) => {
-                if (!p.category) return false;
-                const normCat = p.category.toLowerCase();
-                return normCat.includes(cat.name.toLowerCase()) || normCat.includes(cat.slug);
-              }).length;
-
-              return (
-                <div
-                  key={cat.slug}
-                  onClick={() => navigate(`/danh-muc/${cat.slug}`)}
-                  className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-orange-300 transition-all cursor-pointer flex flex-col justify-between group"
-                >
-                  <div className="space-y-2">
-                    <div className="w-10 h-10 rounded-xl bg-orange-50 text-[#EE4D2D] flex items-center justify-center group-hover:scale-110 transition-transform">
-                      {cat.slug === 'can-cau' && <Fish className="w-5 h-5" />}
-                      {cat.slug === 'may-cau' && <Compass className="w-5 h-5" />}
-                      {cat.slug === 'moi-cau' && <Feather className="w-5 h-5" />}
-                      {cat.slug === 'day-cau' && <Waves className="w-5 h-5" />}
-                      {cat.slug === 'phao-luoi' && <Anchor className="w-5 h-5" />}
-                      {cat.slug === 'phu-kien' && <ShieldCheck className="w-5 h-5" />}
-                    </div>
-                    <h3 className="text-sm font-extrabold text-slate-900 group-hover:text-[#EE4D2D] transition-colors">
-                      {cat.name}
-                    </h3>
-                    <p className="text-[11px] text-slate-500 line-clamp-2 leading-tight">
-                      {cat.description}
-                    </p>
-                  </div>
-                  <div className="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-[#EE4D2D]">
-                    <span>{catCount} sản phẩm</span>
-                    <ChevronRight className="w-3.5 h-3.5" />
-                  </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+            {MENU_CATEGORIES.map((cat) => (
+              <button
+                key={cat.slug}
+                type="button"
+                onClick={() => navigate(`/danh-muc/${cat.slug}`)}
+                className="bg-[#111827] hover:bg-[#14532D]/35 p-4 rounded-2xl border border-slate-800 hover:border-emerald-700 transition-all cursor-pointer flex flex-col justify-between text-left group min-h-28"
+              >
+                <div className="w-9 h-9 rounded-xl bg-[#14532D]/50 border border-emerald-800/70 text-[#FACC15] flex items-center justify-center group-hover:scale-105 transition-transform">
+                  {cat.slug === 'combo' && <Flame className="w-4 h-4" />}
+                  {cat.slug === 'moi-lure-chuot-lk' && <Feather className="w-4 h-4" />}
+                  {cat.slug === 'can-cau' && <Fish className="w-4 h-4" />}
+                  {cat.slug === 'may-cau' && <Compass className="w-4 h-4" />}
+                  {cat.slug === 'day-cau' && <Waves className="w-4 h-4" />}
+                  {cat.slug === 'moi-dai-cam-hat' && <Anchor className="w-4 h-4" />}
+                  {cat.slug === 'phu-kien' && <ShoppingBag className="w-4 h-4" />}
                 </div>
-              );
-            })}
+                <div className="mt-3 flex items-center justify-between gap-1">
+                  <h3 className="text-xs sm:text-sm font-extrabold text-white group-hover:text-[#FACC15] leading-snug">
+                    {cat.name}
+                  </h3>
+                  <ChevronRight className="w-3.5 h-3.5 text-slate-500 group-hover:text-[#FACC15] shrink-0" />
+                </div>
+              </button>
+            ))}
           </div>
         </section>
 
-        {/* Newly Updated Active Products */}
+        {/* Featured Products Grid: 2 cols Mobile, 4 cols PC */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Flame className="w-6 h-6 text-[#EE4D2D] fill-[#EE4D2D]" />
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2.5">
+              <Flame className="w-6 h-6 text-[#F97316] fill-[#F97316] shrink-0" />
               <div>
-                <h2 className="text-2xl sm:text-3xl font-black text-slate-900">Sản Phẩm Mới Cập Nhật</h2>
-                <p className="text-xs sm:text-sm text-slate-500 font-medium">
-                  Thông tin và giá tham khảo; kiểm tra phân loại và giá cuối cùng trên sàn
+                <h2 className="font-display text-2xl sm:text-3xl font-black text-white">
+                  Sản Phẩm Thực Chiến Nổi Bật
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-400 font-medium">
+                  Đặt COD đồng kiểm hoặc chuyển khoản VietQR · Freeship từ 300.000đ
                 </p>
               </div>
             </div>
 
             <button
+              type="button"
               onClick={() => navigate('/san-pham')}
               data-cta="true"
-              className="cta-btn bg-[#EE4D2D] hover:bg-orange-600 text-white font-extrabold text-xs sm:text-sm px-4 py-2.5 rounded-xl shadow-xs flex items-center gap-1.5 cursor-pointer"
+              className="cta-btn bg-[#FACC15] hover:bg-yellow-300 text-[#0F172A] font-black text-xs sm:text-sm px-4 py-2.5 rounded-xl flex items-center gap-1.5 cursor-pointer shrink-0"
             >
               <span>Xem tất cả</span>
               <ArrowRight className="w-4 h-4" />
@@ -429,73 +462,94 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
           </div>
 
           {isSyncing ? (
-            <ProductSkeletonGrid count={8} message="Đang kết nối và đồng bộ dữ liệu mới nhất từ Google Sheet..." />
+            <ProductSkeletonGrid count={8} message="Đang đồng bộ danh mục sản phẩm chính hãng LK Hòa..." />
           ) : homepageProducts.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
               {homepageProducts.map((product) => (
                 <ProductCard
                   key={product.id}
                   product={product}
                   onOpenDetail={handleOpenDetail}
+                  onQuickBuy={() => navigate('/thanh-toan')}
                 />
               ))}
             </div>
           ) : (
-            <div className="bg-white p-8 rounded-3xl border border-slate-200 text-center text-slate-500 text-sm">
-              Đang tải danh sách sản phẩm từ Google Sheet...
+            <div className="bg-[#111827] p-8 rounded-2xl border border-slate-800 text-center text-slate-400 text-sm">
+              Đang tải danh sách sản phẩm chính hãng Đồ Câu LK Hòa...
             </div>
           )}
         </section>
+
+        {/* 4 Brand Trust Commitments */}
+        <WhyUsSection />
 
         {/* Fishing Guides & Knowledge Section */}
         <HomeGuidesSection onNavigate={navigate} />
 
         {/* FAQ Section */}
         <FaqSection />
-
-        {/* Why Us */}
-        <WhyUsSection />
       </div>
     );
   };
 
   return (
-    <div className="min-h-screen bg-[#F6F7FB] flex flex-col text-slate-800">
-      {/* Header */}
-      <Header
-        onOpenAdmin={() => {}}
-        productCount={activeProducts.length}
-        showAdminButton={false}
-        categories={CATEGORIES.map((c) => ({ name: c.name, slug: c.slug }))}
-        onNavigate={navigate}
-        currentPath={currentPath}
-      />
+    <CartProvider>
+      <div className="min-h-screen bg-[#0F172A] flex flex-col text-slate-100">
+        <Header
+          onOpenAdmin={() => setIsAdminOpen(true)}
+          productCount={activeProducts.length}
+          products={activeProducts}
+          showAdminButton={isAdmin}
+          categories={CATEGORIES.map((c) => ({ name: c.name, slug: c.slug }))}
+          onNavigate={navigate}
+          currentPath={currentPath}
+        />
 
-      {/* Main Content Area */}
-      <main key={`${currentPath}:${routeVersion}`} tabIndex={-1} className="flex-1 outline-none">{renderContent()}</main>
+        <main key={`${currentPath}:${routeVersion}`} tabIndex={-1} className="flex-1 outline-none">
+          {renderContent()}
+        </main>
 
-      {/* Footer */}
-      <Footer />
+        <Footer onNavigate={navigate} />
 
-      {/* SEO Toolkit & Google Search Console Guide Modal */}
-      {isSeoModalOpen && (
-        <Suspense fallback={null}>
-          <SeoToolkitModal
-            isOpen={isSeoModalOpen}
-            onClose={() => setIsSeoModalOpen(false)}
-            productCount={activeProducts.length}
-          />
-        </Suspense>
-      )}
+        <CartDrawer products={activeProducts} onNavigate={navigate} />
 
-      {/* Chatbot */}
-      <ChatBot products={activeProducts} />
+        {isSeoModalOpen && (
+          <Suspense fallback={null}>
+            <SeoToolkitModal
+              isOpen={isSeoModalOpen}
+              onClose={() => setIsSeoModalOpen(false)}
+              productCount={activeProducts.length}
+            />
+          </Suspense>
+        )}
 
-      {/* Floating Scroll To Top */}
-      <ScrollToTopButton />
+        {isAdminOpen && (
+          <Suspense fallback={null}>
+            <AffiliateGuideModal
+              isOpen={isAdminOpen}
+              onClose={() => setIsAdminOpen(false)}
+              products={products}
+              onUpdateProducts={setProducts}
+              onResetDefault={() => {}}
+              sheetUrl={sheetUrl}
+              onUpdateSheetUrl={setSheetUrl}
+              onTriggerSync={() => handleSyncGoogleSheet(sheetUrl)}
+              isSyncing={isSyncing}
+              lastSyncTime={lastSyncTime}
+              onOpenSeoModal={() => setIsSeoModalOpen(true)}
+              onOpenOrders={() => {
+                setIsAdminOpen(false);
+                navigate('/quan-ly-don-hang');
+              }}
+            />
+          </Suspense>
+        )}
 
-      {/* Toast Feedback */}
-      <Toast message={toastMessage} onClose={() => setToastMessage(null)} />
-    </div>
+        <ChatBot products={activeProducts} />
+        <ScrollToTopButton />
+        <Toast message={toastMessage} onClose={() => setToastMessage(null)} />
+      </div>
+    </CartProvider>
   );
 }
