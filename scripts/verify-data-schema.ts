@@ -125,6 +125,7 @@ async function runTests() {
   try {
     const products = await fetchProductsFromGoogleSheet(DEFAULT_SHEET_URL);
     assert(products.length === 66, `Fetched exactly 66 products from Google Sheet (got ${products.length})`);
+    assert(products.every((product) => !product.isFlashSale), 'Do not infer flash sale from price difference without an explicit promotion flag');
 
     const shopeeCount = products.filter((p) => p.shopeeUrl && p.shopeeUrl.startsWith('https://s.shopee.vn/')).length;
     assert(shopeeCount === 65, `65 products have Shopee links; one sheet product awaits its mecuabin link (got ${shopeeCount})`);
@@ -144,7 +145,7 @@ async function runTests() {
     saveProductsCache(products, DEFAULT_SHEET_URL);
     const cache = loadProductsCache(DEFAULT_SHEET_URL);
     assert(cache !== null, 'Product cache loaded successfully');
-    assert(cache?.schemaVersion === 5, 'Cache schemaVersion is 5');
+    assert(cache?.schemaVersion === 6, 'Cache schemaVersion is 6');
     assert(cache?.source === 'google-sheet', 'Cache source is "google-sheet"');
     assert(
       cache?.spreadsheetId === extractSpreadsheetId(DEFAULT_SHEET_URL),

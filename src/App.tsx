@@ -48,10 +48,7 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
     if (initialProducts) return ensureUniqueProductIds(initialProducts);
     const cached = loadProductsCache(DEFAULT_SHEET_URL);
     if (cached && cached.products && cached.products.length > 0) {
-      const hasValidDiscounts = cached.products.some((p) => (p.saleDiscountPercent || 0) > 0);
-      if (hasValidDiscounts) {
-        return ensureUniqueProductIds(cached.products);
-      }
+      return ensureUniqueProductIds(cached.products);
     }
     return ensureUniqueProductIds(FALLBACK_PRODUCTS);
   });
