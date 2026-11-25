@@ -18,14 +18,14 @@ import {
 import type { Product, ProductReview } from '../types';
 import { ProductCard } from './ProductCard';
 import { InternalLink } from './InternalLink';
-import { formatPrice } from '../utils/catalog';
+import { formatPrice, isPromotedProduct, productDisplayName, productPromoLabel } from '../utils/catalog';
 import { NotFoundPage } from './NotFoundPage';
 import { getProductDescription } from '../utils/productDescription';
 import { getProductDetailData } from '../data/productVariants';
 import { useCart } from '../utils/CartContext';
 import { validateAffiliateUrl } from './AffiliateButtons';
 import { SHARED_TIKTOK_URL } from '../utils/googleSheetSync';
-import { trackAffiliateClick } from '../utils/analyticsService';
+import { trackAffiliateClick, trackCommerceEvent } from '../utils/analyticsService';
 
 type TabKey = 'description' | 'specs' | 'rigging' | 'reviews';
 
@@ -42,6 +42,8 @@ export function ProductDetailPage({
 }) {
   const { addToCart } = useCart();
   const product = products.find((item) => item.slug === productSlug);
+  const displayName = product ? productDisplayName(product) : '';
+  const promoLabel = product ? productPromoLabel(product) : undefined;
 
   const detail = useMemo(() => (product ? getProductDetailData(product) : null), [product]);
   const [selectedVariantId, setSelectedVariantId] = useState<string>('');
@@ -61,8 +63,25 @@ export function ProductDetailPage({
       setQuantity(1);
       setActiveImageIndex(0);
       setShowVideo(false);
+      setActiveTab('description');
     }
   }, [productSlug, detail]);
+
+  useEffect(() => {
+    if (!product || !detail) return;
+    const firstVariant = detail.variants[0];
+    trackCommerceEvent('view_item', {
+      value: firstVariant?.price || 0,
+      items: [{
+        item_id: product.id,
+        item_name: productDisplayName(product),
+        item_category: product.category,
+        item_variant: firstVariant?.label,
+        price: firstVariant?.price,
+        quantity: 1,
+      }],
+    });
+  }, [product?.id]);
 
   useEffect(() => {
     if (!product || typeof window === 'undefined') return;
@@ -79,7 +98,7 @@ export function ProductDetailPage({
   if (product.status !== 'active') {
     return (
       <div className="mx-auto max-w-4xl space-y-4 px-4 py-12 text-slate-200">
-        <h1 className="text-2xl font-bold text-white">{product.name}</h1>
+        <h1 className="text-2xl font-bold text-white">{displayName}</h1>
         <p>Sản phẩm hiện tạm ngưng kinh doanh trong danh mục.</p>
         <InternalLink href="/san-pham" onNavigate={onNavigate} className="text-[#FACC15] font-bold">
           Xem sản phẩm khác
@@ -93,7 +112,7 @@ export function ProductDetailPage({
   const price = selectedVariant.price;
   const originalPrice = selectedVariant.originalPrice || product.originalPrice || 0;
   const discount =
-    originalPrice > price && price > 0
+    isPromotedProduct(product) && originalPrice > price && price > 0
       ? Math.round(((originalPrice - price) / originalPrice) * 100)
       : 0;
   const savings = discount > 0 ? originalPrice - price : 0;
@@ -105,6 +124,14 @@ export function ProductDetailPage({
     .slice(0, 4);
 
   const allReviews = [...customReviews, ...detail.reviews];
+  const hasDetailedSpecs = Boolean(product.specs?.length);
+  const hasRiggingGuide = Boolean(detail.riggingGuide?.trim());
+  const availableTabs: { id: TabKey; label: string }[] = [
+    { id: 'description', label: 'Mô tả chi tiết' },
+    ...(hasDetailedSpecs ? [{ id: 'specs' as TabKey, label: 'Thông số kỹ thuật' }] : []),
+    ...(hasRiggingGuide ? [{ id: 'rigging' as TabKey, label: 'Hướng dẫn phối đồ / bài mồi' }] : []),
+    { id: 'reviews', label: `Đánh giá (${allReviews.length})` },
+  ];
   const activeImage = detail.gallery[activeImageIndex] || product.imageUrl;
 
   const handleAddToCart = () => {
@@ -158,7 +185,7 @@ export function ProductDetailPage({
           <div className="relative aspect-square overflow-hidden rounded-xl border border-slate-800 bg-slate-900 group">
             {showVideo && detail.youtubeId ? (
               <iframe
-                title={detail.youtubeTitle || product.name}
+                title={detail.youtubeTitle || displayName}
                 src={`https://www.youtube.com/embed/${detail.youtubeId}?autoplay=1`}
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
@@ -168,7 +195,7 @@ export function ProductDetailPage({
               <>
                 <img
                   src={activeImage}
-                  alt={`${product.name} - ${selectedVariant.label}`}
+                  alt={`${displayName} - ${selectedVariant.label}`}
                   referrerPolicy="no-referrer"
                   width="640"
                   height="640"
@@ -259,8 +286,11 @@ export function ProductDetailPage({
             </div>
 
             <h1 className="font-display text-xl font-black leading-tight text-white sm:text-3xl">
-              {product.name}
+              {displayName}
             </h1>
+            {promoLabel && (
+              <p className="text-sm font-bold text-[#F97316]">{promoLabel}</p>
+            )}
 
             {(typeof detail.rating === 'number' ||
               typeof detail.reviewCount === 'number' ||
@@ -288,7 +318,7 @@ export function ProductDetailPage({
               <strong className="text-3xl sm:text-4xl font-black text-[#FACC15] tabular-nums">
                 {formatPrice(price)}
               </strong>
-              {originalPrice > price && (
+              {discount > 0 && originalPrice > price && (
                 <span className="text-base font-semibold text-slate-400 line-through tabular-nums">
                   {formatPrice(originalPrice)}
                 </span>
@@ -395,7 +425,7 @@ export function ProductDetailPage({
                   target="_blank"
                   rel="nofollow sponsored noopener"
                   onClick={() =>
-                    trackAffiliateClick('shopee', shopeeUrl, product.id, product.name, {
+                    trackAffiliateClick('shopee', shopeeUrl, product.id, displayName, {
                       placement: 'product_detail',
                       destinationType: 'product',
                     })
@@ -414,7 +444,7 @@ export function ProductDetailPage({
                 target="_blank"
                 rel="nofollow sponsored noopener"
                 onClick={() =>
-                  trackAffiliateClick('tiktok', tiktokUrl, product.id, product.name, {
+                  trackAffiliateClick('tiktok', tiktokUrl, product.id, displayName, {
                     placement: 'product_detail',
                     destinationType: 'product',
                   })
@@ -443,14 +473,7 @@ export function ProductDetailPage({
       {/* 4 Product Detail Information Tabs */}
       <section className="rounded-2xl border border-slate-800 bg-[#111827] overflow-hidden">
         <div className="flex overflow-x-auto border-b border-slate-800 bg-[#0F172A] px-2 sm:px-4">
-          {(
-            [
-              { id: 'description', label: 'Mô tả chi tiết' },
-              { id: 'specs', label: 'Thông số kỹ thuật' },
-              { id: 'rigging', label: 'Hướng dẫn phối đồ / bài mồi' },
-              { id: 'reviews', label: `Đánh giá (${allReviews.length})` },
-            ] as { id: TabKey; label: string }[]
-          ).map((tab) => (
+          {availableTabs.map((tab) => (
             <button
               key={tab.id}
               type="button"
@@ -470,7 +493,7 @@ export function ProductDetailPage({
           {activeTab === 'description' && (
             <div className="space-y-4">
               <h2 className="font-display text-lg font-black text-white">
-                Mô tả chi tiết {product.name}
+                Mô tả chi tiết {displayName}
               </h2>
               <p className="whitespace-pre-line text-sm leading-relaxed text-slate-300">
                 {getProductDescription(product)}
@@ -650,7 +673,7 @@ export function ProductDetailPage({
           </button>
           <img
             src={activeImage}
-            alt={product.name}
+            alt={displayName}
             referrerPolicy="no-referrer"
             className="max-h-[88vh] max-w-full rounded-xl object-contain"
           />

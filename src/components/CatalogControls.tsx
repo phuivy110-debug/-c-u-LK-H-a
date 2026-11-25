@@ -62,7 +62,9 @@ export function CatalogControls({
             className="min-h-11 flex-1 min-w-0 rounded-xl bg-[#0F172A] border border-slate-700 px-3 text-sm text-white focus:border-[#FACC15] focus:outline-none"
           >
             <option value="default">Mặc định</option>
-            <option value="discount-desc">Giảm giá nhiều nhất</option>
+            {((saleCount || 0) > 0 || sortBy === 'discount-desc') && (
+              <option value="discount-desc" disabled={(saleCount || 0) === 0}>Giảm giá nhiều nhất</option>
+            )}
             <option value="price-asc">Giá: Thấp đến Cao</option>
             <option value="price-desc">Giá: Cao đến Thấp</option>
             <option value="name-asc">Tên: A - Z</option>
@@ -71,7 +73,7 @@ export function CatalogControls({
       </div>
 
       <div className="flex gap-2 overflow-x-auto pb-1" aria-label="Lọc sản phẩm">
-        {onToggleSaleOnly && (
+        {onToggleSaleOnly && (saleCount || 0) > 0 && (
           <button
             type="button"
             aria-pressed={Boolean(showSaleOnly)}

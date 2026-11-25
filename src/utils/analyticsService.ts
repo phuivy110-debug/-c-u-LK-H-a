@@ -8,6 +8,15 @@ export interface AffiliateContext {
   destinationType?: 'product' | 'store';
 }
 
+export interface CommerceItem {
+  item_id: string;
+  item_name: string;
+  item_category?: string;
+  item_variant?: string;
+  price?: number;
+  quantity?: number;
+}
+
 type GtagCommand = 'config' | 'event' | 'js';
 
 declare global {
@@ -41,6 +50,17 @@ export const trackPageView = (path: string) => {
     page_title: document.title,
     page_location: window.location.href,
     page_path: path,
+  });
+};
+
+export const trackCommerceEvent = (
+  eventName: 'view_item' | 'select_item' | 'add_to_cart' | 'begin_checkout' | 'purchase' | 'search',
+  parameters: Record<string, unknown>,
+) => {
+  sendToGoogleAnalytics('event', eventName, {
+    send_to: GA_MEASUREMENT_ID,
+    currency: 'VND',
+    ...parameters,
   });
 };
 

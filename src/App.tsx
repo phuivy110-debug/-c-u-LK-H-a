@@ -478,7 +478,7 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
   };
 
   return (
-    <CartProvider>
+    <CartProvider products={activeProducts} catalogReady={!isSyncing}>
       <div className="min-h-screen bg-[#0F172A] flex flex-col text-slate-100">
         <Header
           onOpenAdmin={() => navigate('/quan-ly-don-hang')}

@@ -1189,7 +1189,7 @@ export function createApiApp(): express.Express {
       if (idx === -1) return res.status(404).json({ error: 'Không tìm thấy đơn hàng.' });
 
       const { status, shippingCarrier, trackingCode, packageWeightGrams } = req.body || {};
-      const nextOrder = { ...orders[idx], updatedAt: new Date().toISOString() };
+      const nextOrder: Record<string, any> = { ...orders[idx], updatedAt: new Date().toISOString() };
 
       if (typeof status === 'string') {
         if (!ALLOWED_ORDER_STATUSES.has(status)) return res.status(400).json({ error: 'Trạng thái đơn hàng không hợp lệ.' });
@@ -2303,8 +2303,6 @@ export function createApiApp(): express.Express {
         trackingCode: found.trackingCode || null,
         shippingCarrier: found.shippingCarrier || null,
         statusHistory: Array.isArray(found.statusHistory) ? found.statusHistory : [],
-        shippingCarrier: found.shippingCarrier || null,
-        trackingCode: found.trackingCode || null,
         estimatedDelivery: found.estimatedDelivery,
         createdAt: found.createdAt,
         updatedAt: found.updatedAt || found.createdAt,

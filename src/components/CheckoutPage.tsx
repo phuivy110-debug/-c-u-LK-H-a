@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   ArrowLeft,
   Check,
@@ -25,6 +25,8 @@ import {
   validateVietnamesePhone,
 } from '../utils/cartStore';
 import { STORE_BANK_INFO, STORE_HOTLINE, ZALO_CHAT_URL } from '../utils/site';
+import { CartUpdateNotice } from './CartUpdateNotice';
+import { trackCommerceEvent } from '../utils/analyticsService';
 
 const VIETNAM_PROVINCES = [
   'Hà Nội',
@@ -91,6 +93,24 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onNavigate }) => {
 
   const previewOrderCode = useMemo(() => 'LKH2026', []);
   const estimatedDelivery = useMemo(() => estimateDeliveryWindow(customer.province), [customer.province]);
+
+  useEffect(() => {
+    if (items.length === 0) return;
+    trackCommerceEvent('begin_checkout', {
+      value: totals.total,
+      coupon: couponCode || undefined,
+      items: items.map((item) => ({
+        item_id: item.productId,
+        item_name: item.name,
+        item_category: item.category,
+        item_variant: item.variantLabel,
+        price: item.price,
+        quantity: item.quantity,
+      })),
+    });
+    // Checkout entry is measured once; later catalogue changes are covered by cart reconciliation.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleCopy = (label: string, value: string) => {
     if (typeof navigator !== 'undefined' && navigator.clipboard) {
@@ -189,6 +209,21 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onNavigate }) => {
       return;
     }
     setCompletedOrder(syncResult.savedOrder);
+    trackCommerceEvent('purchase', {
+      transaction_id: syncResult.savedOrder.orderCode,
+      value: syncResult.savedOrder.total,
+      shipping: syncResult.savedOrder.shippingFee,
+      coupon: syncResult.savedOrder.discountCode || undefined,
+      payment_type: syncResult.savedOrder.paymentMethod,
+      items: syncResult.savedOrder.items.map((item) => ({
+        item_id: item.productId,
+        item_name: item.name,
+        item_category: item.category,
+        item_variant: item.variantLabel,
+        price: item.price,
+        quantity: item.quantity,
+      })),
+    });
     clearCart();
     if (typeof window !== 'undefined') {
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -414,6 +449,8 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onNavigate }) => {
         </p>
       </div>
 
+      <CartUpdateNotice />
+
       <form onSubmit={handleSubmitOrder} noValidate className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left: Shipping Address & Payment Method */}
         <div className="lg:col-span-7 space-y-6">
@@ -432,6 +469,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onNavigate }) => {
                 <input
                   id="checkout-name"
                   type="text"
+                  autoComplete="name"
                   value={customer.fullName}
                   onChange={(e) => setCustomer((c) => ({ ...c, fullName: e.target.value }))}
                   placeholder="Nguyễn Văn A"
@@ -448,6 +486,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onNavigate }) => {
                   id="checkout-phone"
                   type="tel"
                   inputMode="numeric"
+                  autoComplete="tel"
                   value={customer.phone}
                   onChange={(e) => setCustomer((c) => ({ ...c, phone: e.target.value }))}
                   placeholder="0933040999"
@@ -464,6 +503,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onNavigate }) => {
                 </label>
                 <select
                   id="checkout-province"
+                  autoComplete="address-level1"
                   value={customer.province}
                   onChange={(e) => setCustomer((c) => ({ ...c, province: e.target.value }))}
                   className="w-full h-11 px-3 rounded-xl bg-[#0F172A] border border-slate-700 text-sm text-white focus:border-[#FACC15] focus:outline-none"
@@ -485,6 +525,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onNavigate }) => {
                 <input
                   id="checkout-district"
                   type="text"
+                  autoComplete="address-level2"
                   value={customer.district}
                   onChange={(e) => setCustomer((c) => ({ ...c, district: e.target.value }))}
                   placeholder="VD: Nghĩa Đàn"
@@ -500,6 +541,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onNavigate }) => {
                 <input
                   id="checkout-ward"
                   type="text"
+                  autoComplete="address-level3"
                   value={customer.ward}
                   onChange={(e) => setCustomer((c) => ({ ...c, ward: e.target.value }))}
                   placeholder="VD: Xã Nghĩa Lâm"
@@ -516,6 +558,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onNavigate }) => {
               <input
                 id="checkout-address"
                 type="text"
+                autoComplete="street-address"
                 value={customer.address}
                 onChange={(e) => setCustomer((c) => ({ ...c, address: e.target.value }))}
                 placeholder="VD: Đường mòn Hồ Chí Minh, Xóm Yên Lâm"

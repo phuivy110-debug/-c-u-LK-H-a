@@ -126,10 +126,12 @@ const renamed = { ...NEW_SHOPEE_PRODUCTS[0], id: 'sheet-renamed', slug: 'sheet-r
 assert.equal(mergeWithLocalAdditions([...originalProducts, renamed]).length, 75, 'Same affiliate item is not added twice');
 for (const product of NEW_SHOPEE_PRODUCTS) {
   assert.ok(allowed.has(product.shopeeUrl));
-  assert.equal(product.imageUrl, undefined);
+  assert.ok(product.imageUrl?.startsWith('https://down-vn.img.susercontent.com/file/'));
+  assert.ok((product.gallery?.length || 0) >= 5);
+  assert.ok((product.referencePrice || 0) > 0);
   assert.equal(product.salePrice, undefined);
   assert.equal(product.originalPrice, undefined);
   assert.equal(product.tiktokLinkStatus, 'none');
-  assert.ok(product.description.includes('tham khảo'));
+  assert.ok((product.description || '').length > 80);
 }
 console.log('PASS affiliate: 72 export links, 75 catalog entries, 2 hidden links, 5 new listings, SSR/buttons/sheet/cache and stable IDs.');
