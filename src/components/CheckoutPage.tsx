@@ -76,6 +76,9 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onNavigate }) => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [completedOrder, setCompletedOrder] = useState<OrderRecord | null>(null);
+  const [orderSyncState, setOrderSyncState] = useState<'synced' | 'local-only'>('synced');
+  const [orderSyncNote, setOrderSyncNote] = useState('');
+  const [retryingSync, setRetryingSync] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [qrImageError, setQrImageError] = useState(false);
 
@@ -120,31 +123,70 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onNavigate }) => {
     return Object.keys(nextErrors).length === 0;
   };
 
+  const syncOrderToServer = async (orderPayload: OrderRecord): Promise<{
+    synced: boolean;
+    savedOrder: OrderRecord;
+    note: string;
+  }> => {
+    try {
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...orderPayload,
+          idempotencyKey: orderPayload.orderCode,
+        }),
+      });
+      const raw = await res.text();
+      let data: any = null;
+      try {
+        data = JSON.parse(raw);
+      } catch {
+        data = null;
+      }
+      if (res.ok && data?.success && data?.order) {
+        saveOrderLocally(data.order);
+        return { synced: true, savedOrder: data.order, note: '' };
+      }
+      const errMsg = data?.error || `Máy chủ chưa ghi nhận đơn (HTTP ${res.status})`;
+      return { synced: false, savedOrder: orderPayload, note: errMsg };
+    } catch {
+      return {
+        synced: false,
+        savedOrder: orderPayload,
+        note: 'Không thể kết nối tới máy chủ đơn hàng (/api/orders).',
+      };
+    }
+  };
+
   const handleSubmitOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     if (items.length === 0) return;
     if (!validateForm()) return;
 
     setIsSubmitting(true);
-    const order = buildOrderRecord(customer, paymentMethod, items, couponCode);
-    saveOrderLocally(order);
+    const draftOrder = buildOrderRecord(customer, paymentMethod, items, couponCode);
+    saveOrderLocally(draftOrder);
 
-    try {
-      await fetch('/api/orders', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(order),
-      });
-    } catch {
-      // Order is already persisted locally for immediate confirmation
-    } finally {
-      setIsSubmitting(false);
-      setCompletedOrder(order);
-      clearCart();
-      if (typeof window !== 'undefined') {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
+    const syncResult = await syncOrderToServer(draftOrder);
+    setOrderSyncState(syncResult.synced ? 'synced' : 'local-only');
+    setOrderSyncNote(syncResult.note);
+    setCompletedOrder(syncResult.savedOrder);
+    setIsSubmitting(false);
+    clearCart();
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
+  };
+
+  const handleRetrySync = async () => {
+    if (!completedOrder) return;
+    setRetryingSync(true);
+    const syncResult = await syncOrderToServer(completedOrder);
+    setOrderSyncState(syncResult.synced ? 'synced' : 'local-only');
+    setOrderSyncNote(syncResult.note);
+    setCompletedOrder(syncResult.savedOrder);
+    setRetryingSync(false);
   };
 
   // ORDER SUCCESS STATE
@@ -159,14 +201,32 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onNavigate }) => {
         <div className="rounded-2xl border border-emerald-700/60 bg-[#14532D]/30 p-6 sm:p-8 text-center space-y-3">
           <CheckCircle2 className="w-14 h-14 text-[#FACC15] mx-auto" />
           <p className="text-xs font-bold uppercase tracking-widest text-emerald-300">
-            Đặt Hàng Thành Công
+            {orderSyncState === 'synced' ? 'Đã Ghi Nhận Đơn Hàng Lên Hệ Thống' : 'Đã Lưu Đơn Hàng Trên Trình Duyệt'}
           </p>
           <h1 className="font-display text-2xl sm:text-3xl font-black text-white">
             Mã đơn hàng #{completedOrder.orderCode}
           </h1>
           <p className="text-sm text-slate-200 max-w-xl mx-auto">
-            Cảm ơn <strong>{completedOrder.customer.fullName}</strong> đã đặt hàng tại Đồ Câu LK Hòa. Đơn hàng đã được ghi nhận và sẽ đóng ống nhựa bảo vệ cẩn thận trước khi giao.
+            Cảm ơn <strong>{completedOrder.customer.fullName}</strong> đã đặt hàng tại Đồ Câu LK Hòa. Đơn hàng sẽ được đóng ống nhựa bảo vệ cẩn thận trước khi giao.
           </p>
+          {orderSyncState === 'local-only' && (
+            <div className="max-w-xl mx-auto mt-3 rounded-xl border border-amber-500/40 bg-amber-950/40 px-4 py-3 text-left text-xs text-amber-200 space-y-2">
+              <p className="font-bold text-[#FACC15]">
+                Lưu ý: Đơn mới được lưu trên trình duyệt hiện tại ({orderSyncNote})
+              </p>
+              <p>
+                Bạn hãy bấm nút <strong>Chat Zalo xác nhận đơn nhanh</strong> bên dưới để shop nhận đơn ngay, hoặc mở trang Quản lý đơn hàng → Chế độ Trình duyệt trên chính thiết bị này.
+              </p>
+              <button
+                type="button"
+                disabled={retryingSync}
+                onClick={handleRetrySync}
+                className="px-3 py-1.5 rounded-lg bg-[#FACC15] text-[#0F172A] font-extrabold cursor-pointer disabled:opacity-60"
+              >
+                {retryingSync ? 'Đang gửi lại...' : 'Thử đồng bộ lại lên máy chủ'}
+              </button>
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

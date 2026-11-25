@@ -131,6 +131,62 @@
       "destination": "/api/chat"
     },
     {
+      "source": "/api/admin/:path*",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/api/orders",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/api/orders/:path*",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/api/connectors",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/api/connectors/:path*",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/api/pos/:path*",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/api/shipping/:path*",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/api/analytics/:path*",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/api/shopee-prices",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/api/shopee-prices/:path*",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/api/products",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/api/sync-sheet",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/api/extract-shopee-image",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/api/agent/:path*",
+      "destination": "/api/index"
+    },
+    {
       "source": "/sitemap.xml",
       "destination": "/seo/sitemap.xml"
     },

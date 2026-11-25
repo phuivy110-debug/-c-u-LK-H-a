@@ -56,6 +56,18 @@ function getSessionSecretKey(): string {
     return crypto.scryptSync(envPasscode, 'lkhoa-vercel-session-v1', 32).toString('hex');
   }
 
+  try {
+    const authPath = resolveReadPath('admin_auth.json');
+    if (fs.existsSync(authPath)) {
+      const parsed = JSON.parse(fs.readFileSync(authPath, 'utf-8'));
+      if (parsed?.hash && typeof parsed.hash === 'string') {
+        return crypto.scryptSync(parsed.hash, 'lkhoa-local-session-v1', 32).toString('hex');
+      }
+    }
+  } catch {
+    // Fall back to runtime secret
+  }
+
   if (!globalForAuth.__lkhoaSessionKey) {
     globalForAuth.__lkhoaSessionKey = crypto.randomBytes(32).toString('hex');
   }

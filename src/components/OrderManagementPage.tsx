@@ -28,6 +28,19 @@ import type {
   ShippingCarrierId,
 } from '../types';
 import { formatPrice } from '../utils/catalog';
+import { loadLocalOrders, updateLocalOrder } from '../utils/cartStore';
+import { OrderSummaryDashboard } from './OrderSummaryDashboard';
+
+const ADMIN_SESSION_STORAGE_KEY = 'lkhoa_admin_token_v1';
+const LOCAL_BROWSER_MODE_TOKEN = '__local_browser_mode__';
+
+const DEFAULT_CONNECTOR_SUMMARIES: ConnectorSummary[] = [
+  { provider: 'pancake', name: 'Pancake POS', connected: false, source: 'none', autoSync: true },
+  { provider: 'ghn', name: 'Giao Hàng Nhanh (GHN)', connected: false, source: 'none', autoSync: false },
+  { provider: 'ghtk', name: 'Giao Hàng Tiết Kiệm (GHTK)', connected: false, source: 'none', autoSync: false },
+  { provider: 'viettelpost', name: 'Viettel Post (VTP)', connected: false, source: 'none', autoSync: false },
+  { provider: 'webhook', name: 'Webhook POS Mở Rộng (Sapo / KiotViet / n8n)', connected: false, source: 'none', autoSync: true },
+];
 
 interface OrderManagementPageProps {
   onNavigate: (path: string) => void;
@@ -119,8 +132,32 @@ const CONNECTOR_META: Record<
 };
 
 export const OrderManagementPage: React.FC<OrderManagementPageProps> = ({ onNavigate }) => {
-  const [adminToken, setAdminToken] = useState<string | null>(null);
+  const [adminToken, setAdminTokenState] = useState<string | null>(() => {
+    if (typeof sessionStorage === 'undefined') return null;
+    try {
+      return sessionStorage.getItem(ADMIN_SESSION_STORAGE_KEY);
+    } catch {
+      return null;
+    }
+  });
+  const setAdminToken = useCallback((nextToken: string | null) => {
+    setAdminTokenState(nextToken);
+    if (typeof sessionStorage === 'undefined') return;
+    try {
+      if (nextToken) {
+        sessionStorage.setItem(ADMIN_SESSION_STORAGE_KEY, nextToken);
+      } else {
+        sessionStorage.removeItem(ADMIN_SESSION_STORAGE_KEY);
+      }
+    } catch {
+      // Ignore storage restrictions
+    }
+  }, []);
+  const isLocalBrowserMode = adminToken === LOCAL_BROWSER_MODE_TOKEN;
+
   const [adminStatus, setAdminStatus] = useState<AdminStatusResponse | null>(null);
+  const [checkingStatus, setCheckingStatus] = useState<boolean>(true);
+  const [statusError, setStatusError] = useState<string>('');
   const [passcodeInput, setPasscodeInput] = useState('');
   const [confirmPasscodeInput, setConfirmPasscodeInput] = useState('');
   const [authError, setAuthError] = useState('');
@@ -159,14 +196,30 @@ export const OrderManagementPage: React.FC<OrderManagementPageProps> = ({ onNavi
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
   const loadAdminStatus = useCallback(async () => {
+    setCheckingStatus(true);
+    setStatusError('');
     try {
-      const res = await fetch('/api/admin/status');
-      if (res.ok) {
-        const data = await res.json();
+      const res = await fetch('/api/admin/status', { cache: 'no-store' });
+      const raw = await res.text();
+      let data: AdminStatusResponse | null = null;
+      try {
+        data = JSON.parse(raw);
+      } catch {
+        data = null;
+      }
+      if (res.ok && data && typeof data.hasConfiguredPasscode === 'boolean') {
         setAdminStatus(data);
+      } else {
+        setAdminStatus(null);
+        setStatusError(
+          `Máy chủ API chưa phản hồi hợp lệ (HTTP ${res.status}). Nếu đang chạy trên Vercel, hãy triển khai lại bản mới nhất có /api/index.`
+        );
       }
     } catch {
-      setAdminStatus({ hasConfiguredPasscode: false, usingEnvPasscode: false, authenticated: false });
+      setAdminStatus(null);
+      setStatusError('Không thể kết nối tới máy chủ API (/api/admin/status).');
+    } finally {
+      setCheckingStatus(false);
     }
   }, []);
 
@@ -175,6 +228,12 @@ export const OrderManagementPage: React.FC<OrderManagementPageProps> = ({ onNavi
   }, [loadAdminStatus]);
 
   const fetchDashboardData = useCallback(async (token: string) => {
+    if (token === LOCAL_BROWSER_MODE_TOKEN) {
+      setOrders(loadLocalOrders());
+      setConnectors(DEFAULT_CONNECTOR_SUMMARIES);
+      setLoadingOrders(false);
+      return;
+    }
     setLoadingOrders(true);
     try {
       const [ordersRes, connRes] = await Promise.all([
@@ -188,7 +247,41 @@ export const OrderManagementPage: React.FC<OrderManagementPageProps> = ({ onNavi
       }
       if (ordersRes.ok) {
         const data = await ordersRes.json();
-        setOrders(Array.isArray(data.orders) ? data.orders : []);
+        let serverOrders: OrderRecord[] = Array.isArray(data.orders) ? data.orders : [];
+        const serverCodes = new Set(serverOrders.map((o) => o.orderCode));
+        const unsyncedLocal = loadLocalOrders().filter((o) => !serverCodes.has(o.orderCode));
+        if (unsyncedLocal.length > 0) {
+          let syncedCount = 0;
+          for (const localOrder of unsyncedLocal) {
+            try {
+              const syncRes = await fetch('/api/orders', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  ...localOrder,
+                  idempotencyKey: localOrder.orderCode,
+                }),
+              });
+              if (syncRes.ok) {
+                const syncData = await syncRes.json();
+                if (syncData?.order && !serverCodes.has(syncData.order.orderCode)) {
+                  serverOrders = [syncData.order, ...serverOrders];
+                  serverCodes.add(syncData.order.orderCode);
+                  syncedCount += 1;
+                }
+              }
+            } catch {
+              // Ignore transient sync error for individual local draft
+            }
+          }
+          if (syncedCount > 0) {
+            setFeedback({
+              type: 'success',
+              text: `Đã tự động đồng bộ ${syncedCount} đơn hàng lưu trên trình duyệt lên máy chủ.`,
+            });
+          }
+        }
+        setOrders(serverOrders);
       }
       if (connRes.ok) {
         const cData = await connRes.json();
@@ -199,13 +292,22 @@ export const OrderManagementPage: React.FC<OrderManagementPageProps> = ({ onNavi
     } finally {
       setLoadingOrders(false);
     }
-  }, []);
+  }, [setAdminToken]);
 
   useEffect(() => {
     if (adminToken) {
       fetchDashboardData(adminToken);
     }
   }, [adminToken, fetchDashboardData]);
+
+  const parseSafeJson = async (res: Response) => {
+    const raw = await res.text();
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return null;
+    }
+  };
 
   const handleClaimAdmin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -225,16 +327,19 @@ export const OrderManagementPage: React.FC<OrderManagementPageProps> = ({ onNavi
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ passcode: passcodeInput.trim() }),
       });
-      const data = await res.json();
-      if (!res.ok || !data.token) {
-        setAuthError(data.error || 'Không thể thiết lập mật khẩu quản trị.');
+      const data = await parseSafeJson(res);
+      if (!res.ok || !data?.token) {
+        setAuthError(
+          data?.error ||
+            `Máy chủ chưa thiết lập được mật khẩu (HTTP ${res.status}). Hãy cài ADMIN_PASSCODE trong Vercel Environment Variables.`
+        );
         return;
       }
       setAdminToken(data.token);
       setPasscodeInput('');
       setConfirmPasscodeInput('');
     } catch {
-      setAuthError('Lỗi kết nối máy chủ.');
+      setAuthError('Không thể kết nối máy chủ (/api/admin/claim).');
     } finally {
       setAuthLoading(false);
     }
@@ -250,15 +355,18 @@ export const OrderManagementPage: React.FC<OrderManagementPageProps> = ({ onNavi
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ passcode: passcodeInput.trim() }),
       });
-      const data = await res.json();
-      if (!res.ok || !data.token) {
-        setAuthError(data.error || 'Mật khẩu quản trị không đúng.');
+      const data = await parseSafeJson(res);
+      if (!res.ok || !data?.token) {
+        setAuthError(
+          data?.error ||
+            `Máy chủ không phản hồi JSON hợp lệ (HTTP ${res.status}). Vui lòng kiểm tra /api/index trên Vercel.`
+        );
         return;
       }
       setAdminToken(data.token);
       setPasscodeInput('');
     } catch {
-      setAuthError('Lỗi kết nối máy chủ.');
+      setAuthError('Không thể kết nối máy chủ (/api/admin/login).');
     } finally {
       setAuthLoading(false);
     }
@@ -270,6 +378,16 @@ export const OrderManagementPage: React.FC<OrderManagementPageProps> = ({ onNavi
   ) => {
     if (!adminToken) return;
     setFeedback(null);
+    if (isLocalBrowserMode) {
+      const updated = updateLocalOrder(orderCode, patch);
+      if (!updated) {
+        setFeedback({ type: 'error', text: 'Không tìm thấy đơn hàng trong bộ nhớ trình duyệt.' });
+        return;
+      }
+      setOrders((prev) => prev.map((o) => (o.orderCode === orderCode ? updated : o)));
+      setFeedback({ type: 'success', text: `Đã cập nhật đơn #${orderCode} trên trình duyệt.` });
+      return;
+    }
     try {
       const res = await fetch(`/api/orders/${encodeURIComponent(orderCode)}`, {
         method: 'PATCH',
@@ -294,6 +412,14 @@ export const OrderManagementPage: React.FC<OrderManagementPageProps> = ({ onNavi
   const handlePushToCarrier = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!adminToken || !pushOrderTarget) return;
+    if (isLocalBrowserMode) {
+      setFeedback({
+        type: 'error',
+        text: 'Đang ở chế độ trình duyệt (không kết nối máy chủ). Hãy bấm "Xuất CSV Đẩy Đơn Hàng Loạt" để tải lên GHN/GHTK/Viettel Post hoặc đăng nhập trên máy chủ AI Studio.',
+      });
+      setPushOrderTarget(null);
+      return;
+    }
     setPushing(true);
     setFeedback(null);
     try {
@@ -334,6 +460,13 @@ export const OrderManagementPage: React.FC<OrderManagementPageProps> = ({ onNavi
 
   const handlePushToPancake = async (orderCode: string) => {
     if (!adminToken) return;
+    if (isLocalBrowserMode) {
+      setFeedback({
+        type: 'error',
+        text: 'Đang ở chế độ trình duyệt. Hãy bấm "Xuất CSV Đẩy Đơn Hàng Loạt" để nhập nhanh vào Pancake POS hoặc mở trang quản trị trên máy chủ AI Studio.',
+      });
+      return;
+    }
     setPushingPancakeCode(orderCode);
     setFeedback(null);
     try {
@@ -363,6 +496,13 @@ export const OrderManagementPage: React.FC<OrderManagementPageProps> = ({ onNavi
   };
 
   const openConnectorConfig = (conn: ConnectorSummary) => {
+    if (isLocalBrowserMode) {
+      setFeedback({
+        type: 'error',
+        text: 'Lưu API Key bảo mật cần kết nối máy chủ. Hiện bạn vẫn có thể xuất CSV đơn hàng để nhập sang POS/Ship.',
+      });
+      return;
+    }
     setEditingConnector(conn.provider);
     setCfgToken('');
     setCfgShopId(conn.shopId || '');
@@ -373,7 +513,7 @@ export const OrderManagementPage: React.FC<OrderManagementPageProps> = ({ onNavi
 
   const handleSaveConnector = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!adminToken || !editingConnector) return;
+    if (!adminToken || !editingConnector || isLocalBrowserMode) return;
     setSavingConnector(true);
     setFeedback(null);
     try {
@@ -410,7 +550,7 @@ export const OrderManagementPage: React.FC<OrderManagementPageProps> = ({ onNavi
   };
 
   const handleTestConnector = async (provider: ConnectorProviderId) => {
-    if (!adminToken) return;
+    if (!adminToken || isLocalBrowserMode) return;
     setTestingProvider(provider);
     setFeedback(null);
     try {
@@ -434,7 +574,7 @@ export const OrderManagementPage: React.FC<OrderManagementPageProps> = ({ onNavi
   };
 
   const handleDisconnectConnector = async (provider: ConnectorProviderId) => {
-    if (!adminToken) return;
+    if (!adminToken || isLocalBrowserMode) return;
     setFeedback(null);
     try {
       const res = await fetch(`/api/connectors/${provider}`, {
@@ -525,23 +665,16 @@ export const OrderManagementPage: React.FC<OrderManagementPageProps> = ({ onNavi
     });
   }, [orders, searchQuery, statusFilter]);
 
-  const stats = useMemo(() => {
-    const pendingOrConfirmed = orders.filter(
-      (o) => o.status === 'pending' || o.status === 'confirmed' || o.status === 'packing'
-    ).length;
-    const shipping = orders.filter((o) => o.status === 'shipping').length;
-    const codTotal = orders
-      .filter((o) => o.paymentMethod === 'cod' && o.status !== 'cancelled')
-      .reduce((sum, o) => sum + (o.total || 0), 0);
-    const connectedCount = connectors.filter((c) => c.connected).length;
-    return { total: orders.length, pendingOrConfirmed, shipping, codTotal, connectedCount };
-  }, [orders, connectors]);
+  const connectedCount = useMemo(
+    () => connectors.filter((c) => c.connected).length,
+    [connectors]
+  );
 
   const originBase = typeof window !== 'undefined' ? window.location.origin : 'https://docaulkhoa.vn';
 
   // AUTHENTICATION / FIRST-RUN ADMIN GATE
   if (!adminToken) {
-    const isClaimMode = adminStatus && !adminStatus.hasConfiguredPasscode && !adminStatus.usingEnvPasscode;
+    const isClaimMode = Boolean(adminStatus && !adminStatus.hasConfiguredPasscode && !adminStatus.usingEnvPasscode);
     return (
       <div className="max-w-md mx-auto px-4 py-12 space-y-6">
         <button
@@ -560,7 +693,13 @@ export const OrderManagementPage: React.FC<OrderManagementPageProps> = ({ onNavi
             </div>
             <div>
               <h1 className="font-display text-xl font-black text-white">
-                {isClaimMode ? 'Thiết Lập Quản Trị Đơn Hàng' : 'Đăng Nhập Quản Lý Đơn Hàng'}
+                {checkingStatus
+                  ? 'Đang Kiểm Tra Cổng Quản Trị...'
+                  : statusError
+                    ? 'Cổng Quản Trị Chưa Kết Nối API'
+                    : isClaimMode
+                      ? 'Thiết Lập Quản Trị Đơn Hàng'
+                      : 'Đăng Nhập Quản Lý Đơn Hàng'}
               </h1>
               <p className="text-xs text-slate-400">
                 Quản lý đơn COD/VietQR &amp; kết nối Pancake POS, GHN, GHTK, Viettel Post
@@ -568,11 +707,37 @@ export const OrderManagementPage: React.FC<OrderManagementPageProps> = ({ onNavi
             </div>
           </div>
 
-          {isClaimMode ? (
+          {checkingStatus ? (
+            <div className="py-6 text-center text-xs text-slate-400">
+              Đang kiểm tra trạng thái mật khẩu quản trị từ máy chủ...
+            </div>
+          ) : statusError ? (
+            <div className="space-y-3">
+              <div className="rounded-xl border border-orange-700/60 bg-orange-950/30 p-3.5 text-xs text-orange-200 leading-relaxed space-y-2">
+                <p className="font-bold text-[#F97316]">Chưa kết nối được máy chủ đơn hàng trực tuyến</p>
+                <p>
+                  Bạn vẫn có thể bấm nút màu vàng bên dưới để mở ngay trang quản lý đơn hàng lưu trên trình duyệt này (xem thống kê, cập nhật trạng thái và xuất CSV) mà không cần cấu hình Vercel.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setAdminToken(LOCAL_BROWSER_MODE_TOKEN)}
+                className="w-full min-h-11 rounded-xl bg-[#FACC15] hover:bg-yellow-300 text-[#0F172A] text-sm font-black cursor-pointer"
+              >
+                Mở Quản Lý Ngay (Không cần máy chủ)
+              </button>
+              <button
+                type="button"
+                onClick={loadAdminStatus}
+                className="w-full min-h-10 rounded-xl border border-slate-700 hover:bg-slate-800 text-xs font-bold text-slate-300 cursor-pointer"
+              >
+                Thử kết nối lại máy chủ
+              </button>
+            </div>
+          ) : isClaimMode ? (
             <form onSubmit={handleClaimAdmin} className="space-y-4">
               <div className="rounded-xl border border-emerald-800/60 bg-[#14532D]/20 p-3 text-xs text-emerald-200 leading-relaxed">
-                Lần đầu truy cập: hãy đặt mật khẩu quản trị riêng cho shop (tối thiểu 6 ký tự) hoặc cấu hình biến{' '}
-                <code className="text-[#FACC15]">ADMIN_PASSCODE</code> trong Settings → Secrets.
+                Lần đầu truy cập: tự đặt mật khẩu mới (tối thiểu 6 ký tự) để mở trang quản lý đơn hàng ngay lập tức.
               </div>
               <div>
                 <label className="block text-xs font-bold text-slate-300 mb-1.5">Mật khẩu quản trị mới</label>
@@ -602,9 +767,19 @@ export const OrderManagementPage: React.FC<OrderManagementPageProps> = ({ onNavi
               >
                 {authLoading ? 'Đang thiết lập...' : 'Tạo mật khẩu & Mở quản lý đơn'}
               </button>
+              <button
+                type="button"
+                onClick={() => setAdminToken(LOCAL_BROWSER_MODE_TOKEN)}
+                className="w-full min-h-10 rounded-xl border border-slate-800 hover:bg-slate-800/70 text-xs font-semibold text-slate-400 cursor-pointer"
+              >
+                Hoặc mở nhanh đơn lưu trên trình duyệt
+              </button>
             </form>
           ) : (
             <form onSubmit={handleLogin} className="space-y-4">
+              <div className="rounded-xl border border-slate-800 bg-[#0F172A] p-3 text-[11px] text-slate-400 leading-relaxed">
+                Nhập mật khẩu quản trị bạn đã tạo trước đó. Không cần cài đặt thêm trên Vercel.
+              </div>
               <div>
                 <label className="block text-xs font-bold text-slate-300 mb-1.5">Mật khẩu quản trị</label>
                 <input
@@ -622,6 +797,13 @@ export const OrderManagementPage: React.FC<OrderManagementPageProps> = ({ onNavi
                 className="w-full min-h-11 rounded-xl bg-[#FACC15] hover:bg-yellow-300 text-[#0F172A] text-sm font-black cursor-pointer disabled:opacity-60"
               >
                 {authLoading ? 'Đang xác thực...' : 'Đăng nhập'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setAdminToken(LOCAL_BROWSER_MODE_TOKEN)}
+                className="w-full min-h-10 rounded-xl border border-slate-800 hover:bg-slate-800/70 text-xs font-semibold text-slate-400 cursor-pointer"
+              >
+                Mở nhanh đơn lưu trên trình duyệt (Không cần mật khẩu)
               </button>
             </form>
           )}
@@ -671,32 +853,42 @@ export const OrderManagementPage: React.FC<OrderManagementPageProps> = ({ onNavi
             className="min-h-10 px-3.5 py-2 rounded-xl border border-slate-700 hover:bg-slate-800 text-xs font-bold text-slate-300 flex items-center gap-1.5 cursor-pointer"
           >
             <LogOut className="w-3.5 h-3.5" />
-            <span>Đăng xuất</span>
+            <span>{isLocalBrowserMode ? 'Đổi sang máy chủ' : 'Đăng xuất'}</span>
           </button>
         </div>
       </div>
 
-      {/* KPI Row */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <div className="rounded-2xl border border-slate-800 bg-[#111827] p-4">
-          <p className="text-xs text-slate-400 font-semibold">Tổng đơn hàng</p>
-          <p className="text-2xl font-black text-white tabular-nums mt-1">{stats.total}</p>
-        </div>
-        <div className="rounded-2xl border border-slate-800 bg-[#111827] p-4">
-          <p className="text-xs text-slate-400 font-semibold">Cần xử lý / Đóng gói</p>
-          <p className="text-2xl font-black text-[#FACC15] tabular-nums mt-1">{stats.pendingOrConfirmed}</p>
-        </div>
-        <div className="rounded-2xl border border-slate-800 bg-[#111827] p-4">
-          <p className="text-xs text-slate-400 font-semibold">Cổng đã kết nối</p>
-          <p className="text-2xl font-black text-[#F97316] tabular-nums mt-1">
-            {stats.connectedCount} / {connectors.length || 5}
+      {isLocalBrowserMode && (
+        <div className="rounded-xl border border-amber-600/40 bg-amber-950/20 px-4 py-3 flex flex-wrap items-center justify-between gap-3 text-xs text-amber-200">
+          <p className="leading-relaxed">
+            Đang dùng <strong>Chế độ Trình Duyệt (Không cần cấu hình Vercel)</strong>: bạn có thể xem biểu đồ doanh thu, cập nhật trạng thái đơn, lưu mã vận đơn và xuất file CSV để tải lên GHTK / GHN / Viettel Post / Pancake POS.
           </p>
+          <button
+            type="button"
+            onClick={() => {
+              setAdminToken(null);
+              loadAdminStatus();
+            }}
+            className="px-3 py-1.5 rounded-lg bg-[#FACC15] text-[#0F172A] font-extrabold whitespace-nowrap shrink-0 cursor-pointer"
+          >
+            Kết nối lại máy chủ
+          </button>
         </div>
-        <div className="rounded-2xl border border-slate-800 bg-[#111827] p-4">
-          <p className="text-xs text-slate-400 font-semibold">Tổng tiền thu hộ COD</p>
-          <p className="text-2xl font-black text-emerald-400 tabular-nums mt-1">{formatPrice(stats.codTotal)}</p>
-        </div>
-      </div>
+      )}
+
+      {/* Summary Dashboard with Recharts */}
+      <OrderSummaryDashboard
+        orders={orders}
+        connectors={connectors}
+        loading={loadingOrders}
+        activeStatusFilter={statusFilter}
+        onSelectStatusFilter={(nextStatus) => {
+          setStatusFilter(nextStatus);
+          setActiveTab('orders');
+        }}
+        onRefresh={() => fetchDashboardData(adminToken)}
+        onOpenConnectors={() => setActiveTab('shipping')}
+      />
 
       {/* Navigation Tabs */}
       <div className="flex flex-wrap gap-2 border-b border-slate-800 pb-3">
@@ -722,7 +914,7 @@ export const OrderManagementPage: React.FC<OrderManagementPageProps> = ({ onNavi
           }`}
         >
           <PlugZap className="w-4 h-4" />
-          <span>Cổng Kết Nối POS &amp; Vận Chuyển ({stats.connectedCount}/{connectors.length || 5})</span>
+          <span>Cổng Kết Nối POS &amp; Vận Chuyển ({connectedCount}/{connectors.length || 5})</span>
         </button>
       </div>
 

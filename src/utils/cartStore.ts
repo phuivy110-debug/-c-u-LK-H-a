@@ -217,15 +217,48 @@ export function saveCouponToStorage(code: string): void {
   }
 }
 
+export function loadLocalOrders(): OrderRecord[] {
+  if (typeof localStorage === 'undefined') return [];
+  try {
+    const raw = localStorage.getItem(ORDERS_STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
 export function saveOrderLocally(order: OrderRecord): void {
   if (typeof localStorage === 'undefined') return;
   try {
-    const raw = localStorage.getItem(ORDERS_STORAGE_KEY);
-    const list: OrderRecord[] = raw ? JSON.parse(raw) : [];
+    const list = loadLocalOrders().filter((item) => item.orderCode !== order.orderCode);
     list.unshift(order);
-    localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(list.slice(0, 20)));
+    localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(list.slice(0, 200)));
   } catch {
     // Ignore storage quota issues
+  }
+}
+
+export function updateLocalOrder(
+  orderCode: string,
+  patch: Partial<Pick<OrderRecord, 'status' | 'shippingCarrier' | 'trackingCode'>>
+): OrderRecord | null {
+  if (typeof localStorage === 'undefined') return null;
+  try {
+    const list = loadLocalOrders();
+    let updated: OrderRecord | null = null;
+    const nextList = list.map((item) => {
+      if (item.orderCode !== orderCode) return item;
+      updated = { ...item, ...patch };
+      return updated;
+    });
+    if (updated) {
+      localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(nextList));
+    }
+    return updated;
+  } catch {
+    return null;
   }
 }
 
