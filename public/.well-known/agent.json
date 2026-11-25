@@ -1,0 +1,44 @@
+{
+  "schemaVersion": "1.0",
+  "protocol": "b2a-commerce",
+  "name": "Đồ Câu LK Hòa B2A Commerce Agent Gateway",
+  "description": "Official machine-readable commerce endpoint for Đồ Câu LK Hòa (docaulkhoa.vn) enabling AI shopping agents to search SKUs, compute authoritative shipping/coupon quotes, place COD/VietQR orders, and track fulfillment.",
+  "merchant": {
+    "name": "Đồ Câu LK Hòa",
+    "domain": "https://docaulkhoa.vn",
+    "country": "VN",
+    "currency": "VND",
+    "language": "vi-VN",
+    "phone": "+84933040999",
+    "address": "Đường mòn Hồ Chí Minh, Xóm Yên Lâm, Xã Nghĩa Lâm, Huyện Nghĩa Đàn, Tỉnh Nghệ An"
+  },
+  "capabilities": {
+    "catalogSearch": true,
+    "variantResolution": true,
+    "deterministicQuoting": true,
+    "programmaticCheckout": true,
+    "orderStatusTracking": true,
+    "idempotentCheckout": true
+  },
+  "paymentMethods": ["cod", "vietqr"],
+  "shippingPolicy": {
+    "freeShippingThresholdVnd": 300000,
+    "freeShippingForRods": true,
+    "flatShippingFeeVnd": 30000,
+    "deliveryWindowDays": { "min": 1, "max": 4 },
+    "inspectBeforePayCod": true
+  },
+  "returnPolicy": {
+    "returnWindowDays": 7,
+    "exchangeOneToOne": true,
+    "url": "https://docaulkhoa.vn/chinh-sach-bao-hanh-doi-tra"
+  },
+  "endpoints": {
+    "llmsTxt": "https://docaulkhoa.vn/llms.txt",
+    "manifest": "https://docaulkhoa.vn/api/agent/manifest",
+    "catalog": "https://docaulkhoa.vn/api/agent/catalog",
+    "quote": "https://docaulkhoa.vn/api/agent/quote",
+    "checkout": "https://docaulkhoa.vn/api/agent/checkout",
+    "orderStatus": "https://docaulkhoa.vn/api/agent/orders/{orderCode}/status"
+  }
+}

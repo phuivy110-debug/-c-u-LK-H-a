@@ -166,6 +166,37 @@ export function ProductDetailPage({
       seller: {
         '@type': 'Organization',
         name: 'Đồ Câu LK Hòa',
+        url: DOMAIN,
+      },
+      shippingDetails: {
+        '@type': 'OfferShippingDetails',
+        shippingRate: {
+          '@type': 'MonetaryAmount',
+          value:
+            price >= 300000 ||
+            product.category.toLowerCase().includes('cần') ||
+            /\bcần\b/i.test(product.name)
+              ? 0
+              : 30000,
+          currency: 'VND',
+        },
+        shippingDestination: {
+          '@type': 'DefinedRegion',
+          addressCountry: 'VN',
+        },
+        deliveryTime: {
+          '@type': 'ShippingDeliveryTime',
+          handlingTime: { '@type': 'QuantitativeValue', minValue: 0, maxValue: 1, unitCode: 'DAY' },
+          transitTime: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 4, unitCode: 'DAY' },
+        },
+      },
+      hasMerchantReturnPolicy: {
+        '@type': 'MerchantReturnPolicy',
+        applicableCountry: 'VN',
+        returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
+        merchantReturnDays: 7,
+        returnMethod: 'https://schema.org/ReturnByMail',
+        returnFees: 'https://schema.org/FreeReturn',
       },
     },
   };

@@ -145,6 +145,36 @@
     {
       "source": "/rss.xml",
       "destination": "/seo/rss.xml"
+    },
+    {
+      "source": "/gio-hang",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/thanh-toan",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/quan-ly-don-hang",
+      "destination": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/llms.txt",
+      "headers": [
+        { "key": "Content-Type", "value": "text/plain; charset=utf-8" },
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Cache-Control", "value": "public, max-age=3600" }
+      ]
+    },
+    {
+      "source": "/.well-known/agent.json",
+      "headers": [
+        { "key": "Content-Type", "value": "application/json; charset=utf-8" },
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Cache-Control", "value": "public, max-age=3600" }
+      ]
     }
   ],
   "headers": [

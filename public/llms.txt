@@ -1,0 +1,37 @@
+# Đồ Câu LK Hòa (docaulkhoa.vn)
+
+> Hệ thống bán lẻ trang bị câu cá thể thao thực chiến chính hãng tại Việt Nam (Cần câu đài, Cần Lure, Máy câu, Mồi câu, Dây dù PE và Phụ kiện). Hỗ trợ đặt hàng trực tiếp COD đồng kiểm toàn quốc, VietQR và điều hướng Shopee/TikTok Shop.
+
+## Thông tin Thương hiệu & Xác thực (Merchant Identity)
+- Tên cửa hàng: Đồ Câu LK Hòa
+- Tên miền chính thức: https://docaulkhoa.vn
+- Địa chỉ: Đường mòn Hồ Chí Minh, Xóm Yên Lâm, Xã Nghĩa Lâm, Huyện Nghĩa Đàn, Tỉnh Nghệ An
+- Hotline / Zalo: +84-933-040-999
+- Tiền tệ mặc định: VND
+- Khu vực phục vụ: Toàn quốc Việt Nam (VN)
+
+## Chính sách Giao hàng, Thanh toán & Đổi trả
+- Phí vận chuyển: MIỄN PHÍ VẬN CHUYỂN (0đ) cho đơn hàng từ 300.000đ trở lên HOẶC bất kỳ đơn hàng nào có chứa Cần câu (đóng gói ống nhựa PVC cứng chống gãy đọt). Đơn phụ kiện dưới 300.000đ đồng giá 30.000đ toàn quốc.
+- Thời gian giao hàng dự kiến: 1–2 ngày làm việc (Nghệ An, Thanh Hóa, Hà Tĩnh, Hà Nội, TP.HCM), 2–4 ngày làm việc toàn quốc.
+- Phương thức thanh toán: COD (thanh toán tiền mặt khi nhận hàng, cho phép đồng kiểm) và VietQR (chuyển khoản ngân hàng nhanh kèm mã đơn hàng).
+- Chính sách bảo hành & đổi trả: Đổi mới 1-1 trong 7 ngày nếu lỗi nhà sản xuất hoặc hư hỏng vận chuyển; hỗ trợ thay lóng/ngọn cần chính hãng.
+- Mã ưu đãi công khai: `LKHOA10` (giảm 10.000đ mọi đơn), `LKHOA30` (giảm 30.000đ đơn từ 500.000đ), `FREESHIP` (miễn phí vận chuyển).
+
+## Giao thức B2A (Business-to-Agent Commerce APIs)
+Các AI Agent mua sắm (Shopping Agents / Procurement Agents) có thể truy vấn trực tiếp dữ liệu chuẩn JSON thay vì parse HTML:
+
+- Agent Discovery Card: https://docaulkhoa.vn/.well-known/agent.json
+- Manifest & Action Schema: GET https://docaulkhoa.vn/api/agent/manifest
+- Danh mục & Biến thể SKU chuẩn: GET https://docaulkhoa.vn/api/agent/catalog?q=&category=&maxPrice=&freeShippingOnly=&limit=20
+- Báo giá giỏ hàng & Phí ship tức thì: POST https://docaulkhoa.vn/api/agent/quote
+- Đặt hàng chuẩn B2A (COD / VietQR): POST https://docaulkhoa.vn/api/agent/checkout
+- Tra cứu trạng thái đơn hàng: GET https://docaulkhoa.vn/api/agent/orders/{orderCode}/status?token=...
+
+## Tài nguyên cho người dùng & trình duyệt
+- Trang chủ: https://docaulkhoa.vn/
+- Tất cả sản phẩm: https://docaulkhoa.vn/san-pham
+- Cẩm nang kỹ thuật câu cá: https://docaulkhoa.vn/cam-nang
+- Chính sách bảo hành & đổi trả: https://docaulkhoa.vn/chinh-sach-bao-hanh-doi-tra
+- Chính sách vận chuyển: https://docaulkhoa.vn/chinh-sach-van-chuyen
+- Chính sách thanh toán: https://docaulkhoa.vn/chinh-sach-thanh-toan
+- Sitemap XML: https://docaulkhoa.vn/sitemap.xml

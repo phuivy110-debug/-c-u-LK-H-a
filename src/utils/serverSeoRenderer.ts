@@ -244,10 +244,13 @@ export function generateRobotsTxt(): string {
   return [
     'User-agent: *',
     'Allow: /',
+    'Allow: /api/agent/',
     'Disallow: /api/',
     '',
     `Sitemap: ${DOMAIN}/sitemap.xml`,
-    `Sitemap: ${DOMAIN}/feed.xml`
+    `Sitemap: ${DOMAIN}/feed.xml`,
+    `# AI & B2A Agent Discovery: ${DOMAIN}/llms.txt`,
+    `# B2A Agent Manifest: ${DOMAIN}/.well-known/agent.json`
   ].join('\n');
 }
 
@@ -302,11 +305,15 @@ export function renderSeoPage(
     if (product) {
       const priceFormatted = product.referencePrice ? `${product.referencePrice.toLocaleString('vi-VN')}đ` : 'Giá tốt';
       title = `${product.name} – ${priceFormatted} | Đồ Câu LK Hòa Chính Hãng`;
-      description = `Tìm hiểu ${product.name} LK Hòa: thông tin sản phẩm, hình ảnh, giá tham khảo ${priceFormatted} và link mua trên Shopee/TikTok Shop. Xem kỹ phân loại trước khi đặt hàng.`;
+      description = `Mua ${product.name} chính hãng tại Đồ Câu LK Hòa (docaulkhoa.vn): giá ${priceFormatted}, giao hàng toàn quốc, đóng ống PVC bảo vệ ngọn cần, hỗ trợ COD đồng kiểm & VietQR.`;
       ogType = 'product';
       if (product.imageUrl) ogImage = product.imageUrl;
       const productDescription = getProductDescription(product);
-      seoBodyHtml = `<main><article><h1>${escapeHtml(product.name)} LK Hòa</h1><p>${escapeHtml(productDescription).replace(/\n\n/g, '</p><p>')}</p><p>Danh mục: ${escapeHtml(product.category)}. Giá tham khảo: ${escapeHtml(priceFormatted)}.</p><p><strong>Gợi ý trước khi mua:</strong> Kiểm tra hình ảnh, thông số, phân loại, tồn kho và ưu đãi đang hiển thị trên gian hàng chính thức.</p><p><strong>Công bố affiliate:</strong> Trang có liên kết tiếp thị tới Shopee hoặc TikTok Shop. Giá của người mua không tăng khi sử dụng liên kết.</p><p><a href="${DOMAIN}/danh-muc/${CATEGORIES.find(c => c.name === product.category)?.slug || 'can-cau'}">Xem thêm sản phẩm ${escapeHtml(product.category)} LK Hòa</a></p></article></main>`;
+      const isFreeShippingItem =
+        (product.referencePrice || 0) >= 300000 ||
+        (product.category || '').toLowerCase().includes('cần') ||
+        /\bcần\b/i.test(product.name || '');
+      seoBodyHtml = `<main><article><h1>${escapeHtml(product.name)} LK Hòa</h1><p>${escapeHtml(productDescription).replace(/\n\n/g, '</p><p>')}</p><p>Danh mục: ${escapeHtml(product.category)}. Giá bán: ${escapeHtml(priceFormatted)}. Hỗ trợ đặt trực tiếp COD đồng kiểm / VietQR hoặc qua Shopee &amp; TikTok Shop.</p><p><strong>Chính sách giao nhận &amp; bảo hành:</strong> ${isFreeShippingItem ? 'Miễn phí vận chuyển toàn quốc' : 'Miễn phí vận chuyển đơn từ 300.000đ (đồng giá 30.000đ đơn dưới 300.000đ)'}, đổi mới 1-1 trong 7 ngày.</p><p><a href="${DOMAIN}/danh-muc/${CATEGORIES.find(c => c.name === product.category)?.slug || 'can-cau'}">Xem thêm sản phẩm ${escapeHtml(product.category)} LK Hòa</a></p></article></main>`;
 
       jsonLdData = [
         {
@@ -326,6 +333,7 @@ export function renderSeoPage(
           'image': product.imageUrl ? [product.imageUrl] : [ogImage],
           'description': productDescription,
           'sku': product.id,
+          'mpn': product.id,
           'category': product.category,
           'brand': {
             '@type': 'Brand',
@@ -337,11 +345,39 @@ export function renderSeoPage(
               '@type': 'Offer',
               'priceCurrency': 'VND',
               'price': product.referencePrice,
+              'priceValidUntil': '2027-12-31',
+              'itemCondition': 'https://schema.org/NewCondition',
               'availability': 'https://schema.org/InStock',
               'url': canonicalUrl,
               'seller': {
                 '@type': 'Organization',
-                'name': 'LK Hòa'
+                'name': 'Đồ Câu LK Hòa',
+                'url': DOMAIN
+              },
+              'shippingDetails': {
+                '@type': 'OfferShippingDetails',
+                'shippingRate': {
+                  '@type': 'MonetaryAmount',
+                  'value': isFreeShippingItem ? 0 : 30000,
+                  'currency': 'VND'
+                },
+                'shippingDestination': {
+                  '@type': 'DefinedRegion',
+                  'addressCountry': 'VN'
+                },
+                'deliveryTime': {
+                  '@type': 'ShippingDeliveryTime',
+                  'handlingTime': { '@type': 'QuantitativeValue', 'minValue': 0, 'maxValue': 1, 'unitCode': 'DAY' },
+                  'transitTime': { '@type': 'QuantitativeValue', 'minValue': 1, 'maxValue': 4, 'unitCode': 'DAY' }
+                }
+              },
+              'hasMerchantReturnPolicy': {
+                '@type': 'MerchantReturnPolicy',
+                'applicableCountry': 'VN',
+                'returnPolicyCategory': 'https://schema.org/MerchantReturnFiniteReturnWindow',
+                'merchantReturnDays': 7,
+                'returnMethod': 'https://schema.org/ReturnByMail',
+                'returnFees': 'https://schema.org/FreeReturn'
               }
             }
           } : {}),
@@ -448,9 +484,9 @@ export function renderSeoPage(
   // ROUTE 5: Privacy policy
   else if (reqPath === '/quyen-rieng-tu') {
     title = 'Chính sách quyền riêng tư | Đồ Câu LK Hòa';
-    description = 'Chính sách quyền riêng tư của docaulkhoa.vn về Google Analytics 4, cookie, liên kết ngoài và dữ liệu người dùng.';
-    keywords = 'chính sách quyền riêng tư docaulkhoa.vn, Google Analytics 4, cookie';
-    seoBodyHtml = `<main><article><h1>Chính sách quyền riêng tư</h1><p>docaulkhoa.vn sử dụng Google Analytics 4 để thống kê trang đã xem, nguồn truy cập, loại thiết bị và sự kiện bấm liên kết affiliate.</p><p>Website không yêu cầu hoặc lưu thông tin thẻ thanh toán. Việc mua hàng diễn ra trên Shopee hoặc TikTok theo chính sách riêng của các nền tảng đó.</p><h2>Cookie và liên kết ngoài</h2><p>Người dùng có thể chặn cookie trong trình duyệt. Khi rời website qua liên kết mua hàng, chính sách của nền tảng đích sẽ được áp dụng.</p><p>Liên hệ về dữ liệu: <a href="tel:0933040999">0933 040 999</a>.</p></article></main>`;
+    description = 'Chính sách quyền riêng tư và bảo vệ thông tin khách hàng đặt hàng trực tiếp COD/VietQR tại docaulkhoa.vn.';
+    keywords = 'chính sách quyền riêng tư docaulkhoa.vn, bảo mật thông tin đơn hàng, Google Analytics 4';
+    seoBodyHtml = `<main><article><h1>Chính sách quyền riêng tư</h1><p>docaulkhoa.vn thu thập họ tên, số điện thoại và địa chỉ giao hàng chỉ nhằm xác nhận đơn hàng, đóng gói vận chuyển và bảo hành ngọn cần chính hãng cho khách hàng.</p><p>Website không lưu trữ số thẻ tín dụng hay mật khẩu ngân hàng; giao dịch thực hiện qua COD đồng kiểm hoặc chuyển khoản VietQR. Khi người dùng chọn chuyển sang Shopee hoặc TikTok Shop, chính sách của sàn tương ứng được áp dụng.</p><h2>Cookie và liên kết ngoài</h2><p>Người dùng có thể quản lý cookie hoặc giỏ hàng trong trình duyệt. Liên hệ về dữ liệu: <a href="tel:0933040999">0933 040 999</a>.</p></article></main>`;
     jsonLdData = {
       '@context': 'https://schema.org',
       '@type': 'WebPage',
