@@ -31,7 +31,6 @@ import { formatPrice } from '../utils/catalog';
 import { loadLocalOrders, updateLocalOrder } from '../utils/cartStore';
 import { OrderSummaryDashboard } from './OrderSummaryDashboard';
 
-const ADMIN_SESSION_STORAGE_KEY = 'lkhoa_admin_token_v1';
 const LOCAL_BROWSER_MODE_TOKEN = '__local_browser_mode__';
 
 const DEFAULT_CONNECTOR_SUMMARIES: ConnectorSummary[] = [
@@ -132,27 +131,7 @@ const CONNECTOR_META: Record<
 };
 
 export const OrderManagementPage: React.FC<OrderManagementPageProps> = ({ onNavigate }) => {
-  const [adminToken, setAdminTokenState] = useState<string | null>(() => {
-    if (typeof sessionStorage === 'undefined') return null;
-    try {
-      return sessionStorage.getItem(ADMIN_SESSION_STORAGE_KEY);
-    } catch {
-      return null;
-    }
-  });
-  const setAdminToken = useCallback((nextToken: string | null) => {
-    setAdminTokenState(nextToken);
-    if (typeof sessionStorage === 'undefined') return;
-    try {
-      if (nextToken) {
-        sessionStorage.setItem(ADMIN_SESSION_STORAGE_KEY, nextToken);
-      } else {
-        sessionStorage.removeItem(ADMIN_SESSION_STORAGE_KEY);
-      }
-    } catch {
-      // Ignore storage restrictions
-    }
-  }, []);
+  const [adminToken, setAdminToken] = useState<string | null>(null);
   const isLocalBrowserMode = adminToken === LOCAL_BROWSER_MODE_TOKEN;
 
   const [adminStatus, setAdminStatus] = useState<AdminStatusResponse | null>(null);
@@ -227,6 +206,15 @@ export const OrderManagementPage: React.FC<OrderManagementPageProps> = ({ onNavi
     loadAdminStatus();
   }, [loadAdminStatus]);
 
+  const parseSafeJson = useCallback(async (res: Response) => {
+    const raw = await res.text();
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return null;
+    }
+  }, []);
+
   const fetchDashboardData = useCallback(async (token: string) => {
     if (token === LOCAL_BROWSER_MODE_TOKEN) {
       setOrders(loadLocalOrders());
@@ -245,13 +233,23 @@ export const OrderManagementPage: React.FC<OrderManagementPageProps> = ({ onNavi
         setAuthError('Phiên đăng nhập quản trị đã hết hạn. Vui lòng đăng nhập lại.');
         return;
       }
-      if (ordersRes.ok) {
-        const data = await ordersRes.json();
-        let serverOrders: OrderRecord[] = Array.isArray(data.orders) ? data.orders : [];
+
+      const ordersData = await parseSafeJson(ordersRes);
+      const connData = await parseSafeJson(connRes);
+
+      if (!ordersRes.ok || !ordersData) {
+        setFeedback({
+          type: 'error',
+          text: ordersData?.error || `Không thể tải danh sách đơn hàng (HTTP ${ordersRes.status}).`,
+        });
+      } else {
+        let serverOrders: OrderRecord[] = Array.isArray(ordersData.orders) ? ordersData.orders : [];
         const serverCodes = new Set(serverOrders.map((o) => o.orderCode));
         const unsyncedLocal = loadLocalOrders().filter((o) => !serverCodes.has(o.orderCode));
         if (unsyncedLocal.length > 0) {
           let syncedCount = 0;
+          let failedCount = 0;
+          let lastSyncError = '';
           for (const localOrder of unsyncedLocal) {
             try {
               const syncRes = await fetch('/api/orders', {
@@ -262,19 +260,31 @@ export const OrderManagementPage: React.FC<OrderManagementPageProps> = ({ onNavi
                   idempotencyKey: localOrder.orderCode,
                 }),
               });
-              if (syncRes.ok) {
-                const syncData = await syncRes.json();
-                if (syncData?.order && !serverCodes.has(syncData.order.orderCode)) {
+              const syncData = await parseSafeJson(syncRes);
+              if (syncRes.ok && syncData?.order) {
+                if (!serverCodes.has(syncData.order.orderCode)) {
                   serverOrders = [syncData.order, ...serverOrders];
                   serverCodes.add(syncData.order.orderCode);
-                  syncedCount += 1;
                 }
+                syncedCount += 1;
+              } else {
+                failedCount += 1;
+                lastSyncError = syncData?.error || `HTTP ${syncRes.status}`;
               }
             } catch {
-              // Ignore transient sync error for individual local draft
+              failedCount += 1;
+              lastSyncError = 'Không thể kết nối máy chủ (/api/orders)';
             }
           }
-          if (syncedCount > 0) {
+          if (failedCount > 0) {
+            setFeedback({
+              type: 'error',
+              text:
+                syncedCount > 0
+                  ? `Đã đồng bộ ${syncedCount} đơn từ trình duyệt, nhưng còn ${failedCount} đơn chưa đồng bộ được (${lastSyncError}).`
+                  : `Có ${failedCount} đơn lưu trên trình duyệt chưa đồng bộ được lên máy chủ (${lastSyncError}).`,
+            });
+          } else if (syncedCount > 0) {
             setFeedback({
               type: 'success',
               text: `Đã tự động đồng bộ ${syncedCount} đơn hàng lưu trên trình duyệt lên máy chủ.`,
@@ -283,31 +293,29 @@ export const OrderManagementPage: React.FC<OrderManagementPageProps> = ({ onNavi
         }
         setOrders(serverOrders);
       }
-      if (connRes.ok) {
-        const cData = await connRes.json();
-        setConnectors(Array.isArray(cData.connectors) ? cData.connectors : []);
+
+      if (!connRes.ok || !connData) {
+        setFeedback((prev) =>
+          prev || {
+            type: 'error',
+            text: connData?.error || `Không thể tải cấu hình cổng kết nối (HTTP ${connRes.status}).`,
+          }
+        );
+      } else {
+        setConnectors(Array.isArray(connData.connectors) ? connData.connectors : []);
       }
     } catch {
       setFeedback({ type: 'error', text: 'Không thể tải dữ liệu quản trị từ máy chủ.' });
     } finally {
       setLoadingOrders(false);
     }
-  }, [setAdminToken]);
+  }, [parseSafeJson]);
 
   useEffect(() => {
     if (adminToken) {
       fetchDashboardData(adminToken);
     }
   }, [adminToken, fetchDashboardData]);
-
-  const parseSafeJson = async (res: Response) => {
-    const raw = await res.text();
-    try {
-      return JSON.parse(raw);
-    } catch {
-      return null;
-    }
-  };
 
   const handleClaimAdmin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -397,9 +405,9 @@ export const OrderManagementPage: React.FC<OrderManagementPageProps> = ({ onNavi
         },
         body: JSON.stringify(patch),
       });
-      const data = await res.json();
-      if (!res.ok) {
-        setFeedback({ type: 'error', text: data.error || 'Cập nhật đơn hàng thất bại.' });
+      const data = await parseSafeJson(res);
+      if (!res.ok || !data?.order) {
+        setFeedback({ type: 'error', text: data?.error || `Cập nhật đơn hàng thất bại (HTTP ${res.status}).` });
         return;
       }
       setOrders((prev) => prev.map((o) => (o.orderCode === orderCode ? data.order : o)));
@@ -438,9 +446,12 @@ export const OrderManagementPage: React.FC<OrderManagementPageProps> = ({ onNavi
           heightCm: pkgHeight,
         }),
       });
-      const data = await res.json();
-      if (!res.ok) {
-        setFeedback({ type: 'error', text: data.error || 'Không thể đẩy đơn sang đơn vị vận chuyển.' });
+      const data = await parseSafeJson(res);
+      if (!res.ok || !data?.order) {
+        setFeedback({
+          type: 'error',
+          text: data?.error || `Không thể đẩy đơn sang đơn vị vận chuyển (HTTP ${res.status}).`,
+        });
         return;
       }
       setOrders((prev) =>
@@ -478,12 +489,17 @@ export const OrderManagementPage: React.FC<OrderManagementPageProps> = ({ onNavi
         },
         body: JSON.stringify({ orderCode }),
       });
-      const data = await res.json();
-      if (!res.ok) {
-        setFeedback({ type: 'error', text: data.error || 'Không thể đẩy đơn sang Pancake POS.' });
+      const data = await parseSafeJson(res);
+      if (data?.order) {
+        setOrders((prev) => prev.map((o) => (o.orderCode === orderCode ? data.order : o)));
+      }
+      if (!res.ok || !data?.pancakeOrderId) {
+        setFeedback({
+          type: 'error',
+          text: data?.error || `Không thể đẩy đơn sang Pancake POS (HTTP ${res.status}).`,
+        });
         return;
       }
-      setOrders((prev) => prev.map((o) => (o.orderCode === orderCode ? data.order : o)));
       setFeedback({
         type: 'success',
         text: `Đã đồng bộ đơn #${orderCode} sang Pancake POS! Mã Pancake: ${data.pancakeOrderId}`,
@@ -531,9 +547,12 @@ export const OrderManagementPage: React.FC<OrderManagementPageProps> = ({ onNavi
           autoSync: cfgAutoSync,
         }),
       });
-      const data = await res.json();
-      if (!res.ok) {
-        setFeedback({ type: 'error', text: data.error || 'Không thể lưu cấu hình cổng kết nối.' });
+      const data = await parseSafeJson(res);
+      if (!res.ok || !data?.connector) {
+        setFeedback({
+          type: 'error',
+          text: data?.error || `Không thể lưu cấu hình cổng kết nối (HTTP ${res.status}).`,
+        });
         return;
       }
       setConnectors((prev) =>
@@ -558,13 +577,13 @@ export const OrderManagementPage: React.FC<OrderManagementPageProps> = ({ onNavi
         method: 'POST',
         headers: { Authorization: `Bearer ${adminToken}` },
       });
-      const data = await res.json();
-      if (data.connector) {
+      const data = await parseSafeJson(res);
+      if (data?.connector) {
         setConnectors((prev) => prev.map((c) => (c.provider === provider ? data.connector : c)));
       }
       setFeedback({
-        type: res.ok && data.success ? 'success' : 'error',
-        text: data.message || data.error || 'Đã hoàn tất kiểm tra kết nối.',
+        type: res.ok && data?.success ? 'success' : 'error',
+        text: data?.message || data?.error || `Kiểm tra kết nối thất bại (HTTP ${res.status}).`,
       });
     } catch {
       setFeedback({ type: 'error', text: 'Lỗi mạng khi kiểm tra kết nối.' });
@@ -581,10 +600,12 @@ export const OrderManagementPage: React.FC<OrderManagementPageProps> = ({ onNavi
         method: 'DELETE',
         headers: { Authorization: `Bearer ${adminToken}` },
       });
-      const data = await res.json();
-      if (res.ok && data.connector) {
+      const data = await parseSafeJson(res);
+      if (res.ok && data?.connector) {
         setConnectors((prev) => prev.map((c) => (c.provider === provider ? data.connector : c)));
         setFeedback({ type: 'success', text: `Đã ngắt kết nối ${data.connector.name}.` });
+      } else {
+        setFeedback({ type: 'error', text: data?.error || `Không thể ngắt kết nối (HTTP ${res.status}).` });
       }
     } catch {
       setFeedback({ type: 'error', text: 'Không thể ngắt kết nối.' });
@@ -1002,6 +1023,11 @@ export const OrderManagementPage: React.FC<OrderManagementPageProps> = ({ onNavi
                         <span className="px-2 py-0.5 rounded-md bg-slate-800 text-slate-200 text-[11px] font-bold">
                           {order.paymentMethod === 'cod' ? 'COD đồng kiểm' : 'VietQR'}
                         </span>
+                        {order.channel === 'b2a-agent' && (
+                          <span className="px-2 py-0.5 rounded-md bg-violet-950 border border-violet-700 text-violet-200 text-[11px] font-bold">
+                            B2A Agent{order.agentName ? `: ${order.agentName}` : ''}
+                          </span>
+                        )}
                         {order.trackingCode && (
                           <span className="px-2 py-0.5 rounded-md bg-emerald-950 border border-emerald-700 text-emerald-300 text-[11px] font-mono-tabular font-bold">
                             {order.shippingCarrier?.toUpperCase() || 'SHIP'}: {order.trackingCode}
@@ -1012,11 +1038,31 @@ export const OrderManagementPage: React.FC<OrderManagementPageProps> = ({ onNavi
                             Pancake POS: #{order.pancakeOrderId}
                           </span>
                         )}
+                        {order.webhookSyncedAt && !order.webhookSyncError && (
+                          <span className="px-2 py-0.5 rounded-md bg-emerald-950/70 border border-emerald-800 text-emerald-300 text-[11px] font-bold">
+                            Webhook: Đã đồng bộ
+                          </span>
+                        )}
                       </div>
                       <span className="text-xs text-slate-400 tabular-nums">
                         {new Date(order.createdAt).toLocaleString('vi-VN')}
                       </span>
                     </div>
+
+                    {(order.pancakeSyncError || order.webhookSyncError) && (
+                      <div className="rounded-xl border border-orange-700/60 bg-orange-950/35 px-3 py-2 text-xs text-orange-200 space-y-1">
+                        {order.pancakeSyncError && (
+                          <p>
+                            <strong className="text-[#F97316]">Lỗi đồng bộ Pancake POS:</strong> {order.pancakeSyncError}
+                          </p>
+                        )}
+                        {order.webhookSyncError && (
+                          <p>
+                            <strong className="text-[#F97316]">Lỗi đồng bộ Webhook:</strong> {order.webhookSyncError}
+                          </p>
+                        )}
+                      </div>
+                    )}
 
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 text-xs sm:text-sm">
                       <div className="lg:col-span-5 space-y-1 text-slate-300">
@@ -1133,7 +1179,7 @@ export const OrderManagementPage: React.FC<OrderManagementPageProps> = ({ onNavi
                 </span>
               </div>
               <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                Chọn cổng bạn muốn dùng rồi bấm <strong className="text-white">Kết nối / Cấu hình</strong> để nhập API Key &amp; Shop ID ngay sau khi đăng nhập Admin. Để tự động ghi nhớ Token khi máy chủ khởi động lại, có thể điền thêm vào{' '}
+                Chọn cổng bạn muốn dùng rồi bấm <strong className="text-white">Kết nối / Cấu hình</strong> để nhập API Key &amp; Shop ID ngay sau khi đăng nhập Admin. Token được mã hóa bảo mật trên máy chủ; nếu triển khai nhiều instance Serverless (Vercel), nên cài thêm trong{' '}
                 <strong className="text-[#FACC15]">Settings → Secrets</strong>.
               </p>
 
@@ -1291,7 +1337,7 @@ export const OrderManagementPage: React.FC<OrderManagementPageProps> = ({ onNavi
               <div className="rounded-xl border border-emerald-800/50 bg-[#14532D]/20 p-3 text-xs text-slate-200 flex items-start gap-2">
                 <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
                 <span>
-                  API Key/Token nhập trong Admin được giữ bảo mật trên RAM máy chủ (không lưu chữ thô ra file và không trả ngược về trình duyệt). Nếu muốn cố định vĩnh viễn qua các lần khởi động lại server, hãy điền thêm vào <strong>Settings → Secrets</strong>.
+                  API Key/Token nhập trong Admin được mã hóa AES-256-GCM trên máy chủ và không bao giờ trả ngược về trình duyệt. Nếu triển khai trên Vercel đa vùng, bạn nên khai báo thêm trong <strong>Settings → Secrets</strong>.
                 </span>
               </div>
 

@@ -140,9 +140,17 @@ export function estimateDeliveryWindow(province: string): string {
   return '2–4 ngày làm việc (Giao hàng toàn quốc, đồng kiểm)';
 }
 
+export function normalizeVietnamesePhone(phone: string): string {
+  let digits = String(phone || '').replace(/\D/g, '');
+  if (digits.startsWith('84') && digits.length === 11 && /^84[35789][0-9]{8}$/.test(digits)) {
+    digits = `0${digits.slice(2)}`;
+  }
+  return digits;
+}
+
 export function validateVietnamesePhone(phone: string): boolean {
-  const cleaned = phone.replace(/[\s.-]/g, '');
-  return /^0[35789][0-9]{8}$/.test(cleaned);
+  const normalized = normalizeVietnamesePhone(phone);
+  return /^0[35789][0-9]{8}$/.test(normalized);
 }
 
 export function generateOrderCode(): string {
@@ -269,10 +277,19 @@ export function buildOrderRecord(
   couponCode: string
 ): OrderRecord {
   const totals = calculateCheckoutTotals(items, couponCode);
+  const normalizedCustomer: OrderCustomerInfo = {
+    fullName: customer.fullName.trim(),
+    phone: normalizeVietnamesePhone(customer.phone),
+    province: customer.province.trim(),
+    district: customer.district.trim(),
+    ward: customer.ward.trim(),
+    address: customer.address.trim(),
+    note: customer.note?.trim() || '',
+  };
   return {
     orderCode: generateOrderCode(),
     createdAt: new Date().toISOString(),
-    customer,
+    customer: normalizedCustomer,
     paymentMethod,
     items,
     subtotal: totals.subtotal,

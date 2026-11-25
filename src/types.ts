@@ -137,6 +137,11 @@ export interface OrderRecord {
   pushedToCarrierAt?: string;
   pancakeOrderId?: string;
   pancakeSyncedAt?: string;
+  pancakeSyncError?: string;
+  webhookSyncedAt?: string;
+  webhookSyncError?: string;
+  channel?: 'web' | 'b2a-agent';
+  agentName?: string;
   updatedAt?: string;
 }
 

@@ -2,6 +2,17 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": "vite",
+  "functions": {
+    "api/index.ts": {
+      "includeFiles": "api/_published_sheet_fallback.csv"
+    },
+    "api/sitemap.ts": {
+      "includeFiles": "api/_published_sheet_fallback.csv"
+    },
+    "api/rss.ts": {
+      "includeFiles": "api/_published_sheet_fallback.csv"
+    }
+  },
   "redirects": [
     {
       "source": "/danh-muc/tat-ca",

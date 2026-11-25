@@ -1,6 +1,7 @@
 import express from 'express';
 import path from 'path';
 import fs from 'fs';
+import os from 'os';
 import crypto from 'crypto';
 import net from 'net';
 import { loadServerProducts } from '../utils/serverSeoRenderer';
@@ -11,6 +12,7 @@ import {
   calculateCheckoutTotals,
   estimateDeliveryWindow,
   generateOrderCode,
+  normalizeVietnamesePhone,
 } from '../utils/cartStore';
 import {
   DOMAIN,
@@ -22,8 +24,22 @@ import {
 } from '../utils/site';
 import type { CartItem, Product } from '../types';
 
-const isVercelRuntime = Boolean(process.env.VERCEL);
-const mutableDataDir = isVercelRuntime ? '/tmp/lkhoa-data' : process.cwd();
+const isServerlessRuntime = Boolean(
+  process.env.VERCEL || process.env.NOW_REGION || process.env.AWS_LAMBDA_FUNCTION_NAME
+);
+
+function detectMutableDir(): string {
+  const tmpDir = path.join(os.tmpdir(), 'lkhoa-data');
+  if (isServerlessRuntime) return tmpDir;
+  try {
+    fs.accessSync(process.cwd(), fs.constants.W_OK);
+    return process.cwd();
+  } catch {
+    return tmpDir;
+  }
+}
+
+const mutableDataDir = detectMutableDir();
 
 function ensureMutableDir() {
   if (!fs.existsSync(mutableDataDir)) {
@@ -34,7 +50,13 @@ function ensureMutableDir() {
 function resolveReadPath(filename: string): string {
   const mutablePath = path.join(mutableDataDir, filename);
   if (fs.existsSync(mutablePath)) return mutablePath;
-  return path.join(process.cwd(), filename);
+  const cwdPath = path.join(process.cwd(), filename);
+  if (fs.existsSync(cwdPath)) return cwdPath;
+  if (typeof __dirname !== 'undefined') {
+    const dirPath = path.join(__dirname, filename);
+    if (fs.existsSync(dirPath)) return dirPath;
+  }
+  return cwdPath;
 }
 
 function resolveWritePath(filename: string): string {
@@ -80,6 +102,14 @@ export function createApiApp(): express.Express {
   // Safely parse JSON only when not already parsed (e.g. Vercel Serverless pre-parses req.body)
   const jsonParser = express.json({ limit: '2mb' });
   app.use((req, res, next) => {
+    if (typeof req.body === 'string') {
+      try {
+        req.body = JSON.parse(req.body);
+      } catch {
+        // Leave as-is if invalid JSON string
+      }
+      return next();
+    }
     if (req.body !== undefined) return next();
     return jsonParser(req, res, next);
   });
@@ -373,7 +403,7 @@ export function createApiApp(): express.Express {
     }
   };
 
-  if (!isVercelRuntime) {
+  if (!isServerlessRuntime) {
     syncShopeePricesInternal().catch(() => {});
     setInterval(() => {
       syncShopeePricesInternal().catch(() => {});
@@ -556,6 +586,7 @@ export function createApiApp(): express.Express {
     warehouseId?: string;
     webhookUrl?: string;
     maskedToken?: string;
+    encryptedToken?: string;
     lastTestedAt?: string;
     lastTestOk?: boolean;
     lastTestMessage?: string;
@@ -565,6 +596,39 @@ export function createApiApp(): express.Express {
     globalForAuth.__lkhoaRuntimeConnectorTokens = new Map<string, string>();
   }
   const runtimeConnectorTokens = globalForAuth.__lkhoaRuntimeConnectorTokens;
+
+  const deriveConnectorCipherKey = (): Buffer => {
+    return crypto.createHash('sha256').update(`lkhoa-connector-cipher:${getSessionSecretKey()}`).digest();
+  };
+
+  const encryptConnectorToken = (plainToken: string): string => {
+    const iv = crypto.randomBytes(12);
+    const cipher = crypto.createCipheriv('aes-256-gcm', deriveConnectorCipherKey(), iv);
+    const encrypted = Buffer.concat([cipher.update(plainToken, 'utf8'), cipher.final()]);
+    const authTag = cipher.getAuthTag();
+    return `v1:${iv.toString('hex')}:${authTag.toString('hex')}:${encrypted.toString('hex')}`;
+  };
+
+  const decryptConnectorToken = (payload: string | undefined): string => {
+    if (!payload || !payload.startsWith('v1:')) return '';
+    try {
+      const [, ivHex, tagHex, dataHex] = payload.split(':');
+      if (!ivHex || !tagHex || !dataHex) return '';
+      const decipher = crypto.createDecipheriv(
+        'aes-256-gcm',
+        deriveConnectorCipherKey(),
+        Buffer.from(ivHex, 'hex')
+      );
+      decipher.setAuthTag(Buffer.from(tagHex, 'hex'));
+      const decrypted = Buffer.concat([
+        decipher.update(Buffer.from(dataHex, 'hex')),
+        decipher.final(),
+      ]);
+      return decrypted.toString('utf8').trim();
+    } catch {
+      return '';
+    }
+  };
 
   const loadConnectorsConfig = (): Partial<Record<ConnectorProvider, StoredConnectorConfig>> => {
     try {
@@ -635,8 +699,15 @@ export function createApiApp(): express.Express {
       envToken = (process.env.VTP_TOKEN || '').trim();
     }
 
-    const runtimeToken = (runtimeConnectorTokens.get(provider) || '').trim();
-    const effectiveToken = envToken || runtimeToken;
+    let persistedToken = (runtimeConnectorTokens.get(provider) || '').trim();
+    if (!persistedToken && cfg.encryptedToken) {
+      persistedToken = decryptConnectorToken(cfg.encryptedToken);
+      if (persistedToken) {
+        runtimeConnectorTokens.set(provider, persistedToken);
+      }
+    }
+
+    const effectiveToken = envToken || persistedToken;
     const effectiveShopId = envShopId || (cfg.shopId || '').trim();
     const effectiveWebhookUrl = (cfg.webhookUrl || '').trim();
 
@@ -651,7 +722,7 @@ export function createApiApp(): express.Express {
 
     const source: 'env' | 'admin-ui' | 'none' = envToken
       ? 'env'
-      : runtimeToken || (provider === 'webhook' && connected)
+      : persistedToken || (provider === 'webhook' && connected)
         ? 'admin-ui'
         : 'none';
 
@@ -662,7 +733,11 @@ export function createApiApp(): express.Express {
       warehouseId: (cfg.warehouseId || '').trim(),
       webhookUrl: effectiveWebhookUrl,
       autoSync: Boolean(cfg.autoSync),
-      maskedToken: envToken ? maskSecretToken(envToken) : runtimeToken ? cfg.maskedToken || maskSecretToken(runtimeToken) : undefined,
+      maskedToken: envToken
+        ? maskSecretToken(envToken)
+        : persistedToken
+          ? cfg.maskedToken || maskSecretToken(persistedToken)
+          : undefined,
       connected,
       source,
       lastTestedAt: cfg.lastTestedAt,
@@ -689,7 +764,7 @@ export function createApiApp(): express.Express {
     };
   };
 
-  const pushOrderToPancakeInternal = async (order: any) => {
+  const pushOrderToPancakeInternal = async (order: any, timeoutMs = 10000) => {
     const creds = resolveConnectorCredentials('pancake');
     if (!creds.token || !creds.shopId) {
       return {
@@ -699,7 +774,14 @@ export function createApiApp(): express.Express {
       };
     }
 
-    const fullAddress = `${order.customer.address}, ${order.customer.ward}, ${order.customer.district}, ${order.customer.province}`;
+    const fullAddress = [
+      order.customer.address,
+      order.customer.ward,
+      order.customer.district,
+      order.customer.province,
+    ]
+      .filter(Boolean)
+      .join(', ');
     const codAmount = order.paymentMethod === 'cod' ? Math.round(order.total || 0) : 0;
     const shopIdNum = Number(creds.shopId);
 
@@ -736,26 +818,37 @@ export function createApiApp(): express.Express {
     if (creds.warehouseId) payload.warehouse_id = creds.warehouseId;
 
     const pancakeUrl = `https://pos.pages.fm/api/v1/shops/${encodeURIComponent(creds.shopId)}/orders?api_key=${encodeURIComponent(creds.token)}`;
-    const resp = await fetch(pancakeUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-      signal: AbortSignal.timeout(10000),
-    });
-    const data: any = await resp.json().catch(() => ({}));
-    const pancakeId = data?.data?.id || data?.id || data?.order_id;
-    if (!resp.ok || data?.success === false || !pancakeId) {
+    try {
+      const resp = await fetch(pancakeUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(timeoutMs),
+      });
+      const data: any = await resp.json().catch(() => ({}));
+      const pancakeId = data?.data?.id || data?.id || data?.order_id;
+      if (!resp.ok || data?.success === false || !pancakeId) {
+        return {
+          ok: false as const,
+          status: 502,
+          error:
+            data?.message ||
+            data?.error ||
+            `Pancake POS từ chối tạo đơn (HTTP ${resp.status}). Kiểm tra lại API Key và Shop ID.`,
+        };
+      }
+
+      return { ok: true as const, pancakeOrderId: String(pancakeId) };
+    } catch (err: any) {
       return {
         ok: false as const,
         status: 502,
-        error: data?.message || data?.error || 'Pancake POS từ chối tạo đơn. Kiểm tra lại API Key và Shop ID.',
+        error: `Lỗi kết nối Pancake POS: ${err?.message || 'Timeout / Không thể truy cập pos.pages.fm'}`,
       };
     }
-
-    return { ok: true as const, pancakeOrderId: String(pancakeId) };
   };
 
-  const pushOrderToWebhookInternal = async (order: any) => {
+  const pushOrderToWebhookInternal = async (order: any, timeoutMs = 8000) => {
     const creds = resolveConnectorCredentials('webhook');
     if (!creds.webhookUrl) return { ok: false as const, error: 'Chưa cấu hình Webhook URL.' };
     const safeCheck = isSafeExternalHttpsUrl(creds.webhookUrl);
@@ -767,20 +860,27 @@ export function createApiApp(): express.Express {
     };
     if (creds.token) headers['X-Webhook-Secret'] = creds.token;
 
-    const resp = await fetch(safeCheck.url.toString(), {
-      method: 'POST',
-      headers,
-      redirect: 'error',
-      body: JSON.stringify({
-        event: 'order.created',
-        source: 'docaulkhoa.vn',
-        order,
-        timestamp: new Date().toISOString(),
-      }),
-      signal: AbortSignal.timeout(8000),
-    });
-    if (!resp.ok) return { ok: false as const, error: `Webhook trả về HTTP ${resp.status}` };
-    return { ok: true as const };
+    try {
+      const resp = await fetch(safeCheck.url.toString(), {
+        method: 'POST',
+        headers,
+        redirect: 'error',
+        body: JSON.stringify({
+          event: 'order.created',
+          source: 'docaulkhoa.vn',
+          order,
+          timestamp: new Date().toISOString(),
+        }),
+        signal: AbortSignal.timeout(timeoutMs),
+      });
+      if (!resp.ok) return { ok: false as const, error: `Webhook trả về HTTP ${resp.status}` };
+      return { ok: true as const };
+    } catch (err: any) {
+      return {
+        ok: false as const,
+        error: `Lỗi gửi Webhook: ${err?.message || 'Timeout / Không thể kết nối Webhook URL'}`,
+      };
+    }
   };
 
   const signAgentOrderStatusToken = (orderCode: string): string => {
@@ -891,7 +991,12 @@ export function createApiApp(): express.Express {
     return { ok: true, items: resolvedItems };
   };
 
-  const createVerifiedOrderRecord = (params: {
+  const sanitizeOrderForPublicClient = (order: any) => {
+    const { pancakeSyncError: _pe, webhookSyncError: _we, idempotencyKey: _ik, ...publicOrder } = order;
+    return publicOrder;
+  };
+
+  const createVerifiedOrderRecord = async (params: {
     customer: any;
     paymentMethod: 'cod' | 'vietqr';
     rawItems: AgentRequestedItem[];
@@ -901,7 +1006,7 @@ export function createApiApp(): express.Express {
     channel?: 'web' | 'b2a-agent';
     agentName?: string;
   }) => {
-    const cleanPhone = String(params.customer?.phone || '').replace(/\D/g, '');
+    const cleanPhone = normalizeVietnamesePhone(String(params.customer?.phone || ''));
     if (!/^0[35789][0-9]{8}$/.test(cleanPhone)) {
       return { ok: false as const, status: 400, error: 'Số điện thoại Việt Nam phải gồm đúng 10 chữ số hợp lệ.' };
     }
@@ -969,44 +1074,79 @@ export function createApiApp(): express.Express {
     orders.unshift(record);
     saveOrdersStore(orders);
 
-    void (async () => {
-      try {
-        const pancakeCreds = resolveConnectorCredentials('pancake');
-        if (pancakeCreds.connected && pancakeCreds.autoSync) {
-          const pRes = await pushOrderToPancakeInternal(record);
+    // Run enabled auto-sync integrations and persist their outcomes before returning HTTP 201
+    // (critical on serverless runtimes where background tasks terminate after res.json)
+    const pancakeCreds = resolveConnectorCredentials('pancake');
+    const webhookCreds = resolveConnectorCredentials('webhook');
+
+    const syncTasks: Promise<void>[] = [];
+    let syncedUpdates: Record<string, any> = {};
+
+    if (pancakeCreds.connected && pancakeCreds.autoSync) {
+      syncTasks.push(
+        pushOrderToPancakeInternal(record, 4500).then((pRes) => {
           if (pRes.ok) {
-            const latest = loadOrdersStore();
-            const idx = latest.findIndex((o) => o.orderCode === record.orderCode);
-            if (idx !== -1) {
-              latest[idx] = {
-                ...latest[idx],
-                pancakeOrderId: pRes.pancakeOrderId,
-                pancakeSyncedAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-              };
-              saveOrdersStore(latest);
-            }
+            syncedUpdates = {
+              ...syncedUpdates,
+              pancakeOrderId: pRes.pancakeOrderId,
+              pancakeSyncedAt: new Date().toISOString(),
+              pancakeSyncError: undefined,
+            };
+          } else {
+            syncedUpdates = {
+              ...syncedUpdates,
+              pancakeSyncError: pRes.error,
+            };
           }
-        }
-        const webhookCreds = resolveConnectorCredentials('webhook');
-        if (webhookCreds.connected && webhookCreds.autoSync) {
-          await pushOrderToWebhookInternal(record);
-        }
-      } catch (syncErr) {
-        console.warn('Auto-sync order background error:', syncErr);
+        })
+      );
+    }
+
+    if (webhookCreds.connected && webhookCreds.autoSync) {
+      syncTasks.push(
+        pushOrderToWebhookInternal(record, 4500).then((wRes) => {
+          if (wRes.ok) {
+            syncedUpdates = {
+              ...syncedUpdates,
+              webhookSyncedAt: new Date().toISOString(),
+              webhookSyncError: undefined,
+            };
+          } else {
+            syncedUpdates = {
+              ...syncedUpdates,
+              webhookSyncError: wRes.error,
+            };
+          }
+        })
+      );
+    }
+
+    if (syncTasks.length > 0) {
+      await Promise.allSettled(syncTasks);
+      const latest = loadOrdersStore();
+      const idx = latest.findIndex((o) => o.orderCode === record.orderCode);
+      if (idx !== -1) {
+        const merged = {
+          ...latest[idx],
+          ...syncedUpdates,
+          updatedAt: new Date().toISOString(),
+        };
+        latest[idx] = merged;
+        saveOrdersStore(latest);
+        return { ok: true as const, order: merged, deduplicated: false };
       }
-    })();
+    }
 
     return { ok: true as const, order: record, deduplicated: false };
   };
 
-  app.post('/api/orders', (req, res) => {
+  app.post('/api/orders', async (req, res) => {
     try {
       const order = req.body;
       if (!order || !Array.isArray(order.items) || order.items.length === 0 || !order.customer) {
         return res.status(400).json({ error: 'Thông tin đơn hàng hoặc giỏ hàng không hợp lệ.' });
       }
-      const result = createVerifiedOrderRecord({
+      const result = await createVerifiedOrderRecord({
         customer: order.customer,
         paymentMethod: order.paymentMethod === 'vietqr' ? 'vietqr' : 'cod',
         rawItems: order.items,
@@ -1021,7 +1161,7 @@ export function createApiApp(): express.Express {
       return res.status(result.deduplicated ? 200 : 201).json({
         success: true,
         deduplicated: result.deduplicated,
-        order: result.order,
+        order: sanitizeOrderForPublicClient(result.order),
       });
     } catch (err: any) {
       return res.status(500).json({ error: err.message || 'Không thể lưu đơn hàng.' });
@@ -1119,6 +1259,7 @@ export function createApiApp(): express.Express {
             ? webhookUrl.trim().slice(0, 300)
             : prevCfg.webhookUrl,
         maskedToken: cleanToken ? maskSecretToken(cleanToken) : prevCfg.maskedToken,
+        encryptedToken: cleanToken ? encryptConnectorToken(cleanToken) : prevCfg.encryptedToken,
       };
 
       allCfg[provider] = nextCfg;
@@ -1259,6 +1400,7 @@ export function createApiApp(): express.Express {
         ...(allCfg[provider] || {}),
         autoSync: false,
         maskedToken: undefined,
+        encryptedToken: undefined,
         webhookUrl: provider === 'webhook' ? undefined : allCfg[provider]?.webhookUrl,
         lastTestOk: undefined,
         lastTestMessage: 'Đã ngắt kết nối bởi quản trị viên.',
@@ -1279,12 +1421,22 @@ export function createApiApp(): express.Express {
       if (idx === -1) return res.status(404).json({ error: 'Không tìm thấy đơn hàng.' });
 
       const result = await pushOrderToPancakeInternal(orders[idx]);
-      if (!result.ok) return res.status(result.status).json({ error: result.error });
+      if (!result.ok) {
+        const failedOrder = {
+          ...orders[idx],
+          pancakeSyncError: result.error,
+          updatedAt: new Date().toISOString(),
+        };
+        orders[idx] = failedOrder;
+        saveOrdersStore(orders);
+        return res.status(result.status).json({ error: result.error, order: failedOrder });
+      }
 
       const updatedOrder = {
         ...orders[idx],
         pancakeOrderId: result.pancakeOrderId,
         pancakeSyncedAt: new Date().toISOString(),
+        pancakeSyncError: undefined,
         updatedAt: new Date().toISOString(),
       };
       orders[idx] = updatedOrder;
@@ -1328,8 +1480,24 @@ export function createApiApp(): express.Express {
 
       const order = orders[idx];
       const codAmount = order.paymentMethod === 'cod' ? Math.round(order.total || 0) : 0;
-      const fullAddress = `${order.customer.address}, ${order.customer.ward}, ${order.customer.district}, ${order.customer.province}`;
+      const fullAddress = [
+        order.customer.address,
+        order.customer.ward,
+        order.customer.district,
+        order.customer.province,
+      ]
+        .filter(Boolean)
+        .join(', ');
       const noteText = order.customer.note || 'Đồ câu LK Hòa - Đóng ống nhựa PVC, cho khách đồng kiểm.';
+
+      if (
+        (carrier === 'ghn' || carrier === 'ghtk') &&
+        (!String(order.customer?.district || '').trim() || !String(order.customer?.ward || '').trim())
+      ) {
+        return res.status(400).json({
+          error: `Đơn #${order.orderCode} đang thiếu Quận/Huyện hoặc Phường/Xã nên không thể tạo vận đơn ${carrier.toUpperCase()}.`,
+        });
+      }
 
       let trackingCode = '';
 
@@ -1957,14 +2125,14 @@ export function createApiApp(): express.Express {
     }
   });
 
-  app.post('/api/agent/checkout', (req, res) => {
+  app.post('/api/agent/checkout', async (req, res) => {
     try {
       const { customer, items, paymentMethod = 'cod', couponCode = '', idempotencyKey, agentName } = req.body || {};
       if (!Array.isArray(items) || items.length === 0 || !customer) {
         return res.status(400).json({ error: 'Yêu cầu customer và danh sách items hợp lệ.' });
       }
       const headerIdempotency = String(req.headers['idempotency-key'] || '').trim();
-      const result = createVerifiedOrderRecord({
+      const result = await createVerifiedOrderRecord({
         customer,
         paymentMethod: paymentMethod === 'vietqr' ? 'vietqr' : 'cod',
         rawItems: items,

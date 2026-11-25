@@ -16,8 +16,15 @@ export { DOMAIN } from './site';
 // Fallback CSV parsing or fallback products on server side
 export function loadServerProducts(): Product[] {
   try {
-    const csvPath = path.join(process.cwd(), 'src', 'data', 'published_sheet_fallback.csv');
-    if (fs.existsSync(csvPath)) {
+    const candidatePaths = [
+      path.join(process.cwd(), 'src', 'data', 'published_sheet_fallback.csv'),
+      path.join(process.cwd(), 'api', '_published_sheet_fallback.csv'),
+      ...(typeof __dirname !== 'undefined'
+        ? [path.join(__dirname, '_published_sheet_fallback.csv')]
+        : []),
+    ];
+    const csvPath = candidatePaths.find((p) => fs.existsSync(p));
+    if (csvPath) {
       const fileContent = fs.readFileSync(csvPath, 'utf-8');
       const lines = fileContent.split(/\r?\n/).filter(line => line.trim().length > 0);
       if (lines.length > 1) {

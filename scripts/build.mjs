@@ -34,5 +34,29 @@ await esbuild({
   sourcemap: true,
   outfile: 'dist/server.cjs',
 });
-console.log('Production server bundle generated at dist/server.cjs');
+
+// Bundle Vercel Serverless API & SEO modules into CJS so @vercel/node under "type": "module" resolves cleanly
+await Promise.all([
+  esbuild({
+    entryPoints: ['src/server/createApiApp.ts'],
+    bundle: true,
+    platform: 'node',
+    format: 'cjs',
+    packages: 'external',
+    outfile: 'api/_bundled_api.cjs',
+  }),
+  esbuild({
+    entryPoints: ['src/utils/serverSeoRenderer.ts'],
+    bundle: true,
+    platform: 'node',
+    format: 'cjs',
+    packages: 'external',
+    outfile: 'api/_bundled_seo.cjs',
+  }),
+]);
+fs.copyFileSync(
+  path.join('src', 'data', 'published_sheet_fallback.csv'),
+  path.join('api', '_published_sheet_fallback.csv')
+);
+console.log('Production server & Vercel API bundles generated cleanly.');
 

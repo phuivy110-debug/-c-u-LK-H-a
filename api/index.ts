@@ -1,10 +1,12 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { createApiApp } from '../src/server/createApiApp';
+import { createRequire } from 'node:module';
 
-let cachedApp: ReturnType<typeof createApiApp> | null = null;
+const require = createRequire(import.meta.url);
+let cachedApp: any = null;
 
 function getApiApp() {
   if (!cachedApp) {
+    const { createApiApp } = require('./_bundled_api.cjs');
     cachedApp = createApiApp();
   }
   return cachedApp;

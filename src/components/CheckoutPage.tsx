@@ -148,7 +148,11 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onNavigate }) => {
         saveOrderLocally(data.order);
         return { synced: true, savedOrder: data.order, note: '' };
       }
-      const errMsg = data?.error || `Máy chủ chưa ghi nhận đơn (HTTP ${res.status})`;
+      const errMsg =
+        data?.error ||
+        (res.ok
+          ? 'Máy chủ trả về phản hồi không hợp lệ khi lưu đơn.'
+          : `Máy chủ chưa ghi nhận đơn (HTTP ${res.status})`);
       return { synced: false, savedOrder: orderPayload, note: errMsg };
     } catch {
       return {
