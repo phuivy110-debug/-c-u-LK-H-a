@@ -23,6 +23,13 @@ import {
   STORE_NAME,
 } from '../utils/site';
 import type { CartItem, Product } from '../types';
+import {
+  getPersistenceHealth,
+  loadConnectorConfigs,
+  loadOrders,
+  saveConnectorConfigs,
+  saveOrders,
+} from './persistence';
 
 const isServerlessRuntime = Boolean(
   process.env.VERCEL || process.env.NOW_REGION || process.env.AWS_LAMBDA_FUNCTION_NAME
@@ -468,6 +475,19 @@ export function createApiApp(): express.Express {
     });
   });
 
+  app.get('/api/admin/storage-status', requireAdmin, async (_req, res) => {
+    try {
+      res.setHeader('Cache-Control', 'no-store');
+      const storage = await getPersistenceHealth();
+      return res.json({ success: true, storage });
+    } catch (err: any) {
+      return res.status(503).json({
+        success: false,
+        error: err?.message || 'Không thể kết nối kho dữ liệu đơn hàng.',
+      });
+    }
+  });
+
   app.post('/api/admin/claim', (req, res) => {
     try {
       if (isServerlessRuntime) {
@@ -527,22 +547,9 @@ export function createApiApp(): express.Express {
   });
 
   // Persistent Orders Store
-  const loadOrdersStore = (): any[] => {
-    try {
-      const p = resolveReadPath('orders_store.json');
-      if (fs.existsSync(p)) {
-        const parsed = JSON.parse(fs.readFileSync(p, 'utf-8'));
-        return Array.isArray(parsed) ? parsed : [];
-      }
-    } catch (err) {
-      console.warn('Failed to load orders_store.json:', err);
-    }
-    return [];
-  };
-
-  const saveOrdersStore = (orders: any[]) => {
-    fs.writeFileSync(resolveWritePath('orders_store.json'), JSON.stringify(orders.slice(0, 500), null, 2), 'utf-8');
-  };
+  const ordersStorePath = resolveWritePath('orders_store.json');
+  const loadOrdersStore = () => loadOrders(ordersStorePath);
+  const saveOrdersStore = (orders: any[]) => saveOrders(ordersStorePath, orders);
 
   // Connector Gateway Config Store
   type ConnectorProvider = 'pancake' | 'ghn' | 'ghtk' | 'viettelpost' | 'webhook';
@@ -605,21 +612,26 @@ export function createApiApp(): express.Express {
     }
   };
 
-  const loadConnectorsConfig = (): Partial<Record<ConnectorProvider, StoredConnectorConfig>> => {
-    try {
-      const p = resolveReadPath('connectors_store.json');
-      if (fs.existsSync(p)) {
-        const parsed = JSON.parse(fs.readFileSync(p, 'utf-8'));
-        if (parsed && typeof parsed === 'object') return parsed;
-      }
-    } catch (err) {
-      console.warn('Failed to load connectors_store.json:', err);
+  const connectorsStorePath = resolveWritePath('connectors_store.json');
+  let connectorsConfigCache: Partial<Record<ConnectorProvider, StoredConnectorConfig>> = {};
+  let connectorsConfigLoaded = false;
+
+  const hydrateConnectorsConfig = async (force = false) => {
+    if (!connectorsConfigLoaded || force) {
+      connectorsConfigCache = (await loadConnectorConfigs(connectorsStorePath)) as Partial<
+        Record<ConnectorProvider, StoredConnectorConfig>
+      >;
+      connectorsConfigLoaded = true;
     }
-    return {};
+    return connectorsConfigCache;
   };
 
-  const saveConnectorsConfig = (cfg: Partial<Record<ConnectorProvider, StoredConnectorConfig>>) => {
-    fs.writeFileSync(resolveWritePath('connectors_store.json'), JSON.stringify(cfg, null, 2), 'utf-8');
+  const loadConnectorsConfig = () => connectorsConfigCache;
+
+  const saveConnectorsConfig = async (cfg: Partial<Record<ConnectorProvider, StoredConnectorConfig>>) => {
+    connectorsConfigCache = cfg;
+    connectorsConfigLoaded = true;
+    await saveConnectorConfigs(connectorsStorePath, cfg as Record<string, Record<string, any>>);
   };
 
   const maskSecretToken = (token: string): string => {
@@ -1000,7 +1012,7 @@ export function createApiApp(): express.Express {
       return { ok: false as const, status: 400, error: itemRes.error };
     }
 
-    const orders = loadOrdersStore();
+    const orders = await loadOrdersStore();
     const idempotencyKey = params.idempotencyKey ? String(params.idempotencyKey).trim().slice(0, 96) : '';
     if (idempotencyKey) {
       const existing = orders.find((o) => o.idempotencyKey === idempotencyKey);
@@ -1016,9 +1028,10 @@ export function createApiApp(): express.Express {
         ? params.orderCode.trim()
         : generateOrderCode();
 
+    const createdAt = new Date().toISOString();
     const record: any = {
       orderCode,
-      createdAt: new Date().toISOString(),
+      createdAt,
       customer: {
         fullName: fullName.slice(0, 120),
         phone: cleanPhone,
@@ -1041,16 +1054,18 @@ export function createApiApp(): express.Express {
       total: totals.total,
       estimatedDelivery: estimateDeliveryWindow(province),
       status: 'confirmed',
+      statusHistory: [{ status: 'confirmed', at: createdAt, source: params.channel || 'web' }],
       channel: params.channel || 'web',
       ...(params.agentName ? { agentName: String(params.agentName).trim().slice(0, 80) } : {}),
       ...(idempotencyKey ? { idempotencyKey } : {}),
     };
 
     orders.unshift(record);
-    saveOrdersStore(orders);
+    await saveOrdersStore(orders);
 
     // Run enabled auto-sync integrations and persist their outcomes before returning HTTP 201
     // (critical on serverless runtimes where background tasks terminate after res.json)
+    await hydrateConnectorsConfig();
     const pancakeCreds = resolveConnectorCredentials('pancake');
     const webhookCreds = resolveConnectorCredentials('webhook');
 
@@ -1098,7 +1113,7 @@ export function createApiApp(): express.Express {
 
     if (syncTasks.length > 0) {
       await Promise.allSettled(syncTasks);
-      const latest = loadOrdersStore();
+      const latest = await loadOrdersStore();
       const idx = latest.findIndex((o) => o.orderCode === record.orderCode);
       if (idx !== -1) {
         const merged = {
@@ -1107,7 +1122,7 @@ export function createApiApp(): express.Express {
           updatedAt: new Date().toISOString(),
         };
         latest[idx] = merged;
-        saveOrdersStore(latest);
+        await saveOrdersStore(latest);
         return { ok: true as const, order: merged, deduplicated: false };
       }
     }
@@ -1143,19 +1158,19 @@ export function createApiApp(): express.Express {
     }
   });
 
-  app.get('/api/orders', requireAdmin, (_req, res) => {
+  app.get('/api/orders', requireAdmin, async (_req, res) => {
     try {
       res.setHeader('Cache-Control', 'no-store');
-      const orders = loadOrdersStore();
+      const orders = await loadOrdersStore();
       return res.json({ success: true, count: orders.length, orders });
     } catch (err: any) {
       return res.status(500).json({ error: err.message });
     }
   });
 
-  app.get('/api/orders/:orderCode', requireAdmin, (req, res) => {
+  app.get('/api/orders/:orderCode', requireAdmin, async (req, res) => {
     try {
-      const orders = loadOrdersStore();
+      const orders = await loadOrdersStore();
       const found = orders.find((o) => o.orderCode === req.params.orderCode);
       if (!found) return res.status(404).json({ error: 'Không tìm thấy đơn hàng.' });
       return res.json({ success: true, order: found });
@@ -1167,9 +1182,9 @@ export function createApiApp(): express.Express {
   const ALLOWED_ORDER_STATUSES = new Set(['pending', 'confirmed', 'packing', 'shipping', 'delivered', 'cancelled']);
   const ALLOWED_CARRIERS = new Set(['ghn', 'ghtk', 'viettelpost', 'manual']);
 
-  app.patch('/api/orders/:orderCode', requireAdmin, (req, res) => {
+  app.patch('/api/orders/:orderCode', requireAdmin, async (req, res) => {
     try {
-      const orders = loadOrdersStore();
+      const orders = await loadOrdersStore();
       const idx = orders.findIndex((o) => o.orderCode === req.params.orderCode);
       if (idx === -1) return res.status(404).json({ error: 'Không tìm thấy đơn hàng.' });
 
@@ -1178,6 +1193,12 @@ export function createApiApp(): express.Express {
 
       if (typeof status === 'string') {
         if (!ALLOWED_ORDER_STATUSES.has(status)) return res.status(400).json({ error: 'Trạng thái đơn hàng không hợp lệ.' });
+        if (status !== orders[idx].status) {
+          nextOrder.statusHistory = [
+            ...(Array.isArray(orders[idx].statusHistory) ? orders[idx].statusHistory : []),
+            { status, at: nextOrder.updatedAt, source: 'admin' },
+          ];
+        }
         nextOrder.status = status;
       }
       if (typeof shippingCarrier === 'string') {
@@ -1190,7 +1211,7 @@ export function createApiApp(): express.Express {
       }
 
       orders[idx] = nextOrder;
-      saveOrdersStore(orders);
+      await saveOrdersStore(orders);
       return res.json({ success: true, order: nextOrder });
     } catch (err: any) {
       return res.status(500).json({ error: err.message || 'Không thể cập nhật đơn hàng.' });
@@ -1198,7 +1219,8 @@ export function createApiApp(): express.Express {
   });
 
   // POS & Shipping Connectors Management API
-  app.get('/api/connectors', requireAdmin, (_req, res) => {
+  app.get('/api/connectors', requireAdmin, async (_req, res) => {
+    await hydrateConnectorsConfig();
     res.setHeader('Cache-Control', 'no-store');
     return res.json({
       success: true,
@@ -1206,11 +1228,12 @@ export function createApiApp(): express.Express {
     });
   });
 
-  app.post('/api/connectors/:provider', requireAdmin, (req, res) => {
+  app.post('/api/connectors/:provider', requireAdmin, async (req, res) => {
     try {
       const provider = req.params.provider as ConnectorProvider;
       if (!ALLOWED_CONNECTORS.includes(provider)) return res.status(400).json({ error: 'Cổng kết nối không hợp lệ.' });
 
+      await hydrateConnectorsConfig();
       const { token, shopId, warehouseId, webhookUrl, autoSync } = req.body || {};
       const allCfg = loadConnectorsConfig();
       const prevCfg = allCfg[provider] || {};
@@ -1238,7 +1261,7 @@ export function createApiApp(): express.Express {
       };
 
       allCfg[provider] = nextCfg;
-      saveConnectorsConfig(allCfg);
+      await saveConnectorsConfig(allCfg);
 
       return res.json({
         success: true,
@@ -1255,6 +1278,7 @@ export function createApiApp(): express.Express {
       const provider = req.params.provider as ConnectorProvider;
       if (!ALLOWED_CONNECTORS.includes(provider)) return res.status(400).json({ error: 'Cổng kết nối không hợp lệ.' });
 
+      await hydrateConnectorsConfig();
       const creds = resolveConnectorCredentials(provider);
       let ok = false;
       let message = '';
@@ -1352,7 +1376,7 @@ export function createApiApp(): express.Express {
         lastTestOk: ok,
         lastTestMessage: message,
       };
-      saveConnectorsConfig(allCfg);
+      await saveConnectorsConfig(allCfg);
 
       return res.status(ok ? 200 : 502).json({
         success: ok,
@@ -1364,11 +1388,12 @@ export function createApiApp(): express.Express {
     }
   });
 
-  app.delete('/api/connectors/:provider', requireAdmin, (req, res) => {
+  app.delete('/api/connectors/:provider', requireAdmin, async (req, res) => {
     try {
       const provider = req.params.provider as ConnectorProvider;
       if (!ALLOWED_CONNECTORS.includes(provider)) return res.status(400).json({ error: 'Cổng kết nối không hợp lệ.' });
 
+      await hydrateConnectorsConfig();
       runtimeConnectorTokens.delete(provider);
       const allCfg = loadConnectorsConfig();
       allCfg[provider] = {
@@ -1380,7 +1405,7 @@ export function createApiApp(): express.Express {
         lastTestOk: undefined,
         lastTestMessage: 'Đã ngắt kết nối bởi quản trị viên.',
       };
-      saveConnectorsConfig(allCfg);
+      await saveConnectorsConfig(allCfg);
       return res.json({ success: true, connector: buildConnectorSummary(provider) });
     } catch (err: any) {
       return res.status(500).json({ error: err.message || 'Không thể ngắt kết nối.' });
@@ -1391,7 +1416,8 @@ export function createApiApp(): express.Express {
     try {
       const { orderCode } = req.body || {};
       if (!orderCode) return res.status(400).json({ error: 'Thiếu mã đơn hàng.' });
-      const orders = loadOrdersStore();
+      await hydrateConnectorsConfig();
+      const orders = await loadOrdersStore();
       const idx = orders.findIndex((o) => o.orderCode === orderCode);
       if (idx === -1) return res.status(404).json({ error: 'Không tìm thấy đơn hàng.' });
 
@@ -1403,7 +1429,7 @@ export function createApiApp(): express.Express {
           updatedAt: new Date().toISOString(),
         };
         orders[idx] = failedOrder;
-        saveOrdersStore(orders);
+        await saveOrdersStore(orders);
         return res.status(result.status).json({ error: result.error, order: failedOrder });
       }
 
@@ -1415,7 +1441,7 @@ export function createApiApp(): express.Express {
         updatedAt: new Date().toISOString(),
       };
       orders[idx] = updatedOrder;
-      saveOrdersStore(orders);
+      await saveOrdersStore(orders);
 
       return res.json({ success: true, pancakeOrderId: result.pancakeOrderId, order: updatedOrder });
     } catch (err: any) {
@@ -1423,7 +1449,8 @@ export function createApiApp(): express.Express {
     }
   });
 
-  app.get('/api/shipping/status', requireAdmin, (_req, res) => {
+  app.get('/api/shipping/status', requireAdmin, async (_req, res) => {
+    await hydrateConnectorsConfig();
     return res.json({
       ghnConfigured: resolveConnectorCredentials('ghn').connected,
       ghtkConfigured: resolveConnectorCredentials('ghtk').connected,
@@ -1449,7 +1476,8 @@ export function createApiApp(): express.Express {
         return res.status(400).json({ error: 'Thiếu mã đơn hàng hoặc đơn vị vận chuyển không hợp lệ.' });
       }
 
-      const orders = loadOrdersStore();
+      await hydrateConnectorsConfig();
+      const orders = await loadOrdersStore();
       const idx = orders.findIndex((o) => o.orderCode === orderCode);
       if (idx === -1) return res.status(404).json({ error: 'Không tìm thấy đơn hàng.' });
 
@@ -1611,6 +1639,10 @@ export function createApiApp(): express.Express {
       const updatedOrder = {
         ...order,
         status: 'shipping',
+        statusHistory: [
+          ...(Array.isArray(order.statusHistory) ? order.statusHistory : []),
+          { status: 'shipping', at: new Date().toISOString(), source: carrier },
+        ],
         shippingCarrier: carrier,
         trackingCode,
         packageWeightGrams: Math.round(Number(weightGrams) || 700),
@@ -1618,7 +1650,7 @@ export function createApiApp(): express.Express {
         updatedAt: new Date().toISOString(),
       };
       orders[idx] = updatedOrder;
-      saveOrdersStore(orders);
+      await saveOrdersStore(orders);
 
       return res.json({ success: true, order: updatedOrder, trackingCode });
     } catch (err: any) {
@@ -1626,7 +1658,85 @@ export function createApiApp(): express.Express {
     }
   });
 
-  app.post('/api/shipping/webhook/:carrier', (req, res) => {
+  app.post('/api/pos/pancake/webhook', async (req, res) => {
+    try {
+      const expectedSecret = String(process.env.PANCAKE_WEBHOOK_SECRET || '').trim();
+      if (!expectedSecret) {
+        return res.status(503).json({ error: 'Pancake webhook chưa được cấu hình.' });
+      }
+      const providedSecret = String(req.headers['x-webhook-secret'] || req.query.secret || '').trim();
+      if (!safeCompare(providedSecret, expectedSecret)) {
+        return res.status(401).json({ error: 'Invalid webhook secret' });
+      }
+
+      const body = req.body || {};
+      const eventData = Array.isArray(body)
+        ? body[0]
+        : Array.isArray(body.data)
+          ? body.data[0]
+          : body.data || body.order || body;
+      const pancakeOrderId = String(eventData?.id || eventData?.order_id || eventData?.system_id || '').trim();
+      const orderCode = String(eventData?.custom_id || eventData?.order_code || eventData?.client_order_code || '').trim();
+      if (!pancakeOrderId && !orderCode) {
+        return res.status(400).json({ error: 'Webhook không có mã đơn Pancake hoặc custom_id.' });
+      }
+
+      const orders = await loadOrdersStore();
+      const idx = orders.findIndex(
+        (order) =>
+          (orderCode && order.orderCode === orderCode) ||
+          (pancakeOrderId && String(order.pancakeOrderId || '') === pancakeOrderId)
+      );
+      if (idx === -1) return res.status(404).json({ error: 'Order not found' });
+
+      const pancakeStatus = Number(eventData?.status);
+      const statusMap: Record<number, string> = {
+        0: 'confirmed',
+        1: 'confirmed',
+        2: 'shipping',
+        3: 'delivered',
+        6: 'cancelled',
+        7: 'cancelled',
+        8: 'packing',
+        9: 'packing',
+        11: 'confirmed',
+        12: 'packing',
+        13: 'packing',
+        16: 'delivered',
+        17: 'confirmed',
+        20: 'confirmed',
+      };
+      const mappedStatus = statusMap[pancakeStatus] || orders[idx].status;
+      const now = new Date().toISOString();
+      const statusChanged = mappedStatus !== orders[idx].status;
+      const partner = eventData?.partner || {};
+      const trackingCode = String(
+        partner?.extend_code || partner?.tracking_id || eventData?.tracking_code || orders[idx].trackingCode || ''
+      ).trim();
+
+      orders[idx] = {
+        ...orders[idx],
+        status: mappedStatus,
+        pancakeOrderId: pancakeOrderId || orders[idx].pancakeOrderId,
+        pancakeStatus: Number.isFinite(pancakeStatus) ? pancakeStatus : orders[idx].pancakeStatus,
+        pancakeStatusName: String(eventData?.status_name || '').trim() || orders[idx].pancakeStatusName,
+        trackingCode: trackingCode || orders[idx].trackingCode,
+        statusHistory: statusChanged
+          ? [
+              ...(Array.isArray(orders[idx].statusHistory) ? orders[idx].statusHistory : []),
+              { status: mappedStatus, at: now, source: 'pancake' },
+            ]
+          : orders[idx].statusHistory,
+        updatedAt: now,
+      };
+      await saveOrdersStore(orders);
+      return res.json({ success: true, orderCode: orders[idx].orderCode, status: mappedStatus });
+    } catch (err: any) {
+      return res.status(500).json({ error: err?.message || 'Không thể xử lý webhook Pancake.' });
+    }
+  });
+
+  app.post('/api/shipping/webhook/:carrier', async (req, res) => {
     try {
       const expectedSecret = (process.env.SHIPPING_WEBHOOK_SECRET || '').trim();
       if (expectedSecret) {
@@ -1642,7 +1752,7 @@ export function createApiApp(): express.Express {
 
       if (!orderCode && !trackingCode) return res.status(400).json({ error: 'Missing orderCode or trackingCode' });
 
-      const orders = loadOrdersStore();
+      const orders = await loadOrdersStore();
       const idx = orders.findIndex(
         (o) => (orderCode && o.orderCode === orderCode) || (trackingCode && o.trackingCode === trackingCode)
       );
@@ -1653,13 +1763,20 @@ export function createApiApp(): express.Express {
       else if (/cancel|huy|6|-1/.test(rawStatus)) mappedStatus = 'cancelled';
       else if (/transport|delivering|picking|shipping|3|4/.test(rawStatus)) mappedStatus = 'shipping';
 
+      const statusChanged = mappedStatus !== orders[idx].status;
       orders[idx] = {
         ...orders[idx],
         status: mappedStatus,
+        statusHistory: statusChanged
+          ? [
+              ...(Array.isArray(orders[idx].statusHistory) ? orders[idx].statusHistory : []),
+              { status: mappedStatus, at: new Date().toISOString(), source: req.params.carrier },
+            ]
+          : orders[idx].statusHistory,
         trackingCode: trackingCode || orders[idx].trackingCode,
         updatedAt: new Date().toISOString(),
       };
-      saveOrdersStore(orders);
+      await saveOrdersStore(orders);
       return res.json({ success: true, orderCode: orders[idx].orderCode, status: mappedStatus });
     } catch (err: any) {
       return res.status(500).json({ error: err.message });
@@ -2152,14 +2269,14 @@ export function createApiApp(): express.Express {
     }
   });
 
-  app.get('/api/agent/orders/:orderCode/status', (req, res) => {
+  app.get('/api/agent/orders/:orderCode/status', async (req, res) => {
     try {
       res.setHeader('Cache-Control', 'no-store');
       const orderCode = String(req.params.orderCode || '').trim();
       const token = String(req.query.token || '').trim();
       const phoneLast4 = String(req.query.phoneLast4 || '').trim();
 
-      const orders = loadOrdersStore();
+      const orders = await loadOrdersStore();
       const found = orders.find((o) => o.orderCode === orderCode);
       if (!found) {
         return res.status(404).json({ error: 'Không tìm thấy đơn hàng.' });
@@ -2183,6 +2300,9 @@ export function createApiApp(): express.Express {
         paymentMethod: found.paymentMethod,
         totalVnd: found.total,
         shippingFeeVnd: found.shippingFee,
+        trackingCode: found.trackingCode || null,
+        shippingCarrier: found.shippingCarrier || null,
+        statusHistory: Array.isArray(found.statusHistory) ? found.statusHistory : [],
         shippingCarrier: found.shippingCarrier || null,
         trackingCode: found.trackingCode || null,
         estimatedDelivery: found.estimatedDelivery,
