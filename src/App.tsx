@@ -1,4 +1,5 @@
 import React, { Suspense, lazy, useState, useMemo, useEffect, useCallback, useRef } from 'react';
+import { Analytics } from '@vercel/analytics/react';
 import { Header } from './components/Header';
 import { Hero } from './components/Hero';
 import { ProductCard } from './components/ProductCard';
@@ -549,6 +550,7 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
         <ChatBot products={activeProducts} />
         <ScrollToTopButton />
         <Toast message={toastMessage} onClose={() => setToastMessage(null)} />
+        <Analytics />
       </div>
     </CartProvider>
   );
