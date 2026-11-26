@@ -24,9 +24,9 @@ import { ProductSkeletonGrid } from './components/ProductSkeleton';
 import { CartDrawer } from './components/CartDrawer';
 import { GUIDE_ARTICLES } from './data/guides';
 import { Product } from './types';
-import { CATEGORIES, MENU_CATEGORIES } from './data/products';
+import { CATEGORIES } from './data/products';
 import { FALLBACK_PRODUCTS } from './data/fallbackProducts';
-import { Flame, ArrowRight, ChevronRight, Fish, Compass, Feather, Waves, Anchor, ShoppingBag, MessageCircle } from 'lucide-react';
+import { Flame, ArrowRight, MessageCircle } from 'lucide-react';
 import { fetchProductsFromGoogleSheet, DEFAULT_SHEET_URL, loadProductsCache, saveProductsCache, ensureUniqueProductIds } from './utils/googleSheetSync';
 import { trackAffiliateClick, trackPageView } from './utils/analyticsService';
 import { normalizeInternalPath, publicRoutes } from './utils/routes';
@@ -380,55 +380,6 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
 
         <ShopByNeedSection products={activeProducts} onNavigate={navigate} />
         <ManagedCouponSection />
-
-        {/* Featured 7 Standard Tactical Categories */}
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <p className="text-xs font-extrabold text-[#FACC15] uppercase tracking-wider mb-1">
-                7 Danh Mục Thực Chiến Chính Hãng
-              </p>
-              <h2 className="font-display text-2xl sm:text-3xl font-black text-white tracking-tight">
-                Khám Phá Trang Bị Theo Địa Hình Câu
-              </h2>
-            </div>
-            <button
-              type="button"
-              onClick={() => navigate('/san-pham')}
-              className="text-xs sm:text-sm font-bold text-[#FACC15] hover:underline flex items-center gap-1 cursor-pointer shrink-0"
-            >
-              <span>Xem tất cả ({activeProducts.length})</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
-            {MENU_CATEGORIES.map((cat) => (
-              <button
-                key={cat.slug}
-                type="button"
-                onClick={() => navigate(`/danh-muc/${cat.slug}`)}
-                className="bg-[#111827] hover:bg-[#14532D]/35 p-4 rounded-2xl border border-slate-800 hover:border-emerald-700 transition-all cursor-pointer flex flex-col justify-between text-left group min-h-28"
-              >
-                <div className="w-9 h-9 rounded-xl bg-[#14532D]/50 border border-emerald-800/70 text-[#FACC15] flex items-center justify-center group-hover:scale-105 transition-transform">
-                  {cat.slug === 'combo' && <Flame className="w-4 h-4" />}
-                  {cat.slug === 'moi-lure-chuot-lk' && <Feather className="w-4 h-4" />}
-                  {cat.slug === 'can-cau' && <Fish className="w-4 h-4" />}
-                  {cat.slug === 'may-cau' && <Compass className="w-4 h-4" />}
-                  {cat.slug === 'day-cau' && <Waves className="w-4 h-4" />}
-                  {cat.slug === 'moi-dai-cam-hat' && <Anchor className="w-4 h-4" />}
-                  {cat.slug === 'phu-kien' && <ShoppingBag className="w-4 h-4" />}
-                </div>
-                <div className="mt-3 flex items-center justify-between gap-1">
-                  <h3 className="text-xs sm:text-sm font-extrabold text-white group-hover:text-[#FACC15] leading-snug">
-                    {cat.name}
-                  </h3>
-                  <ChevronRight className="w-3.5 h-3.5 text-slate-500 group-hover:text-[#FACC15] shrink-0" />
-                </div>
-              </button>
-            ))}
-          </div>
-        </section>
 
         {/* Featured Products Grid: 2 cols Mobile, 4 cols PC */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
