@@ -42,7 +42,10 @@ const CATEGORY_SELECTION_CRITERIA: Record<string, string[]> = {
 function cleanProductCopy(value: string): string {
   return value
     .replace(/\s+/g, ' ')
+    .replace(/[“”"]?siêu phẩm[“”"]?/giu, 'sản phẩm nổi bật')
     .replace(/\b(tuyệt đối|hoàn hảo|100%)\b/giu, '')
+    .replace(/cực kỳ|vô cùng/giu, 'rất')
+    .replace(/Kỷ lục ấn tượng:\s*Với phiên bản đặc biệt XXHS, LK Hòa đã từng chinh phục thành công con cá mập nặng 400kg\s*[–-]\s*minh chứng rõ nhất cho sức mạnh vô song của dòng cần này\.?/giu, 'Theo thông tin do LK Hòa công bố, phiên bản XXHS từng được sử dụng trong chuyến câu cá mập 400 kg; khách hàng nên chọn cấu hình theo tải mồi và điều kiện sử dụng thực tế.')
     .replace(/\s+([,.!?])/g, '$1')
     .trim();
 }
@@ -58,7 +61,20 @@ function isQuestion(value: string): boolean {
 function isSectionHeading(value: string): boolean {
   const text = value.trim();
   if (!text || text.length > 130 || /[.!?]$/.test(text)) return false;
-  return /^(ưu điểm|đặc điểm|điểm nổi bật|thông số|thành phần|thiết kế|khám phá|chi tiết|các phiên bản|phân loại|đối tượng|ứng dụng|kích thước|hướng dẫn|cách dùng|cách chọn|bảng thông số|khả năng)/iu.test(text);
+  const withoutNumber = text.replace(/^\d+[.)]\s*/u, '');
+  return /^(ưu điểm|đặc điểm|điểm nổi bật|thông số|thành phần|thiết kế|khám phá|chi tiết|các phiên bản|phân loại|đối tượng|ứng dụng|kích thước|hướng dẫn|cách dùng|cách chọn|bảng thông số|khả năng)/iu.test(withoutNumber);
+}
+
+function sectionHeading(value: string): string {
+  return cleanProductCopy(value.replace(/^\d+[.)]\s*/u, ''));
+}
+
+function isTabularBlock(value: string): boolean {
+  const lines = value.split('\n').map((line) => line.trim()).filter(Boolean);
+  if (lines.length < 4) return false;
+  const shortLines = lines.filter((line) => line.length <= 42).length;
+  const numericLines = lines.filter((line) => /\d/.test(line)).length;
+  return shortLines / lines.length >= 0.65 && numericLines >= 1;
 }
 
 function sentenceHighlights(value: string): string[] {
@@ -102,9 +118,10 @@ export function getProductDescriptionLayout(product: Product): ProductDescriptio
 
   for (const rawBlock of contentBlocks.slice(1)) {
     if (isSectionHeading(rawBlock)) {
-      currentTitle = cleanProductCopy(rawBlock);
+      currentTitle = sectionHeading(rawBlock);
       continue;
     }
+    if (isTabularBlock(rawBlock)) continue;
     const body = cleanProductCopy(rawBlock.replace(/^(Thông tin nhận diện|Thông tin sử dụng thực tế|Cách dùng):\s*/iu, ''));
     if (!body || /^[-•]/u.test(rawBlock)) continue;
     const last = sections.at(-1);
