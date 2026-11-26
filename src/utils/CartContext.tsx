@@ -3,6 +3,8 @@ import type { CartItem, Product, ProductVariant } from '../types';
 import { getProductDetailData } from '../data/productVariants';
 import { productDisplayName } from './catalog';
 import { trackCommerceEvent } from './analyticsService';
+import type { ManagedCoupon } from '../data/coupons';
+import { DEFAULT_COUPONS } from '../data/coupons';
 import {
   calculateCheckoutTotals,
   evaluateCoupon,
@@ -88,6 +90,13 @@ export const CartProvider: React.FC<{
   const [couponCode, setCouponCode] = useState<string>(() => loadSavedCoupon());
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [cartNotice, setCartNotice] = useState('');
+  const [managedCoupons, setManagedCoupons] = useState<ManagedCoupon[]>(DEFAULT_COUPONS);
+
+  useEffect(() => {
+    fetch('/api/coupons/active', { cache: 'no-store' }).then((res) => res.ok ? res.json() : null).then((data) => {
+      if (Array.isArray(data?.coupons)) setManagedCoupons(data.coupons);
+    }).catch(() => undefined);
+  }, []);
 
   useEffect(() => {
     if (!catalogReady || products.length === 0 || items.length === 0) return;
@@ -110,8 +119,8 @@ export const CartProvider: React.FC<{
     saveCouponToStorage(couponCode);
   }, [couponCode]);
 
-  const totals = useMemo(() => calculateCheckoutTotals(items, couponCode), [items, couponCode]);
-  const couponResult = useMemo(() => evaluateCoupon(couponCode, totals.subtotal), [couponCode, totals.subtotal]);
+  const totals = useMemo(() => calculateCheckoutTotals(items, couponCode, managedCoupons), [items, couponCode, managedCoupons]);
+  const couponResult = useMemo(() => evaluateCoupon(couponCode, totals.subtotal, managedCoupons), [couponCode, totals.subtotal, managedCoupons]);
   const totalQuantity = useMemo(() => items.reduce((sum, item) => sum + item.quantity, 0), [items]);
 
   const openDrawer = useCallback(() => setIsDrawerOpen(true), []);
@@ -216,9 +225,9 @@ export const CartProvider: React.FC<{
     (rawCode: string) => {
       const normalized = rawCode.trim().toUpperCase();
       setCouponCode(normalized);
-      return evaluateCoupon(normalized, totals.subtotal);
+      return evaluateCoupon(normalized, totals.subtotal, managedCoupons);
     },
-    [totals.subtotal]
+    [totals.subtotal, managedCoupons]
   );
 
   const clearCart = useCallback(() => {
