@@ -142,6 +142,10 @@
       "destination": "/api/chat"
     },
     {
+      "source": "/api/coupons/active",
+      "destination": "/api/index"
+    },
+    {
       "source": "/api/admin/:path*",
       "destination": "/api/index"
     },
