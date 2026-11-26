@@ -5,6 +5,7 @@ import { validateAffiliateUrl } from '../components/AffiliateButtons';
 import { FALLBACK_PRICE_MAP, FALLBACK_PRODUCTS } from '../data/fallbackProducts';
 import { generateSeoProductDescription } from './productDescription';
 import { getMecuabinShopeeUrl } from './shopeeAffiliateLinks';
+import { applySourceProductEnrichment } from './sourceProductEnrichment';
 
 export const PUBLISHED_FALLBACK_CSV_URL =
   'https://docs.google.com/spreadsheets/d/e/2PACX-1vRoGVq7tIOSj8pAr-80FuQxNYY_JHVtyZdk6SJd59baBkVlMllh-hDwvm0Zen4FHAcmjtpYQPai9S_w/pub?output=csv&gid=0';
@@ -200,7 +201,7 @@ export function ensureUniqueProductIds(products: Product[]): Product[] {
       }
     }
     seenIds.add(id);
-    return { ...p, id, shopeeUrl: getMecuabinShopeeUrl(p.name, p.shopeeUrl) };
+    return applySourceProductEnrichment({ ...p, id, shopeeUrl: getMecuabinShopeeUrl(p.name, p.shopeeUrl) });
   });
 }
 

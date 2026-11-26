@@ -1,7 +1,8 @@
 import { Product } from "../types";
 import { NEW_SHOPEE_PRODUCTS } from './newShopeeProducts';
+import { applySourceCatalogEnrichment } from '../utils/sourceProductEnrichment';
 
-export const FALLBACK_PRODUCTS: Product[] = [
+const RAW_FALLBACK_PRODUCTS: Product[] = [
   ...NEW_SHOPEE_PRODUCTS,
   {
     "id": "sp_1_lk-hoa-mua-01-can-",
@@ -1460,6 +1461,8 @@ export const FALLBACK_PRODUCTS: Product[] = [
     "updatedAt": "2026-09-12T00:00:00.000Z"
   }
 ];
+
+export const FALLBACK_PRODUCTS: Product[] = applySourceCatalogEnrichment(RAW_FALLBACK_PRODUCTS);
 
 export const FALLBACK_PRICE_MAP: Record<string, { salePrice: number; originalPrice?: number; discountPercent?: number; isFlashSale?: boolean }> = {};
 

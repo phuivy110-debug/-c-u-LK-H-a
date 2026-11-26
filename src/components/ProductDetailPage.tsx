@@ -422,18 +422,22 @@ export function ProductDetailPage({
               <div className="flex flex-wrap gap-2">
                 {detail.variants.map((variant) => {
                   const isSelected = variant.id === selectedVariant.id;
+                  const isUnavailable = variant.stock === 0;
                   return (
                     <button
                       key={variant.id}
                       type="button"
+                      disabled={isUnavailable}
                       onClick={() => setSelectedVariantId(variant.id)}
-                      className={`min-h-11 px-3.5 py-2 rounded-lg text-xs font-bold border transition-colors cursor-pointer whitespace-nowrap ${
+                      className={`min-h-11 px-3.5 py-2 rounded-lg text-xs font-bold border transition-colors whitespace-nowrap ${
                         isSelected
                           ? 'bg-[#14532D] border-[#FACC15] text-[#FACC15]'
+                          : isUnavailable
+                            ? 'cursor-not-allowed border-slate-800 bg-slate-950 text-slate-600 line-through'
                           : 'bg-[#0F172A] border-slate-700 text-slate-200 hover:border-slate-500'
                       }`}
                     >
-                      {variant.label}
+                      {variant.label}{isUnavailable ? ' · Hết hàng' : ''}
                     </button>
                   );
                 })}
