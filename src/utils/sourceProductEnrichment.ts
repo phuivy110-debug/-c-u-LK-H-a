@@ -1,4 +1,6 @@
 import { DOCAULKHOA_SOURCE_PRODUCTS } from '../data/docaulkhoaSourceData';
+import { MECUABIN_SHOPEE_LINKS } from '../data/mecuabinShopeeLinks';
+import { SHOPEE_VARIANT_SNAPSHOT } from '../data/shopeeVariantSnapshot';
 import type { Product } from '../types';
 
 // Only map listings that identify the same physical product with high confidence.
@@ -75,7 +77,7 @@ function normalizeSourceDescription(description: string): string {
 export function applySourceProductEnrichment(product: Product): Product {
   const sourceSlug = SOURCE_PRODUCT_SLUG_BY_CATALOG_SLUG[product.slug];
   const source = sourceSlug ? DOCAULKHOA_SOURCE_PRODUCTS[sourceSlug] : undefined;
-  if (!source) return product;
+  if (!source) return applyShopeeVariantFallback(product);
 
   const variants = source.variants.map((variant) => {
     const sourceSuffix = variant.id.replace(`${sourceSlug}-`, '');
@@ -84,13 +86,65 @@ export function applySourceProductEnrichment(product: Product): Product {
       ...variant,
       id: `${product.id}-${sourceSuffix}`,
       sku: generatedSourceSku ? `${product.id}-${sourceSuffix}` : variant.sku,
+      optionValues: variant.label.split(' · ').map((value) => value.trim()),
     };
   }).sort((left, right) => Number(left.stock === 0) - Number(right.stock === 0));
+  const groupNames = source.variants[0]?.groupName.split(' · ').map((value) => value.trim()) || [];
+  const variantGroups = groupNames.map((name, index) => ({
+    name,
+    options: [...new Set(variants.map((variant) => variant.optionValues?.[index]).filter((value): value is string => Boolean(value)))],
+  }));
   return {
     ...product,
     description: normalizeSourceDescription(source.description),
     specs: source.specs.length ? source.specs : product.specs,
     variants: variants.length ? variants : product.variants,
+    variantGroups: variantGroups.length ? variantGroups : product.variantGroups,
+  };
+}
+
+function productPrice(product: Product): number {
+  return product.salePrice || product.referencePrice || product.originalPrice || 0;
+}
+
+function applyShopeeVariantFallback(product: Product): Product {
+  if (product.variants?.length) return product;
+  const normalizedName = product.name.toLocaleLowerCase('vi-VN').replace(/[^a-z0-9à-ỹ]+/g, ' ').trim();
+  const entry = MECUABIN_SHOPEE_LINKS.find((item) =>
+    item.url === product.shopeeUrl ||
+    normalizedName.includes(item.name.toLocaleLowerCase('vi-VN').replace(/[^a-z0-9à-ỹ]+/g, ' ').trim()) ||
+    item.name.toLocaleLowerCase('vi-VN').replace(/[^a-z0-9à-ỹ]+/g, ' ').trim().includes(normalizedName)
+  );
+  const snapshot = entry ? SHOPEE_VARIANT_SNAPSHOT.find((item) => item.i === entry.itemId) : undefined;
+  if (!snapshot) return product;
+
+  const unavailable = new Set(snapshot.u.map((indices) => indices.join(':')));
+  const combinations = snapshot.v.reduce<number[][]>(
+    (rows, group) => rows.flatMap((row) => group.o.map((_, index) => [...row, index])),
+    [[]],
+  );
+  const price = productPrice(product);
+  const variants = combinations.map((indices, variantIndex) => {
+    const optionValues = indices.map((optionIndex, groupIndex) => snapshot.v[groupIndex].o[optionIndex]);
+    return {
+      id: `${product.id}-shopee-${variantIndex + 1}`,
+      label: optionValues.filter(Boolean).join(' · ') || 'Phiên bản tiêu chuẩn',
+      groupName: snapshot.v.map((group) => group.n || 'Phân loại').join(' · '),
+      price,
+      originalPrice: product.originalPrice && product.originalPrice > price ? product.originalPrice : undefined,
+      sku: `LK-${snapshot.i}-${indices.map((index) => index + 1).join('-')}`,
+      stock: unavailable.has(indices.join(':')) ? 0 : 1,
+      optionValues,
+    };
+  }).sort((left, right) => Number(left.stock === 0) - Number(right.stock === 0));
+
+  return {
+    ...product,
+    variants,
+    variantGroups: snapshot.v.map((group) => ({
+      name: group.n || 'Phân loại',
+      options: group.o.filter(Boolean),
+    })),
   };
 }
 
