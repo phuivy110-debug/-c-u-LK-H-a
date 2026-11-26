@@ -42,12 +42,41 @@ async function ensureSchema(): Promise<void> {
           updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
         )
       `;
+      await sql`
+        CREATE TABLE IF NOT EXISTS lkhoa_coupons (
+          code TEXT PRIMARY KEY,
+          coupon_data JSONB NOT NULL,
+          updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        )
+      `;
     })().catch((error) => {
       schemaReady = null;
       throw error;
     });
   }
   await schemaReady;
+}
+
+export async function loadCoupons(): Promise<JsonRecord[]> {
+  const sql = getSql();
+  if (!sql) return [];
+  await ensureSchema();
+  const rows = await sql`SELECT coupon_data FROM lkhoa_coupons ORDER BY code` as unknown as Array<{ coupon_data: JsonRecord }>;
+  return rows.map((row: any) => row.coupon_data).filter(Boolean);
+}
+
+export async function saveCoupon(coupon: JsonRecord): Promise<void> {
+  const sql = getSql();
+  if (!sql) return;
+  await ensureSchema();
+  await sql`INSERT INTO lkhoa_coupons (code, coupon_data, updated_at) VALUES (${String(coupon.code)}, ${JSON.stringify(coupon)}::jsonb, NOW()) ON CONFLICT (code) DO UPDATE SET coupon_data = EXCLUDED.coupon_data, updated_at = NOW()`;
+}
+
+export async function deleteCoupon(code: string): Promise<void> {
+  const sql = getSql();
+  if (!sql) return;
+  await ensureSchema();
+  await sql`DELETE FROM lkhoa_coupons WHERE code = ${code}`;
 }
 
 function requireDurableStorageOnServerless(): void {
