@@ -42,6 +42,7 @@ const CartPage = lazy(() => import('./components/CartPage').then(module => ({ de
 const CheckoutPage = lazy(() => import('./components/CheckoutPage').then(module => ({ default: module.CheckoutPage })));
 const OrderManagementPage = lazy(() => import('./components/OrderManagementPage').then(module => ({ default: module.OrderManagementPage })));
 const ChatBot = lazy(() => import('./components/ChatBot').then(module => ({ default: module.ChatBot })));
+const HOMEPAGE_PRODUCTS_PER_PAGE = 12;
 
 export default function App({ initialPath, initialProducts }: { initialPath?: string; initialProducts?: Product[] } = {}) {
   const [products, setProductsState] = useState<Product[]>(() => {
@@ -183,6 +184,7 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
   const [searchQuery, setSearchQuery] = useState('');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [supportLoaded, setSupportLoaded] = useState(false);
+  const [homepageProductLimit, setHomepageProductLimit] = useState(HOMEPAGE_PRODUCTS_PER_PAGE);
 
   useEffect(() => {
     if (typeof localStorage !== 'undefined') {
@@ -247,8 +249,8 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
   }, [products]);
 
   const homepageProducts = useMemo(() => {
-    return pickFeaturedProducts(activeProducts, 8);
-  }, [activeProducts]);
+    return pickFeaturedProducts(activeProducts, homepageProductLimit);
+  }, [activeProducts, homepageProductLimit]);
 
   const renderContent = () => {
     if (currentPath === '/gio-hang') {
@@ -450,15 +452,32 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
           {isSyncing ? (
             <ProductSkeletonGrid count={8} message="Đang đồng bộ danh mục sản phẩm chính hãng LK Hòa..." />
           ) : homepageProducts.length > 0 ? (
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
-              {homepageProducts.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  onOpenDetail={handleOpenDetail}
-                  onQuickBuy={() => navigate('/thanh-toan')}
-                />
-              ))}
+            <div className="space-y-6">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
+                {homepageProducts.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    onOpenDetail={handleOpenDetail}
+                    onQuickBuy={() => navigate('/thanh-toan')}
+                  />
+                ))}
+              </div>
+
+              <div className="flex flex-col items-center gap-3">
+                <p className="text-sm font-semibold text-slate-400">
+                  Đang hiển thị {homepageProducts.length}/{activeProducts.length} sản phẩm
+                </p>
+                {homepageProducts.length < activeProducts.length && (
+                  <button
+                    type="button"
+                    onClick={() => setHomepageProductLimit((current) => current + HOMEPAGE_PRODUCTS_PER_PAGE)}
+                    className="min-h-12 rounded-xl border border-[#FACC15]/70 bg-[#FACC15]/10 px-6 py-3 text-sm font-black text-[#FACC15] transition-colors hover:bg-[#FACC15] hover:text-[#0F172A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FACC15] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0F172A]"
+                  >
+                    Hiển thị thêm {Math.min(HOMEPAGE_PRODUCTS_PER_PAGE, activeProducts.length - homepageProducts.length)} sản phẩm
+                  </button>
+                )}
+              </div>
             </div>
           ) : (
             <div className="bg-[#111827] p-8 rounded-2xl border border-slate-800 text-center text-slate-400 text-sm">
