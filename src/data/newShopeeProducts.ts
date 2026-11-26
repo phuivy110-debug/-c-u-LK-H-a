@@ -1,5 +1,6 @@
 import type { Product } from '../types';
 import { MECUABIN_SHOPEE_LINKS } from './mecuabinShopeeLinks';
+import { applySourceProductEnrichment } from '../utils/sourceProductEnrichment';
 
 // Reference prices transcribed from the user's Shopee export dated 2026-10-23.
 // Product imagery is sourced from the matching LK Hoa Shopee item ID.
@@ -120,7 +121,7 @@ const additions = [
 export const NEW_SHOPEE_PRODUCTS: Product[] = additions.map((item, index) => {
   const entry = MECUABIN_SHOPEE_LINKS.find(link => link.itemId === item.itemId);
   if (!entry?.url) throw new Error(`Missing mecuabin affiliate link for new product ${item.itemId}`);
-  return {
+  return applySourceProductEnrichment({
     id: `shopee_${item.itemId}`,
     slug: item.slug,
     name: entry.name,
@@ -138,5 +139,5 @@ export const NEW_SHOPEE_PRODUCTS: Product[] = additions.map((item, index) => {
     featured: true,
     sourceRow: 72 + index,
     updatedAt: '2026-11-25T15:20:00+07:00',
-  };
+  });
 });
