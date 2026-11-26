@@ -34,7 +34,7 @@ import {
   categoryPath,
   getComplementaryCategories,
   getComplementaryProducts,
-  getProductCopySections,
+  getProductDescriptionLayout,
   getVariantSelectionCriteria,
 } from '../utils/productMerchandising';
 
@@ -176,7 +176,7 @@ export function ProductDetailPage({
   const complementaryProducts = getComplementaryProducts(product, products, 4);
   const complementaryCategories = getComplementaryCategories(product);
   const selectionCriteria = getVariantSelectionCriteria(product);
-  const copySections = getProductCopySections(product);
+  const descriptionLayout = getProductDescriptionLayout(product);
 
   const allReviews = [...customReviews, ...detail.reviews];
   const hasDetailedSpecs = Boolean(product.specs?.length);
@@ -665,21 +665,116 @@ export function ProductDetailPage({
 
         <div className="p-5 sm:p-8">
           {activeTab === 'description' && (
-            <div className="space-y-6">
-              <h2 className="font-display text-lg font-black text-white">
-                Mô tả chi tiết {displayName}
-              </h2>
-              <div className="grid gap-3 md:grid-cols-2">
-                {copySections.map((section, index) => (
-                  <article
-                    key={`${section.title}-${index}`}
-                    className="rounded-xl border border-slate-800 bg-[#0F172A]/60 p-4"
-                  >
-                    <h3 className="mb-2 text-sm font-black text-white">{section.title}</h3>
-                    <p className="text-sm leading-7 text-slate-300">{section.body}</p>
-                  </article>
-                ))}
+            <article className="space-y-8">
+              <header className="max-w-4xl space-y-3">
+                <p className="text-xs font-black uppercase tracking-[0.18em] text-[#FACC15]">Thông tin sản phẩm</p>
+                <h2 className="font-display text-xl font-black leading-tight text-white sm:text-2xl">
+                  {displayName}
+                </h2>
+                <p className="text-sm leading-7 text-slate-300 sm:text-base sm:leading-8">
+                  {descriptionLayout.intro}
+                </p>
+              </header>
+
+              <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
+                <div className="space-y-8">
+                  <section aria-labelledby="product-highlights">
+                    <h3 id="product-highlights" className="mb-4 text-base font-black text-white">Điểm nổi bật</h3>
+                    <ul className="grid gap-x-6 gap-y-3 sm:grid-cols-2">
+                      {descriptionLayout.highlights.map((highlight) => (
+                        <li key={highlight} className="flex items-start gap-2.5 text-sm leading-6 text-slate-300">
+                          <CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-emerald-400" aria-hidden="true" />
+                          <span>{highlight}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+
+                  {descriptionLayout.sections.length > 0 && (
+                    <section className="divide-y divide-slate-800 border-y border-slate-800">
+                      {descriptionLayout.sections.map((section, index) => (
+                        <div key={`${section.title}-${index}`} className="py-5 first:pt-0 last:pb-0">
+                          <h3 className="mb-2 text-base font-black text-white">{section.title}</h3>
+                          <p className="text-sm leading-7 text-slate-300">{section.body}</p>
+                        </div>
+                      ))}
+                    </section>
+                  )}
+
+                  {hasRiggingGuide && (
+                    <section className="rounded-xl border-l-4 border-[#FACC15] bg-[#0F172A]/70 px-4 py-4 sm:px-5">
+                      <div className="mb-2 flex items-center gap-2">
+                        <Wrench className="h-4 w-4 text-[#FACC15]" aria-hidden="true" />
+                        <h3 className="text-sm font-black text-white">Hướng dẫn sử dụng nhanh</h3>
+                      </div>
+                      <p className="text-sm leading-7 text-slate-300">{detail.riggingGuide}</p>
+                    </section>
+                  )}
+                </div>
+
+                <aside className="space-y-5 lg:sticky lg:top-24 lg:self-start">
+                  <section className="overflow-hidden rounded-xl border border-slate-700 bg-[#0F172A]/80">
+                    <div className="flex items-center gap-2 border-b border-slate-800 px-4 py-3">
+                      <Layers3 className="h-4 w-4 text-[#FACC15]" aria-hidden="true" />
+                      <h3 className="text-sm font-black text-white">Thông số nhanh</h3>
+                    </div>
+                    <dl className="divide-y divide-slate-800 text-xs">
+                      {detail.specs.slice(0, 6).map((spec) => (
+                        <div key={spec.label} className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] gap-3 px-4 py-3">
+                          <dt className="font-bold text-slate-400">{spec.label}</dt>
+                          <dd className="text-right font-semibold text-slate-100">{spec.value}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  </section>
+
+                  <section className="rounded-xl border border-slate-700 bg-[#0F172A]/80 p-4">
+                    <h3 className="mb-3 text-sm font-black text-white">Chọn đúng phiên bản</h3>
+                    {variantGroups.length > 0 ? (
+                      <div className="space-y-3">
+                        {variantGroups.slice(0, 3).map((group) => (
+                          <div key={group.name}>
+                            <p className="mb-1.5 text-xs font-bold text-slate-400">{group.name}</p>
+                            <div className="flex flex-wrap gap-1.5">
+                              {group.options.slice(0, 8).map((option) => (
+                                <span key={option} className="rounded-md border border-slate-700 bg-slate-900 px-2 py-1 text-[11px] font-semibold text-slate-200">
+                                  {option}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <ul className="space-y-2 text-xs text-slate-300">
+                        {selectionCriteria.slice(0, 5).map((criterion) => (
+                          <li key={criterion} className="flex gap-2"><span className="text-[#FACC15]">•</span>{criterion}</li>
+                        ))}
+                      </ul>
+                    )}
+                    <p className="mt-3 border-t border-slate-800 pt-3 text-[11px] leading-5 text-slate-400">
+                      Chọn phân loại ở khu vực mua hàng phía trên hoặc liên hệ LK Hòa nếu cần đối chiếu cấu hình.
+                    </p>
+                  </section>
+                </aside>
               </div>
+
+              {descriptionLayout.faq.length > 0 && (
+                <section className="max-w-4xl border-t border-slate-800 pt-6">
+                  <h3 className="mb-3 text-base font-black text-white">Câu hỏi thường gặp</h3>
+                  <div className="divide-y divide-slate-800 rounded-xl border border-slate-800 bg-[#0F172A]/50 px-4">
+                    {descriptionLayout.faq.map((item, index) => (
+                      <details key={item.question} className="group py-4" open={index === 0}>
+                        <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-bold text-white">
+                          <span>{item.question}</span>
+                          <Plus className="h-4 w-4 shrink-0 text-[#FACC15] transition-transform group-open:rotate-45" aria-hidden="true" />
+                        </summary>
+                        <p className="pt-3 text-sm leading-7 text-slate-300">{item.answer}</p>
+                      </details>
+                    ))}
+                  </div>
+                </section>
+              )}
 
               <aside className="rounded-xl border border-emerald-900/70 bg-emerald-950/20 p-4">
                 <div className="mb-3 flex items-center gap-2">
@@ -711,7 +806,7 @@ export function ProductDetailPage({
                   ))}
                 </div>
               </aside>
-            </div>
+            </article>
           )}
 
           {activeTab === 'specs' && (
