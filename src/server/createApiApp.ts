@@ -23,8 +23,12 @@ import {
   STORE_NAME,
 } from '../utils/site';
 import type { CartItem, Product } from '../types';
+import { DEFAULT_COUPONS, getActiveManagedCoupons, type ManagedCoupon } from '../data/coupons';
 import {
   getPersistenceHealth,
+  loadCoupons,
+  saveCoupon,
+  deleteCoupon,
   loadConnectorConfigs,
   loadOrders,
   saveConnectorConfigs,
@@ -473,6 +477,59 @@ export function createApiApp(): express.Express {
       usingEnvPasscode: Boolean(envPasscode),
       authenticated: verifyAdminToken(token),
     });
+  });
+
+  const loadManagedCoupons = async (): Promise<ManagedCoupon[]> => {
+    const stored = await loadCoupons();
+    const byCode = new Map(DEFAULT_COUPONS.map((coupon) => [coupon.code, coupon]));
+    for (const coupon of stored) {
+      if (coupon?.code) byCode.set(String(coupon.code).toUpperCase(), coupon as ManagedCoupon);
+    }
+    return [...byCode.values()];
+  };
+
+  app.get('/api/coupons/active', async (_req, res) => {
+    try {
+      const coupons = await loadManagedCoupons();
+      return res.json({ coupons: getActiveManagedCoupons(new Date(), coupons) });
+    } catch (err: any) {
+      return res.status(500).json({ error: err?.message || 'Không thể tải mã giảm giá.' });
+    }
+  });
+
+  app.get('/api/admin/coupons', requireAdmin, async (_req, res) => {
+    try { return res.json({ coupons: await loadManagedCoupons() }); }
+    catch (err: any) { return res.status(500).json({ error: err?.message || 'Không thể tải danh sách mã.' }); }
+  });
+
+  app.put('/api/admin/coupons/:code', requireAdmin, async (req, res) => {
+    try {
+      const code = String(req.params.code || '').trim().toUpperCase();
+      const body = req.body || {};
+      if (!/^[A-Z0-9_-]{4,32}$/.test(code)) return res.status(400).json({ error: 'Tên mã không hợp lệ.' });
+      const coupon: ManagedCoupon = {
+        code,
+        title: String(body.title || code).trim().slice(0, 80),
+        description: String(body.description || '').trim().slice(0, 180),
+        discountType: ['fixed', 'percent', 'free_shipping'].includes(body.discountType) ? body.discountType : 'fixed',
+        discountValue: Math.max(0, Number(body.discountValue) || 0),
+        minSpend: Math.max(0, Number(body.minSpend) || 0),
+        maxDiscount: body.maxDiscount ? Math.max(0, Number(body.maxDiscount) || 0) : undefined,
+        startsAt: String(body.startsAt || '').trim(),
+        endsAt: String(body.endsAt || '').trim(),
+        enabled: body.enabled !== false,
+        campaign: String(body.campaign || 'Website').trim().slice(0, 100),
+        channel: ['website', 'shopee', 'all'].includes(body.channel) ? body.channel : 'website',
+      };
+      if (!coupon.startsAt || !coupon.endsAt || Date.parse(coupon.endsAt) <= Date.parse(coupon.startsAt)) return res.status(400).json({ error: 'Thời gian hiệu lực không hợp lệ.' });
+      await saveCoupon(coupon);
+      return res.json({ success: true, coupon });
+    } catch (err: any) { return res.status(500).json({ error: err?.message || 'Không thể lưu mã.' }); }
+  });
+
+  app.delete('/api/admin/coupons/:code', requireAdmin, async (req, res) => {
+    try { await deleteCoupon(String(req.params.code || '').trim().toUpperCase()); return res.json({ success: true }); }
+    catch (err: any) { return res.status(500).json({ error: err?.message || 'Không thể xóa mã.' }); }
   });
 
   app.get('/api/admin/storage-status', requireAdmin, async (_req, res) => {
@@ -1022,7 +1079,7 @@ export function createApiApp(): express.Express {
     }
 
     const couponInput = String(params.couponCode || '').trim().toUpperCase();
-    const totals = calculateCheckoutTotals(itemRes.items, couponInput);
+    const totals = calculateCheckoutTotals(itemRes.items, couponInput, await loadManagedCoupons());
     const orderCode =
       typeof params.orderCode === 'string' && /^[A-Z0-9-]{5,24}$/.test(params.orderCode.trim())
         ? params.orderCode.trim()

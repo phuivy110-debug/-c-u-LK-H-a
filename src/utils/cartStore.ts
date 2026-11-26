@@ -1,5 +1,6 @@
 import type { CartItem, OrderCustomerInfo, OrderRecord, Product, ProductVariant } from '../types';
 import { FLAT_SHIPPING_FEE, FREESHIP_THRESHOLD, STORE_BANK_INFO } from './site';
+import type { ManagedCoupon } from '../data/coupons';
 
 export const CART_STORAGE_KEY = 'lkhoa_cart_v1';
 export const COUPON_STORAGE_KEY = 'lkhoa_coupon_v1';
@@ -19,11 +20,22 @@ export const AVAILABLE_COUPONS = [
   { code: 'FREESHIP', description: 'Miễn phí vận chuyển toàn quốc 0đ' },
 ];
 
-export function evaluateCoupon(rawCode: string, subtotal: number): CouponValidationResult {
+export function evaluateCoupon(rawCode: string, subtotal: number, managedCoupons?: ManagedCoupon[]): CouponValidationResult {
   const code = rawCode.trim().toUpperCase();
   if (!code) {
     return { valid: false, code: '', discountAmount: 0, freeShipping: false, message: '' };
   }
+  const managed = managedCoupons?.find((coupon) => coupon.code === code && coupon.enabled && Date.parse(coupon.startsAt) <= Date.now() && Date.now() <= Date.parse(coupon.endsAt));
+  if (managed) {
+    if (subtotal < managed.minSpend) return { valid: false, code, discountAmount: 0, freeShipping: false, message: `${managed.code} áp dụng cho đơn từ ${managed.minSpend.toLocaleString('vi-VN')}đ.` };
+    const discountAmount = managed.discountType === 'fixed'
+      ? Math.min(managed.discountValue, subtotal)
+      : managed.discountType === 'percent'
+        ? Math.min(Math.round(subtotal * managed.discountValue / 100), managed.maxDiscount || Number.MAX_SAFE_INTEGER)
+        : 0;
+    return { valid: true, code, discountAmount, freeShipping: managed.discountType === 'free_shipping', message: `Đã áp dụng mã ${code}: ${managed.description}.` };
+  }
+  if (managedCoupons) return { valid: false, code, discountAmount: 0, freeShipping: false, message: 'Mã giảm giá không hoạt động hoặc đã hết hạn.' };
   if (code === 'LKHOA10') {
     return {
       valid: true,
@@ -88,9 +100,9 @@ export interface CheckoutTotals {
   isFreeship: boolean;
 }
 
-export function calculateCheckoutTotals(items: CartItem[], couponCode: string): CheckoutTotals {
+export function calculateCheckoutTotals(items: CartItem[], couponCode: string, managedCoupons?: ManagedCoupon[]): CheckoutTotals {
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const coupon = evaluateCoupon(couponCode, subtotal);
+  const coupon = evaluateCoupon(couponCode, subtotal, managedCoupons);
   const discountAmount = coupon.valid ? coupon.discountAmount : 0;
   const hasRod = cartHasFishingRod(items);
   const qualifiesBySubtotal = subtotal >= FREESHIP_THRESHOLD;
