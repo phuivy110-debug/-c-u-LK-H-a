@@ -35,12 +35,14 @@ import { DOMAIN } from './utils/site';
 import { mergeWithLocalAdditions } from './utils/mergeLocalProducts';
 import { CartProvider } from './utils/CartContext';
 import { ShopByNeedSection } from './components/ShopByNeedSection';
+import { ManagedCouponSection } from './components/ManagedCouponSection';
 import { pickFeaturedProducts } from './data/productVariants';
 
 const SHEET_URL_KEY = 'lkhoa_sheet_url_v2';
 const CartPage = lazy(() => import('./components/CartPage').then(module => ({ default: module.CartPage })));
 const CheckoutPage = lazy(() => import('./components/CheckoutPage').then(module => ({ default: module.CheckoutPage })));
 const OrderManagementPage = lazy(() => import('./components/OrderManagementPage').then(module => ({ default: module.OrderManagementPage })));
+const CouponAdminPage = lazy(() => import('./components/CouponAdminPage').then(module => ({ default: module.CouponAdminPage })));
 const ChatBot = lazy(() => import('./components/ChatBot').then(module => ({ default: module.ChatBot })));
 const HOMEPAGE_PRODUCTS_PER_PAGE = 12;
 
@@ -277,6 +279,10 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
       );
     }
 
+    if (currentPath === '/quan-ly-ma-giam-gia') {
+      return <Suspense fallback={<div className="p-12 text-center">Đang tải CMS mã giảm giá...</div>}><CouponAdminPage onNavigate={navigate} /></Suspense>;
+    }
+
     if (!publicRoutes(products).includes(currentPath)) return <NotFoundPage />;
 
     if (currentPath === '/gioi-thieu-phuong-phap-danh-gia') {
@@ -373,6 +379,7 @@ export default function App({ initialPath, initialProducts }: { initialPath?: st
         />
 
         <ShopByNeedSection products={activeProducts} onNavigate={navigate} />
+        <ManagedCouponSection />
 
         {/* Featured 7 Standard Tactical Categories */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
