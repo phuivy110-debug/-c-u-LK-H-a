@@ -7,6 +7,18 @@ export interface ProductCopySection {
   body: string;
 }
 
+export interface ProductFaqItem {
+  question: string;
+  answer: string;
+}
+
+export interface ProductDescriptionLayout {
+  intro: string;
+  highlights: string[];
+  sections: ProductCopySection[];
+  faq: ProductFaqItem[];
+}
+
 const CATEGORY_PATHS: Record<string, string> = {
   'Cần Câu': '/danh-muc/can-cau',
   'Máy Câu': '/danh-muc/may-cau',
@@ -27,30 +39,113 @@ const CATEGORY_SELECTION_CRITERIA: Record<string, string[]> = {
   'Phụ Kiện': ['Kích thước', 'Màu sắc', 'Phiên bản', 'Số lượng / bộ'],
 };
 
-function sectionTitle(paragraph: string, index: number): string {
-  const normalized = paragraph.toLocaleLowerCase('vi');
-  if (normalized.startsWith('thông tin nhận diện')) return 'Thông tin nhận diện';
-  if (normalized.startsWith('thông tin sử dụng thực tế')) return 'Kinh nghiệm sử dụng thực tế';
-  if (normalized.startsWith('cách dùng')) return 'Cách dùng và bảo quản';
-  if (normalized.startsWith('giá bán') || normalized.startsWith('giá ')) return 'Giá và điều kiện đặt hàng';
-  if (normalized.startsWith('trước khi đặt')) return 'Kiểm tra trước khi đặt';
-  return index === 0 ? 'Sản phẩm này phù hợp với ai?' : `Thông tin cần biết ${index + 1}`;
+function cleanProductCopy(value: string): string {
+  return value
+    .replace(/\s+/g, ' ')
+    .replace(/\b(tuyệt đối|hoàn hảo|100%)\b/giu, '')
+    .replace(/\s+([,.!?])/g, '$1')
+    .trim();
+}
+
+function isFaqHeading(value: string): boolean {
+  return /^câu hỏi thường gặp\??$/iu.test(value.trim());
+}
+
+function isQuestion(value: string): boolean {
+  return /^\d+[.)]\s+.+\?$/u.test(value.trim()) || (/\?$/.test(value.trim()) && value.trim().length < 180);
+}
+
+function isSectionHeading(value: string): boolean {
+  const text = value.trim();
+  if (!text || text.length > 130 || /[.!?]$/.test(text)) return false;
+  return /^(ưu điểm|đặc điểm|điểm nổi bật|thông số|thành phần|thiết kế|khám phá|chi tiết|các phiên bản|phân loại|đối tượng|ứng dụng|kích thước|hướng dẫn|cách dùng|cách chọn|bảng thông số|khả năng)/iu.test(text);
+}
+
+function sentenceHighlights(value: string): string[] {
+  return cleanProductCopy(value)
+    .split(/(?<=[.!?])\s+/u)
+    .map((sentence) => sentence.trim())
+    .filter((sentence) => sentence.length >= 35 && sentence.length <= 180);
+}
+
+function fallbackFaq(product: Product): ProductFaqItem[] {
+  const groups = product.variantGroups?.filter((group) => group.options.length) || [];
+  const criteria = getVariantSelectionCriteria(product);
+  const result: ProductFaqItem[] = [];
+
+  if (groups.length) {
+    result.push({
+      question: `${product.name} có những phiên bản nào?`,
+      answer: groups
+        .map((group) => `${group.name}: ${group.options.slice(0, 8).join(', ')}`)
+        .join('. ') + '.',
+    });
+  }
+
+  result.push({
+    question: 'Nên kiểm tra gì trước khi đặt hàng?',
+    answer: `Hãy đối chiếu ${criteria.slice(0, 4).join(', ').toLocaleLowerCase('vi')} với nhu cầu thực tế. Nếu còn phân vân, hãy nhắn LK Hòa để được xác nhận đúng phiên bản trước khi chốt đơn.`,
+  });
+  return result;
+}
+
+export function getProductDescriptionLayout(product: Product): ProductDescriptionLayout {
+  const primaryBlocks = getProductDescription(product).split(/\n\s*\n/).map((value) => value.trim()).filter(Boolean);
+  const generatedBlocks = generateSeoProductDescription(product).split(/\n\s*\n/).map((value) => value.trim()).filter(Boolean);
+  const blocks = primaryBlocks.length >= 3 ? primaryBlocks : [...primaryBlocks, ...generatedBlocks];
+  const faqStart = blocks.findIndex(isFaqHeading);
+  const contentBlocks = (faqStart >= 0 ? blocks.slice(0, faqStart) : blocks).filter((value) => !isFaqHeading(value));
+  const faqBlocks = faqStart >= 0 ? blocks.slice(faqStart + 1) : [];
+  const intro = cleanProductCopy(contentBlocks.find((value) => !isSectionHeading(value) && !/^[-•]/u.test(value)) || generatedBlocks[0] || product.name);
+  const sections: ProductCopySection[] = [];
+  let currentTitle = '';
+
+  for (const rawBlock of contentBlocks.slice(1)) {
+    if (isSectionHeading(rawBlock)) {
+      currentTitle = cleanProductCopy(rawBlock);
+      continue;
+    }
+    const body = cleanProductCopy(rawBlock.replace(/^(Thông tin nhận diện|Thông tin sử dụng thực tế|Cách dùng):\s*/iu, ''));
+    if (!body || /^[-•]/u.test(rawBlock)) continue;
+    const last = sections.at(-1);
+    if (last && last.title === currentTitle) last.body = `${last.body} ${body}`;
+    else sections.push({ title: currentTitle || 'Thông tin sản phẩm', body });
+  }
+
+  const bulletHighlights = contentBlocks
+    .filter((value) => /^[-•]/u.test(value))
+    .map((value) => cleanProductCopy(value.replace(/^[-•]\s*/u, '')));
+  const featureText = sections
+    .filter((section) => /ưu điểm|đặc điểm|nổi bật|thiết kế|khả năng/iu.test(section.title))
+    .flatMap((section) => sentenceHighlights(section.body));
+  const highlights = [...new Set([...bulletHighlights, ...featureText, ...sentenceHighlights(intro)])]
+    .filter((value) => value.length >= 20)
+    .slice(0, 5);
+
+  const faq: ProductFaqItem[] = [];
+  for (let index = 0; index < faqBlocks.length; index += 1) {
+    if (!isQuestion(faqBlocks[index])) continue;
+    const answer = cleanProductCopy(faqBlocks[index + 1] || '');
+    if (answer && !isQuestion(answer)) {
+      faq.push({ question: cleanProductCopy(faqBlocks[index].replace(/^\d+[.)]\s*/u, '')), answer });
+      index += 1;
+    }
+  }
+
+  return {
+    intro,
+    highlights: highlights.length ? highlights : getVariantSelectionCriteria(product).slice(0, 4),
+    sections: sections
+      .filter((section) => section.body !== intro)
+      .slice(0, 4),
+    faq: (faq.length ? faq : fallbackFaq(product)).slice(0, 3),
+  };
 }
 
 export function getProductCopySections(product: Product): ProductCopySection[] {
-  const primaryParagraphs = getProductDescription(product).split(/\n\s*\n/).map((paragraph) => paragraph.trim()).filter(Boolean);
-  const generatedParagraphs = generateSeoProductDescription(product).split(/\n\s*\n/).map((paragraph) => paragraph.trim()).filter(Boolean);
-  const paragraphs = primaryParagraphs.length >= 4
-    ? primaryParagraphs
-    : [...primaryParagraphs, ...generatedParagraphs.filter((paragraph) => !primaryParagraphs.includes(paragraph))];
+  const layout = getProductDescriptionLayout(product);
 
-  return paragraphs
-    .map((paragraph) => paragraph.trim())
-    .filter(Boolean)
-    .map((paragraph, index) => ({
-      title: sectionTitle(paragraph, index),
-      body: paragraph.replace(/^(Thông tin nhận diện|Thông tin sử dụng thực tế|Cách dùng):\s*/iu, ''),
-    }));
+  return [{ title: 'Tổng quan sản phẩm', body: layout.intro }, ...layout.sections];
 }
 
 export function getVariantSelectionCriteria(product: Product): string[] {
