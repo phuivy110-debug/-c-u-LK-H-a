@@ -2,8 +2,11 @@ import React, { useEffect, useMemo, useState } from 'react';
 import {
   CheckCircle2,
   BadgeCheck,
+  CircleAlert,
   ExternalLink,
   ImageOff,
+  Layers3,
+  Link2,
   Minus,
   Play,
   Plus,
@@ -21,12 +24,19 @@ import { ProductCard } from './ProductCard';
 import { InternalLink } from './InternalLink';
 import { formatPrice, isPromotedProduct, productDisplayName, productPrice, productPromoLabel } from '../utils/catalog';
 import { NotFoundPage } from './NotFoundPage';
-import { getProductDescription } from '../utils/productDescription';
 import { getProductDetailData } from '../data/productVariants';
 import { useCart } from '../utils/CartContext';
 import { validateAffiliateUrl } from './AffiliateButtons';
 import { SHARED_TIKTOK_URL } from '../utils/googleSheetSync';
 import { trackAffiliateClick, trackCommerceEvent } from '../utils/analyticsService';
+import { loadVerifiedShopeeGallery } from '../utils/shopeeGallery';
+import {
+  categoryPath,
+  getComplementaryCategories,
+  getComplementaryProducts,
+  getProductCopySections,
+  getVariantSelectionCriteria,
+} from '../utils/productMerchandising';
 
 type TabKey = 'description' | 'specs' | 'rigging' | 'reviews';
 
@@ -46,7 +56,7 @@ export function ProductDetailPage({
   const displayName = product ? productDisplayName(product) : '';
   const promoLabel = product ? productPromoLabel(product) : undefined;
 
-  const detail = useMemo(() => (product ? getProductDetailData(product) : null), [product]);
+  const baseDetail = useMemo(() => (product ? getProductDetailData(product) : null), [product]);
   const [selectedVariantId, setSelectedVariantId] = useState<string>('');
   const [quantity, setQuantity] = useState(1);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
@@ -57,6 +67,14 @@ export function ProductDetailPage({
   const [reviewAuthor, setReviewAuthor] = useState('');
   const [reviewComment, setReviewComment] = useState('');
   const [reviewRating, setReviewRating] = useState(5);
+  const [variantRequest, setVariantRequest] = useState('');
+  const [verifiedGallery, setVerifiedGallery] = useState<string[]>([]);
+  const detail = useMemo(() => {
+    if (!baseDetail) return null;
+    const gallery = [...baseDetail.gallery, ...verifiedGallery]
+      .filter((url, index, values) => values.indexOf(url) === index);
+    return { ...baseDetail, gallery };
+  }, [baseDetail, verifiedGallery]);
 
   const verifiedFields = useMemo(() => {
     if (!product) return [];
@@ -69,14 +87,26 @@ export function ProductDetailPage({
   }, [product]);
 
   useEffect(() => {
-    if (detail?.variants?.[0]) {
-      setSelectedVariantId(detail.variants[0].id);
+    if (baseDetail?.variants?.[0]) {
+      setSelectedVariantId(baseDetail.variants[0].id);
       setQuantity(1);
       setActiveImageIndex(0);
       setShowVideo(false);
       setActiveTab('description');
+      setVariantRequest('');
     }
-  }, [productSlug, detail]);
+  }, [productSlug, baseDetail]);
+
+  useEffect(() => {
+    let cancelled = false;
+    setVerifiedGallery([]);
+    loadVerifiedShopeeGallery(product?.shopeeUrl).then((gallery) => {
+      if (!cancelled) setVerifiedGallery(gallery);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [product?.shopeeUrl]);
 
   useEffect(() => {
     if (!product || !detail) return;
@@ -120,6 +150,14 @@ export function ProductDetailPage({
 
   const selectedVariant =
     detail.variants.find((v) => v.id === selectedVariantId) || detail.variants[0];
+  const hasVerifiedVariants = Boolean(product.variants?.length);
+  const effectiveVariant = !hasVerifiedVariants && variantRequest.trim()
+    ? {
+        ...selectedVariant,
+        id: `${selectedVariant.id}-requested`,
+        label: `Yêu cầu: ${variantRequest.trim()}`,
+      }
+    : selectedVariant;
   const price = selectedVariant.price;
   const originalPrice = selectedVariant.originalPrice || product.originalPrice || 0;
   const discount =
@@ -130,27 +168,31 @@ export function ProductDetailPage({
 
   const shopeeUrl = validateAffiliateUrl(product.shopeeUrl, 'shopee');
   const tiktokUrl = validateAffiliateUrl(product.tiktokUrl, 'tiktok') || SHARED_TIKTOK_URL;
-  const related = products
+  const similarProducts = products
     .filter((item) => item.status === 'active' && item.category === product.category && item.id !== product.id)
     .slice(0, 4);
+  const complementaryProducts = getComplementaryProducts(product, products, 4);
+  const complementaryCategories = getComplementaryCategories(product);
+  const selectionCriteria = getVariantSelectionCriteria(product);
+  const copySections = getProductCopySections(product);
 
   const allReviews = [...customReviews, ...detail.reviews];
   const hasDetailedSpecs = Boolean(product.specs?.length);
   const hasRiggingGuide = Boolean(detail.riggingGuide?.trim());
   const availableTabs: { id: TabKey; label: string }[] = [
     { id: 'description', label: 'Mô tả chi tiết' },
-    ...(hasDetailedSpecs ? [{ id: 'specs' as TabKey, label: 'Thông số kỹ thuật' }] : []),
+    { id: 'specs', label: 'Thông số & phân loại' },
     ...(hasRiggingGuide ? [{ id: 'rigging' as TabKey, label: 'Hướng dẫn phối đồ / bài mồi' }] : []),
     { id: 'reviews', label: `Đánh giá (${allReviews.length})` },
   ];
   const activeImage = detail.gallery[activeImageIndex] || product.imageUrl;
 
   const handleAddToCart = () => {
-    addToCart(product, selectedVariant, quantity, true);
+    addToCart(product, effectiveVariant, quantity, true);
   };
 
   const handleBuyNowCod = () => {
-    addToCart(product, selectedVariant, quantity, false);
+    addToCart(product, effectiveVariant, quantity, false);
     onNavigate('/thanh-toan');
   };
 
@@ -325,6 +367,9 @@ export function ProductDetailPage({
 
           {/* Dynamic Price Panel */}
           <div className="rounded-xl border border-slate-800 bg-[#0F172A] p-4 space-y-2">
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
+              {hasVerifiedVariants ? 'Giá theo phiên bản đang chọn' : 'Giá tham khảo từ'}
+            </p>
             <div className="flex flex-wrap items-baseline gap-3">
               <strong className="text-3xl sm:text-4xl font-black text-[#FACC15] tabular-nums">
                 {formatPrice(price)}
@@ -365,34 +410,69 @@ export function ProductDetailPage({
             </div>
           </div>
 
-          {/* Variant Selector */}
-          <div className="space-y-2.5">
-            <div className="flex items-center justify-between text-xs">
-              <span className="font-bold uppercase tracking-wider text-slate-300">
-                Chọn {selectedVariant.groupName}:
-              </span>
-              <span className="font-bold text-[#FACC15]">{selectedVariant.label}</span>
+          {/* Variant Selector / truthful request fallback */}
+          {hasVerifiedVariants ? (
+            <div className="space-y-2.5">
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-bold uppercase tracking-wider text-slate-300">
+                  Chọn {selectedVariant.groupName}:
+                </span>
+                <span className="font-bold text-[#FACC15]">{selectedVariant.label}</span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {detail.variants.map((variant) => {
+                  const isSelected = variant.id === selectedVariant.id;
+                  return (
+                    <button
+                      key={variant.id}
+                      type="button"
+                      onClick={() => setSelectedVariantId(variant.id)}
+                      className={`min-h-11 px-3.5 py-2 rounded-lg text-xs font-bold border transition-colors cursor-pointer whitespace-nowrap ${
+                        isSelected
+                          ? 'bg-[#14532D] border-[#FACC15] text-[#FACC15]'
+                          : 'bg-[#0F172A] border-slate-700 text-slate-200 hover:border-slate-500'
+                      }`}
+                    >
+                      {variant.label}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-            <div className="flex flex-wrap gap-2">
-              {detail.variants.map((variant) => {
-                const isSelected = variant.id === selectedVariant.id;
-                return (
-                  <button
-                    key={variant.id}
-                    type="button"
-                    onClick={() => setSelectedVariantId(variant.id)}
-                    className={`min-h-11 px-3.5 py-2 rounded-lg text-xs font-bold border transition-colors cursor-pointer whitespace-nowrap ${
-                      isSelected
-                        ? 'bg-[#14532D] border-[#FACC15] text-[#FACC15]'
-                        : 'bg-[#0F172A] border-slate-700 text-slate-200 hover:border-slate-500'
-                    }`}
-                  >
-                    {variant.label}
-                  </button>
-                );
-              })}
+          ) : (
+            <div className="space-y-3 rounded-xl border border-amber-500/40 bg-amber-500/10 p-4">
+              <div className="flex items-start gap-2.5">
+                <Layers3 className="mt-0.5 h-4 w-4 shrink-0 text-[#FACC15]" aria-hidden="true" />
+                <div className="space-y-1">
+                  <p className="text-sm font-black text-white">Xác nhận đúng phiên bản trước khi giao</p>
+                  <p className="text-xs leading-relaxed text-slate-300">
+                    Sản phẩm có thể có nhiều size, màu hoặc cấu hình. Bảng biến thể và giá theo từng lựa chọn đang được đối soát; LK Hòa sẽ xác nhận lại trước khi chốt đơn.
+                  </p>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {selectionCriteria.map((criterion) => (
+                  <span key={criterion} className="rounded-full border border-slate-700 bg-[#0F172A] px-2.5 py-1 text-xs font-semibold text-slate-300">
+                    {criterion}
+                  </span>
+                ))}
+              </div>
+              <div>
+                <label htmlFor="variant-request" className="mb-1.5 block text-xs font-bold text-slate-200">
+                  Phiên bản anh/chị muốn mua <span className="font-medium text-slate-500">(không bắt buộc)</span>
+                </label>
+                <input
+                  id="variant-request"
+                  type="text"
+                  value={variantRequest}
+                  onChange={(event) => setVariantRequest(event.target.value)}
+                  placeholder="VD: cần 2m1, máy đứng, độ cứng MH, màu đỏ"
+                  className="h-11 w-full rounded-lg border border-slate-700 bg-[#0F172A] px-3 text-sm text-white placeholder:text-slate-500 focus:border-[#FACC15] focus:outline-none"
+                />
+                <p className="mt-1.5 text-xs text-slate-400">Yêu cầu sẽ được lưu cùng sản phẩm trong giỏ để nhân viên xác nhận chính xác.</p>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Quantity Stepper */}
           <div className="flex items-center gap-4">
@@ -430,7 +510,11 @@ export function ProductDetailPage({
               className="cta-btn w-full min-h-13 px-4 py-3 rounded-xl bg-[#FACC15] hover:bg-yellow-300 text-[#0F172A] text-sm sm:text-base font-black flex items-center justify-center gap-2 cursor-pointer"
             >
               <Zap className="w-5 h-5 shrink-0" />
-              <span>MUA NGAY - THANH TOÁN KHI NHẬN HÀNG (COD)</span>
+              <span>
+                {hasVerifiedVariants
+                  ? 'MUA NGAY - THANH TOÁN KHI NHẬN HÀNG (COD)'
+                  : 'ĐẶT HÀNG COD - XÁC NHẬN PHÂN LOẠI TRƯỚC KHI GIAO'}
+              </span>
             </button>
 
             {/* Tier 2: Secondary Add to Cart Drawer */}
@@ -521,21 +605,68 @@ export function ProductDetailPage({
 
         <div className="p-5 sm:p-8">
           {activeTab === 'description' && (
-            <div className="space-y-4">
+            <div className="space-y-6">
               <h2 className="font-display text-lg font-black text-white">
                 Mô tả chi tiết {displayName}
               </h2>
-              <p className="whitespace-pre-line text-sm leading-relaxed text-slate-300">
-                {getProductDescription(product)}
-              </p>
+              <div className="grid gap-3 md:grid-cols-2">
+                {copySections.map((section, index) => (
+                  <article
+                    key={`${section.title}-${index}`}
+                    className="rounded-xl border border-slate-800 bg-[#0F172A]/60 p-4"
+                  >
+                    <h3 className="mb-2 text-sm font-black text-white">{section.title}</h3>
+                    <p className="text-sm leading-7 text-slate-300">{section.body}</p>
+                  </article>
+                ))}
+              </div>
+
+              <aside className="rounded-xl border border-emerald-900/70 bg-emerald-950/20 p-4">
+                <div className="mb-3 flex items-center gap-2">
+                  <Link2 className="h-4 w-4 text-emerald-400" aria-hidden="true" />
+                  <h3 className="text-sm font-black text-white">Mua kèm để hoàn thiện bộ câu</h3>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {complementaryProducts.slice(0, 3).map((item) => (
+                    <InternalLink
+                      key={item.id}
+                      href={`/san-pham/${item.slug}`}
+                      onNavigate={() => onNavigate(`/san-pham/${item.slug}`)}
+                      className="rounded-lg border border-emerald-800/80 bg-[#0F172A] px-3 py-2 text-xs font-bold text-emerald-300 hover:border-[#FACC15] hover:text-[#FACC15]"
+                    >
+                      {productDisplayName(item)} · {formatPrice(productPrice(item))}
+                    </InternalLink>
+                  ))}
+                </div>
+                <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-xs">
+                  {complementaryCategories.slice(0, 3).map((category) => (
+                    <InternalLink
+                      key={category}
+                      href={categoryPath(category)}
+                      onNavigate={() => onNavigate(categoryPath(category))}
+                      className="font-bold text-slate-300 hover:text-[#FACC15]"
+                    >
+                      Xem toàn bộ {category.toLocaleLowerCase('vi')}
+                    </InternalLink>
+                  ))}
+                </div>
+              </aside>
             </div>
           )}
 
           {activeTab === 'specs' && (
             <div className="space-y-4">
               <h2 className="font-display text-lg font-black text-white">
-                Bảng thông số kỹ thuật
+                Bảng thông số và phân loại
               </h2>
+              {!hasDetailedSpecs && (
+                <div className="flex items-start gap-2.5 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-slate-300">
+                  <CircleAlert className="mt-0.5 h-4 w-4 shrink-0 text-[#FACC15]" aria-hidden="true" />
+                  <p>
+                    Bảng dưới đây mới gồm dữ liệu cơ bản đã xác minh. Kích thước, màu, độ cứng, loại máy và giá theo từng biến thể sẽ chỉ hiển thị khi có nguồn chính thức; website không tự suy đoán thông số.
+                  </p>
+                </div>
+              )}
               <div className="overflow-x-auto rounded-xl border border-slate-800">
                 <table className="w-full text-left text-xs sm:text-sm">
                   <tbody className="divide-y divide-slate-800">
@@ -569,6 +700,11 @@ export function ProductDetailPage({
                   <h2 className="font-display text-lg font-black text-white">
                     Nhận xét từ cần thủ đã mua
                   </h2>
+                  {allReviews.length === 0 && (
+                    <div className="rounded-xl border border-slate-800 bg-[#0F172A] p-4 text-sm leading-relaxed text-slate-400">
+                      Chưa có đánh giá mua hàng đã xác minh cho sản phẩm này. LK Hòa không hiển thị nhận xét giả hoặc tự tạo số lượt đánh giá.
+                    </div>
+                  )}
                   {allReviews.map((rev) => (
                     <div key={rev.id} className="rounded-xl border border-slate-800 bg-[#0F172A] p-4 space-y-1.5">
                       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -593,7 +729,10 @@ export function ProductDetailPage({
                   onSubmit={handleSubmitReview}
                   className="md:col-span-5 rounded-xl border border-slate-800 bg-[#0F172A] p-4 space-y-3 h-fit"
                 >
-                  <h3 className="text-sm font-bold text-white">Gửi đánh giá của bạn</h3>
+                  <h3 className="text-sm font-bold text-white">Ghi chú trải nghiệm trên thiết bị này</h3>
+                  <p className="text-xs leading-relaxed text-slate-400">
+                    Nội dung này chỉ lưu trên trình duyệt hiện tại và không được gắn nhãn “đã mua hàng”.
+                  </p>
                   <div>
                     <label className="block text-xs text-slate-400 mb-1">Số sao</label>
                     <div className="flex gap-1">
@@ -639,14 +778,39 @@ export function ProductDetailPage({
         </div>
       </section>
 
-      {/* Related Products */}
-      {related.length > 0 && (
+      {/* Complementary cross-sell products */}
+      {complementaryProducts.length > 0 && (
+        <section className="space-y-4 rounded-2xl border border-emerald-900/60 bg-emerald-950/10 p-4 sm:p-6">
+          <div className="space-y-1">
+            <h2 className="font-display text-xl font-black text-white">
+              Hoàn Thiện Bộ Câu
+            </h2>
+            <p className="text-sm text-slate-400">
+              Gợi ý mua kèm theo kiểu câu và nhóm trang bị của sản phẩm đang xem.
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4">
+            {complementaryProducts.map((item) => (
+              <ProductCard
+                key={item.id}
+                product={item}
+                onOpenDetail={onOpenDetail || ((selected) => onNavigate(`/san-pham/${selected.slug}`))}
+                onQuickBuy={() => onNavigate('/thanh-toan')}
+                placement="product_cross_sell"
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Similar products */}
+      {similarProducts.length > 0 && (
         <section className="space-y-4">
           <h2 className="font-display text-xl font-black text-white">
-            Trang Bị Cùng Danh Mục
+            So Sánh Thêm Sản Phẩm Cùng Nhóm
           </h2>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4">
-            {related.map((item) => (
+            {similarProducts.map((item) => (
               <ProductCard
                 key={item.id}
                 product={item}
@@ -662,7 +826,9 @@ export function ProductDetailPage({
       {/* Mobile Sticky Bottom CTA Bar (<= 64px height) */}
       <div className="fixed bottom-0 left-0 right-0 z-30 md:hidden bg-[#0F172A]/95 backdrop-blur-md border-t border-slate-800 px-3 py-2 flex items-center justify-between gap-2 shadow-2xl">
         <div className="min-w-0">
-          <p className="text-[10px] text-slate-400 truncate">{selectedVariant.label}</p>
+          <p className="text-[10px] text-slate-400 truncate">
+            {hasVerifiedVariants ? effectiveVariant.label : variantRequest.trim() || 'Xác nhận phân loại trước khi giao'}
+          </p>
           <strong className="text-base font-black text-[#FACC15] tabular-nums">
             {formatPrice(price)}
           </strong>
