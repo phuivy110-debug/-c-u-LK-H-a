@@ -11,7 +11,7 @@ export const PUBLISHED_FALLBACK_CSV_URL =
 
 export const DEFAULT_SHEET_URL = PUBLISHED_FALLBACK_CSV_URL;
 
-export const PRODUCT_CACHE_KEY = 'lkhoa_products_google_sheet_v6';
+export const PRODUCT_CACHE_KEY = 'lkhoa_products_google_sheet_v7';
 export const SHARED_TIKTOK_URL = 'https://vt.tiktok.com/ZS9kJHJuDnoUp-AeYDB/';
 
 const VERIFIED_SHOPEE_LINK_CORRECTIONS: Array<{ pattern: RegExp; url: string }> = [
@@ -154,6 +154,7 @@ export const HEADER_ALIASES = {
     'giachuagiam',
     'giatruockhuyenmai',
   ],
+  promotionActive: ['khuyenmaidangchay', 'promotionactive', 'isflashsale', 'flashsale'],
 };
 
 export function getExactColumnValue(
@@ -227,7 +228,7 @@ export function saveProductsCache(products: Product[], spreadsheetUrl: string = 
     if (typeof window === 'undefined' || typeof localStorage === 'undefined') return;
     const sanitizedProducts = ensureUniqueProductIds(products);
     const cache: ProductCache = {
-      schemaVersion: 5,
+      schemaVersion: 6,
       source: 'google-sheet',
       spreadsheetId: extractSpreadsheetId(spreadsheetUrl),
       syncedAt: new Date().toISOString(),
@@ -250,7 +251,7 @@ export function loadProductsCache(spreadsheetUrl: string = DEFAULT_SHEET_URL): P
 
     if (
       parsed &&
-      parsed.schemaVersion === 5 &&
+      parsed.schemaVersion === 6 &&
       parsed.source === 'google-sheet' &&
       parsed.spreadsheetId === expectedSpreadsheetId &&
       Array.isArray(parsed.products)
@@ -491,16 +492,13 @@ export async function fetchProductsFromGoogleSheet(sheetUrl: string): Promise<Pr
             }
 
             let saleDiscountPercent: number | undefined = undefined;
-            let isFlashSale = false;
+            const promotionValue = getExactColumnValue(row, HEADER_ALIASES.promotionActive).toLowerCase();
+            const isFlashSale = ['1', 'true', 'yes', 'co', 'có', 'active', 'x'].includes(promotionValue);
 
             if (originalPrice && referencePrice && originalPrice > referencePrice) {
               saleDiscountPercent = Math.round(((originalPrice - referencePrice) / originalPrice) * 100);
-              if (saleDiscountPercent >= 15) {
-                isFlashSale = true;
-              }
             } else if (matchedFallback && matchedFallback.discountPercent) {
               saleDiscountPercent = matchedFallback.discountPercent;
-              isFlashSale = matchedFallback.isFlashSale ?? (saleDiscountPercent >= 15);
             }
 
             const imageRaw = getExactColumnValue(row, HEADER_ALIASES.image);

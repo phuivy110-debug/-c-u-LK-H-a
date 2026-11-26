@@ -360,7 +360,7 @@ export function createApiApp(): express.Express {
           salePrice,
           originalPrice,
           discountPercent: discountPercent && discountPercent > 0 ? discountPercent : undefined,
-          isFlashSale: (discountPercent && discountPercent >= 15) || false,
+          isFlashSale: Boolean(p.isFlashSale),
           syncedAt: new Date().toISOString(),
           source: 'shopee-realtime',
         };
@@ -1826,7 +1826,7 @@ export function createApiApp(): express.Express {
         salePrice,
         originalPrice: originalPrice || undefined,
         discountPercent,
-        isFlashSale: isFlashSale ?? (discountPercent !== undefined && discountPercent >= 15),
+        isFlashSale: isFlashSale === true,
         syncedAt: new Date().toISOString(),
         source: 'shopee-realtime',
       };

@@ -82,12 +82,9 @@ export function loadServerProducts(): Product[] {
           }
 
           let saleDiscountPercent: number | undefined = undefined;
-          let isFlashSale = false;
+          const isFlashSale = false;
           if (originalPrice && referencePrice && originalPrice > referencePrice) {
             saleDiscountPercent = Math.round(((originalPrice - referencePrice) / originalPrice) * 100);
-            if (saleDiscountPercent >= 15) {
-              isFlashSale = true;
-            }
           }
 
           const generateSlug = (text: string) => {

@@ -95,7 +95,7 @@ export function mergeRealtimeShopeePrices(products: Product[], priceMap: ShopeeP
         return {
           ...p,
           saleDiscountPercent: p.saleDiscountPercent || discount,
-          isFlashSale: p.isFlashSale ?? (discount >= 15),
+          isFlashSale: Boolean(p.isFlashSale),
         };
       }
       return p;
@@ -127,7 +127,7 @@ export function mergeRealtimeShopeePrices(products: Product[], priceMap: ShopeeP
         return {
           ...product,
           saleDiscountPercent: product.saleDiscountPercent || discount,
-          isFlashSale: product.isFlashSale ?? (discount >= 15),
+          isFlashSale: Boolean(product.isFlashSale),
         };
       }
       return product;
@@ -147,7 +147,7 @@ export function mergeRealtimeShopeePrices(products: Product[], priceMap: ShopeeP
       discountPercent = Math.round(((originalPrice - salePrice) / originalPrice) * 100);
     }
 
-    const isFlashSale = livePrice.isFlashSale ?? (discountPercent !== undefined && discountPercent >= 15);
+    const isFlashSale = livePrice.isFlashSale === true;
 
     return {
       ...product,
