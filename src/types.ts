@@ -18,6 +18,12 @@ export interface ProductVariant {
   sku: string;
   stock?: number;
   weightLabel?: string;
+  optionValues?: string[];
+}
+
+export interface ProductVariantGroup {
+  name: string;
+  options: string[];
 }
 
 export interface ProductSpec {
@@ -58,6 +64,7 @@ export interface Product {
   rating?: number;
   reviewCount?: number;
   variants?: ProductVariant[];
+  variantGroups?: ProductVariantGroup[];
   specs?: ProductSpec[];
   riggingGuide?: string;
 
