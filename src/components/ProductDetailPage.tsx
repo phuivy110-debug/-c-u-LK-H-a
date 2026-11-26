@@ -150,6 +150,8 @@ export function ProductDetailPage({
 
   const selectedVariant =
     detail.variants.find((v) => v.id === selectedVariantId) || detail.variants[0];
+  const variantGroups = product.variantGroups?.filter((group) => group.options.length) || [];
+  const selectedOptionValues = selectedVariant.optionValues || [selectedVariant.label];
   const hasVerifiedVariants = Boolean(product.variants?.length);
   const effectiveVariant = !hasVerifiedVariants && variantRequest.trim()
     ? {
@@ -189,6 +191,19 @@ export function ProductDetailPage({
 
   const handleAddToCart = () => {
     addToCart(product, effectiveVariant, quantity, true);
+  };
+
+  const handleVariantOptionSelect = (groupIndex: number, option: string) => {
+    const exact = detail.variants.find((variant) =>
+      variant.stock !== 0 &&
+      variant.optionValues?.every((value, index) =>
+        index === groupIndex ? value === option : value === selectedOptionValues[index]
+      )
+    );
+    const compatible = exact || detail.variants.find((variant) =>
+      variant.stock !== 0 && variant.optionValues?.[groupIndex] === option
+    );
+    if (compatible) setSelectedVariantId(compatible.id);
   };
 
   const handleBuyNowCod = () => {
@@ -411,7 +426,48 @@ export function ProductDetailPage({
           </div>
 
           {/* Variant Selector / truthful request fallback */}
-          {hasVerifiedVariants ? (
+          {hasVerifiedVariants && variantGroups.length > 0 ? (
+            <div className="space-y-4">
+              {variantGroups.map((group, groupIndex) => (
+                <div key={group.name} className="space-y-2">
+                  <div className="flex items-center justify-between gap-3 text-xs">
+                    <span className="font-bold uppercase tracking-wider text-slate-300">
+                      Chọn {group.name}:
+                    </span>
+                    <span className="font-bold text-[#FACC15]">{selectedOptionValues[groupIndex]}</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {group.options.map((option) => {
+                      const isSelected = selectedOptionValues[groupIndex] === option;
+                      const hasAvailableCombination = detail.variants.some((variant) =>
+                        variant.stock !== 0 && variant.optionValues?.[groupIndex] === option
+                      );
+                      return (
+                        <button
+                          key={option}
+                          type="button"
+                          disabled={!hasAvailableCombination}
+                          onClick={() => handleVariantOptionSelect(groupIndex, option)}
+                          className={`min-h-11 rounded-lg border px-3.5 py-2 text-xs font-bold transition-colors ${
+                            isSelected
+                              ? 'bg-[#14532D] border-[#FACC15] text-[#FACC15]'
+                              : !hasAvailableCombination
+                                ? 'cursor-not-allowed border-slate-800 bg-slate-950 text-slate-600 line-through'
+                                : 'bg-[#0F172A] border-slate-700 text-slate-200 hover:border-slate-500'
+                          }`}
+                        >
+                          {option}{!hasAvailableCombination ? ' · Hết hàng' : ''}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+              <p className="text-xs text-slate-400">
+                Phiên bản đã chọn: <span className="font-bold text-slate-200">{selectedVariant.label}</span>
+              </p>
+            </div>
+          ) : hasVerifiedVariants ? (
             <div className="space-y-2.5">
               <div className="flex items-center justify-between text-xs">
                 <span className="font-bold uppercase tracking-wider text-slate-300">
