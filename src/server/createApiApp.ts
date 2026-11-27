@@ -139,10 +139,16 @@ export function createApiApp(): express.Express {
     lastDateStr: string;
     hourlyMap: Record<number, number>;
     weeklyTrafficMap: Record<string, number>;
+    dailyPageViews: Record<string, number>;
+    dailyEvents: Record<string, Record<string, number>>;
+    dailyTopProducts: Record<string, Record<string, { name: string; count: number }>>;
+    dailyReportSent: Record<string, string>;
     recentActivities: Array<{ id: string; time: string; location: string; action: string }>;
   }
 
-  const getTodayStr = () => new Date().toISOString().split('T')[0];
+  const getTodayStr = (date = new Date()) => new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Ho_Chi_Minh', year: 'numeric', month: '2-digit', day: '2-digit',
+  }).format(date);
 
   const loadAnalyticsData = (): AnalyticsData => {
     try {
@@ -153,6 +159,10 @@ export function createApiApp(): express.Express {
           if (!parsed.recentActivities || parsed.recentActivities.length === 0) {
             parsed.recentActivities = [...defaultSampleActivities];
           }
+          parsed.dailyPageViews = parsed.dailyPageViews || {};
+          parsed.dailyEvents = parsed.dailyEvents || {};
+          parsed.dailyTopProducts = parsed.dailyTopProducts || {};
+          parsed.dailyReportSent = parsed.dailyReportSent || {};
           return parsed;
         }
       }
@@ -173,6 +183,10 @@ export function createApiApp(): express.Express {
       lastDateStr: todayStr,
       hourlyMap: initialHourly,
       weeklyTrafficMap: {},
+      dailyPageViews: {},
+      dailyEvents: {},
+      dailyTopProducts: {},
+      dailyReportSent: {},
       recentActivities: [...defaultSampleActivities],
     };
   };
@@ -222,6 +236,7 @@ export function createApiApp(): express.Express {
       if (isNewView) {
         analyticsData.totalPageViews++;
         analyticsData.todayPageViews++;
+        analyticsData.dailyPageViews[getTodayStr()] = (analyticsData.dailyPageViews[getTodayStr()] || 0) + 1;
         const hour = new Date().getHours();
         analyticsData.hourlyMap[hour] = (analyticsData.hourlyMap[hour] || 0) + 1;
         if (isMobile) analyticsData.mobileCount++;
@@ -244,6 +259,29 @@ export function createApiApp(): express.Express {
       return res.json({ success: true, onlineCount: activeSessions.size });
     } catch (err: any) {
       return res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.post('/api/analytics/commerce', (req, res) => {
+    try {
+      const eventName = String(req.body?.eventName || '').trim().toLowerCase();
+      const allowedEvents = new Set(['view_item', 'select_item', 'add_to_cart', 'begin_checkout', 'purchase', 'search']);
+      if (!allowedEvents.has(eventName)) return res.status(400).json({ error: 'Sự kiện thương mại không hợp lệ.' });
+      const dateKey = getTodayStr();
+      analyticsData.dailyEvents[dateKey] = analyticsData.dailyEvents[dateKey] || {};
+      analyticsData.dailyEvents[dateKey][eventName] = (analyticsData.dailyEvents[dateKey][eventName] || 0) + 1;
+      const item = req.body?.item;
+      if (item?.item_id || item?.item_name) {
+        const productKey = String(item.item_id || item.item_name).slice(0, 120);
+        analyticsData.dailyTopProducts[dateKey] = analyticsData.dailyTopProducts[dateKey] || {};
+        const current = analyticsData.dailyTopProducts[dateKey][productKey] || { name: String(item.item_name || productKey).slice(0, 120), count: 0 };
+        current.count += Math.max(1, Number(item.quantity) || 1);
+        analyticsData.dailyTopProducts[dateKey][productKey] = current;
+      }
+      saveAnalyticsData();
+      return res.json({ success: true });
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message || 'Không thể ghi nhận sự kiện.' });
     }
   });
 
@@ -959,14 +997,14 @@ export function createApiApp(): express.Express {
     ].join('\n');
   };
 
-  const pushOrderToTelegramInternal = async (order: any, timeoutMs = 4500) => {
+  const sendTelegramMessageInternal = async (text: string, timeoutMs = 4500) => {
     const creds = resolveConnectorCredentials('telegram');
     if (!creds.token || !creds.chatId) return { ok: false as const, error: 'Chưa cấu hình Telegram Bot Token và Chat ID.' };
     try {
       const resp = await fetch(`https://api.telegram.org/bot${encodeURIComponent(creds.token)}/sendMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chat_id: creds.chatId, text: formatTelegramOrderMessage(order), parse_mode: 'HTML', disable_web_page_preview: true }),
+        body: JSON.stringify({ chat_id: creds.chatId, text, parse_mode: 'HTML', disable_web_page_preview: true }),
         signal: AbortSignal.timeout(timeoutMs),
       });
       const data: any = await resp.json().catch(() => ({}));
@@ -976,6 +1014,58 @@ export function createApiApp(): express.Express {
       return { ok: false as const, error: `Lỗi gửi Telegram: ${err?.message || 'Timeout'}` };
     }
   };
+
+  const pushOrderToTelegramInternal = async (order: any, timeoutMs = 4500) => {
+    return sendTelegramMessageInternal(formatTelegramOrderMessage(order), timeoutMs);
+  };
+
+  const getVietnamDateLabel = (date = new Date()) => new Intl.DateTimeFormat('vi-VN', {
+    timeZone: 'Asia/Ho_Chi_Minh', dateStyle: 'full',
+  }).format(date);
+
+  const sendDailyTelegramReport = async (dateKey: string) => {
+    const events = analyticsData.dailyEvents[dateKey] || {};
+    const topProducts = Object.values(analyticsData.dailyTopProducts[dateKey] || {})
+      .sort((a, b) => b.count - a.count).slice(0, 5);
+    const orders = (await loadOrdersStore()).filter((order) => {
+      const orderDate = getTodayStr(new Date(order.createdAt));
+      return orderDate === dateKey;
+    });
+    const validOrders = orders.filter((order) => order.status !== 'cancelled');
+    const revenue = validOrders.reduce((sum, order) => sum + Math.round(Number(order.total) || 0), 0);
+    const lines = [
+      `📊 <b>BÁO CÁO WEBSITE LK HÒA</b>`,
+      `<b>${getVietnamDateLabel(new Date(`${dateKey}T12:00:00+07:00`))}</b>`,
+      '',
+      `👀 Lượt truy cập: <b>${analyticsData.dailyPageViews[dateKey] || 0}</b>`,
+      `🛍️ Xem sản phẩm: <b>${events.view_item || 0}</b>`,
+      `➕ Thêm vào giỏ: <b>${events.add_to_cart || 0}</b>`,
+      `💳 Bắt đầu thanh toán: <b>${events.begin_checkout || 0}</b>`,
+      `🧾 Đơn hàng: <b>${validOrders.length}</b>`,
+      `💰 Doanh thu ghi nhận: <b>${revenue.toLocaleString('vi-VN')}đ</b>`,
+      '',
+      '<b>Top sản phẩm tương tác:</b>',
+      ...(topProducts.length ? topProducts.map((item) => `• ${item.name.replace(/[<>&]/g, '')}: ${item.count}`) : ['• Chưa có dữ liệu']),
+      '',
+      'Nguồn: docaulkhoa.vn · Báo cáo tự động lúc 21:00',
+    ];
+    return sendTelegramMessageInternal(lines.join('\n'), 7000);
+  };
+
+  app.get('/api/cron/daily-report', async (req, res) => {
+    const configuredSecret = (process.env.CRON_SECRET || '').trim();
+    const providedSecret = String(req.headers.authorization || '').replace(/^Bearer\s+/i, '').trim();
+    if (!configuredSecret || providedSecret !== configuredSecret) return res.status(401).json({ error: 'Unauthorized cron request.' });
+    const dateKey = getTodayStr();
+    if (analyticsData.dailyReportSent[dateKey] && req.query.force !== '1') {
+      return res.json({ success: true, alreadySent: true, date: dateKey });
+    }
+    const result = await sendDailyTelegramReport(dateKey);
+    if (!result.ok) return res.status(502).json({ success: false, error: result.error });
+    analyticsData.dailyReportSent[dateKey] = new Date().toISOString();
+    saveAnalyticsData();
+    return res.json({ success: true, date: dateKey, sentAt: analyticsData.dailyReportSent[dateKey] });
+  });
 
   const signAgentOrderStatusToken = (orderCode: string): string => {
     return crypto
