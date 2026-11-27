@@ -9,10 +9,18 @@ import { sanitizeGuideMarkdown } from './guideContent';
 import { getProductDescription } from './productDescription';
 import { getMecuabinShopeeUrl } from './shopeeAffiliateLinks';
 import { mergeWithLocalAdditions } from './mergeLocalProducts';
+import { applySourceCatalogEnrichment } from './sourceProductEnrichment';
 import { productDisplayName, productPrice } from './catalog';
 
 import { DOMAIN } from './site';
 export { DOMAIN } from './site';
+
+function enrichServerProducts(products: Product[]): Product[] {
+  return applySourceCatalogEnrichment(products).map((product) => ({
+    ...product,
+    description: getProductDescription(product),
+  }));
+}
 
 // Fallback CSV parsing or fallback products on server side
 export function loadServerProducts(): Product[] {
@@ -125,15 +133,15 @@ export function loadServerProducts(): Product[] {
         }
 
         if (products.length >= 50) {
-          return mergeWithLocalAdditions(products);
+          return enrichServerProducts(mergeWithLocalAdditions(products));
         }
       }
     }
 
-    return FALLBACK_PRODUCTS;
+    return enrichServerProducts(FALLBACK_PRODUCTS);
   } catch (err) {
     console.error('Server product loader failed, using fallback:', err);
-    return FALLBACK_PRODUCTS;
+    return enrichServerProducts(FALLBACK_PRODUCTS);
   }
 }
 
@@ -196,6 +204,30 @@ export function generateSitemapXml(products: Product[]): string {
 
   xml += `</urlset>`;
   return xml;
+}
+
+function relatedGuidesForProduct(product: Product) {
+  const category = (product.category || '').toLocaleLowerCase('vi');
+  const terms = `${product.name} ${product.category}`.toLocaleLowerCase('vi');
+  return GUIDE_ARTICLES
+    .map((guide) => {
+      const haystack = `${guide.title} ${guide.summary} ${(guide.keywords || []).join(' ')}`.toLocaleLowerCase('vi');
+      let score = guide.relatedCategorySlug && (
+        (category.includes('cần') && guide.relatedCategorySlug === 'can-cau')
+        || (category.includes('mồi') && guide.relatedCategorySlug === 'moi-cau')
+        || (category.includes('dây') && guide.relatedCategorySlug === 'day-cau')
+        || (category.includes('phụ') && guide.relatedCategorySlug === 'phu-kien')
+        || ((category.includes('phao') || category.includes('lưỡi')) && guide.relatedCategorySlug === 'phao-luoi')
+      ) ? 2 : 0;
+      for (const token of terms.split(/[^\p{L}\p{N}]+/u).filter((item) => item.length >= 4)) {
+        if (haystack.includes(token)) score += 1;
+      }
+      return { guide, score };
+    })
+    .filter((item) => item.score > 0)
+    .sort((left, right) => right.score - left.score)
+    .slice(0, 3)
+    .map((item) => item.guide);
 }
 
 // Google Merchant Center product feed (RSS 2.0 + Google namespace).
@@ -387,11 +419,15 @@ export function renderSeoPage(
       ogType = 'product';
       if (product.imageUrl) ogImage = product.imageUrl;
       const productDescription = getProductDescription(product);
+      const relatedGuideLinks = relatedGuidesForProduct(product);
+      const guideHtml = relatedGuideLinks.length
+        ? `<section><h2>Hướng dẫn chọn ${escapeHtml(product.category.toLocaleLowerCase('vi'))}</h2><ul>${relatedGuideLinks.map((guide) => `<li><a href="${DOMAIN}/cam-nang/${escapeHtml(guide.slug)}">${escapeHtml(guide.title)}</a></li>`).join('')}</ul></section>`
+        : '';
       const isFreeShippingItem =
         (product.referencePrice || 0) >= 300000 ||
         (product.category || '').toLowerCase().includes('cần') ||
         /\bcần\b/i.test(product.name || '');
-      seoBodyHtml = `<main><article><h1>${escapeHtml(displayName)}</h1><p>${escapeHtml(productDescription).replace(/\n\n/g, '</p><p>')}</p><p>Danh mục: ${escapeHtml(product.category)}. Giá bán: ${escapeHtml(priceFormatted)}. Hỗ trợ đặt trực tiếp COD đồng kiểm / VietQR hoặc qua Shopee &amp; TikTok Shop.</p><p><strong>Chính sách giao nhận &amp; bảo hành:</strong> ${isFreeShippingItem ? 'Miễn phí vận chuyển toàn quốc' : 'Miễn phí vận chuyển đơn từ 300.000đ (đồng giá 30.000đ đơn dưới 300.000đ)'}, đổi mới 1-1 trong 7 ngày.</p><p><a href="${DOMAIN}/danh-muc/${CATEGORIES.find(c => c.name === product.category)?.slug || 'can-cau'}">Xem thêm sản phẩm ${escapeHtml(product.category)} LK Hòa</a></p></article></main>`;
+      seoBodyHtml = `<main><article><h1>${escapeHtml(displayName)}</h1><p>${escapeHtml(productDescription).replace(/\n\n/g, '</p><p>')}</p><p>Danh mục: ${escapeHtml(product.category)}. Giá bán: ${escapeHtml(priceFormatted)}. Hỗ trợ đặt trực tiếp COD đồng kiểm / VietQR hoặc qua Shopee &amp; TikTok Shop.</p><p><strong>Chính sách giao nhận &amp; bảo hành:</strong> ${isFreeShippingItem ? 'Miễn phí vận chuyển toàn quốc' : 'Miễn phí vận chuyển đơn từ 300.000đ (đồng giá 30.000đ đơn dưới 300.000đ)'}, đổi mới 1-1 trong 7 ngày.</p><p><a href="${DOMAIN}/danh-muc/${CATEGORIES.find(c => c.name === product.category)?.slug || 'can-cau'}">Xem thêm sản phẩm ${escapeHtml(product.category)} LK Hòa</a></p>${guideHtml}</article></main>`;
 
       jsonLdData = [
         {
