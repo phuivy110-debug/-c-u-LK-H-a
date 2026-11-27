@@ -2,6 +2,12 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": "vite",
+  "crons": [
+    {
+      "path": "/api/cron/daily-report",
+      "schedule": "0 14 * * *"
+    }
+  ],
   "functions": {
     "api/index.ts": {
       "includeFiles": "api/_published_sheet_fallback.csv"
@@ -178,6 +184,10 @@
     },
     {
       "source": "/api/analytics/:path*",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/api/cron/:path*",
       "destination": "/api/index"
     },
     {
