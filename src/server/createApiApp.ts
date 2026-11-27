@@ -609,14 +609,15 @@ export function createApiApp(): express.Express {
   const saveOrdersStore = (orders: any[]) => saveOrders(ordersStorePath, orders);
 
   // Connector Gateway Config Store
-  type ConnectorProvider = 'pancake' | 'ghn' | 'ghtk' | 'viettelpost' | 'webhook';
-  const ALLOWED_CONNECTORS: ConnectorProvider[] = ['pancake', 'ghn', 'ghtk', 'viettelpost', 'webhook'];
+  type ConnectorProvider = 'pancake' | 'ghn' | 'ghtk' | 'viettelpost' | 'webhook' | 'telegram';
+  const ALLOWED_CONNECTORS: ConnectorProvider[] = ['pancake', 'ghn', 'ghtk', 'viettelpost', 'webhook', 'telegram'];
   const CONNECTOR_LABELS: Record<ConnectorProvider, string> = {
     pancake: 'Pancake POS',
     ghn: 'Giao Hàng Nhanh (GHN)',
     ghtk: 'Giao Hàng Tiết Kiệm (GHTK)',
     viettelpost: 'Viettel Post (VTP)',
     webhook: 'Webhook POS Mở Rộng (Sapo / KiotViet / n8n)',
+    telegram: 'Telegram báo đơn mới',
   };
 
   interface StoredConnectorConfig {
@@ -624,6 +625,7 @@ export function createApiApp(): express.Express {
     shopId?: string;
     warehouseId?: string;
     webhookUrl?: string;
+    chatId?: string;
     maskedToken?: string;
     encryptedToken?: string;
     lastTestedAt?: string;
@@ -741,6 +743,8 @@ export function createApiApp(): express.Express {
       envToken = (process.env.GHTK_TOKEN || '').trim();
     } else if (provider === 'viettelpost') {
       envToken = (process.env.VTP_TOKEN || '').trim();
+    } else if (provider === 'telegram') {
+      envToken = (process.env.TELEGRAM_BOT_TOKEN || '').trim();
     }
 
     let persistedToken = (runtimeConnectorTokens.get(provider) || '').trim();
@@ -754,6 +758,7 @@ export function createApiApp(): express.Express {
     const effectiveToken = envToken || persistedToken;
     const effectiveShopId = envShopId || (cfg.shopId || '').trim();
     const effectiveWebhookUrl = (cfg.webhookUrl || '').trim();
+    const effectiveChatId = (process.env.TELEGRAM_CHAT_ID || cfg.chatId || '').trim();
 
     let connected = false;
     if (provider === 'pancake' || provider === 'ghn') {
@@ -762,6 +767,8 @@ export function createApiApp(): express.Express {
       connected = Boolean(effectiveToken);
     } else if (provider === 'webhook') {
       connected = Boolean(effectiveWebhookUrl && isSafeExternalHttpsUrl(effectiveWebhookUrl).ok);
+    } else if (provider === 'telegram') {
+      connected = Boolean(effectiveToken && effectiveChatId);
     }
 
     const source: 'env' | 'admin-ui' | 'none' = envToken
@@ -776,6 +783,7 @@ export function createApiApp(): express.Express {
       shopId: effectiveShopId,
       warehouseId: (cfg.warehouseId || '').trim(),
       webhookUrl: effectiveWebhookUrl,
+      chatId: effectiveChatId,
       autoSync: Boolean(cfg.autoSync),
       maskedToken: envToken
         ? maskSecretToken(envToken)
@@ -801,6 +809,7 @@ export function createApiApp(): express.Express {
       shopId: resolved.shopId || undefined,
       warehouseId: resolved.warehouseId || undefined,
       webhookUrl: resolved.webhookUrl || undefined,
+      chatId: resolved.chatId || undefined,
       maskedToken: resolved.maskedToken,
       lastTestedAt: resolved.lastTestedAt,
       lastTestOk: resolved.lastTestOk,
@@ -924,6 +933,47 @@ export function createApiApp(): express.Express {
         ok: false as const,
         error: `Lỗi gửi Webhook: ${err?.message || 'Timeout / Không thể kết nối Webhook URL'}`,
       };
+    }
+  };
+
+  const formatTelegramOrderMessage = (order: any) => {
+    const items = (order.items || [])
+      .map((item: any) => `• ${String(item.name || 'Sản phẩm').slice(0, 80)} (${String(item.variantLabel || 'Tiêu chuẩn').slice(0, 60)}) × ${Math.max(1, Number(item.quantity) || 1)}`)
+      .join('\n');
+    const customer = order.customer || {};
+    const address = [customer.address, customer.ward, customer.district, customer.province].filter(Boolean).join(', ');
+    return [
+      '🛒 <b>ĐƠN HÀNG MỚI — ĐỒ CÂU LK HÒA</b>',
+      `Mã đơn: <b>${String(order.orderCode || '').replace(/[<>&]/g, '')}</b>`,
+      `Khách: ${String(customer.fullName || '').replace(/[<>&]/g, '')}`,
+      `Điện thoại: <a href="tel:${String(customer.phone || '').replace(/[^0-9+]/g, '')}">${String(customer.phone || '')}</a>`,
+      `Địa chỉ: ${String(address || '').replace(/[<>&]/g, '')}`,
+      '',
+      '<b>Sản phẩm:</b>', items || '• Không có sản phẩm',
+      '',
+      `Tạm tính: <b>${Math.round(order.subtotal || 0).toLocaleString('vi-VN')}đ</b>`,
+      `Phí ship: ${Math.round(order.shippingFee || 0).toLocaleString('vi-VN')}đ`,
+      `Tổng thu: <b>${Math.round(order.total || 0).toLocaleString('vi-VN')}đ</b>`,
+      `Thanh toán: ${order.paymentMethod === 'vietqr' ? 'VietQR' : 'COD'}`,
+      `Giao dự kiến: ${String(order.estimatedDelivery || '')}`,
+    ].join('\n');
+  };
+
+  const pushOrderToTelegramInternal = async (order: any, timeoutMs = 4500) => {
+    const creds = resolveConnectorCredentials('telegram');
+    if (!creds.token || !creds.chatId) return { ok: false as const, error: 'Chưa cấu hình Telegram Bot Token và Chat ID.' };
+    try {
+      const resp = await fetch(`https://api.telegram.org/bot${encodeURIComponent(creds.token)}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id: creds.chatId, text: formatTelegramOrderMessage(order), parse_mode: 'HTML', disable_web_page_preview: true }),
+        signal: AbortSignal.timeout(timeoutMs),
+      });
+      const data: any = await resp.json().catch(() => ({}));
+      if (!resp.ok || data?.ok !== true) return { ok: false as const, error: data?.description || `Telegram trả về HTTP ${resp.status}` };
+      return { ok: true as const };
+    } catch (err: any) {
+      return { ok: false as const, error: `Lỗi gửi Telegram: ${err?.message || 'Timeout'}` };
     }
   };
 
@@ -1125,6 +1175,7 @@ export function createApiApp(): express.Express {
     await hydrateConnectorsConfig();
     const pancakeCreds = resolveConnectorCredentials('pancake');
     const webhookCreds = resolveConnectorCredentials('webhook');
+    const telegramCreds = resolveConnectorCredentials('telegram');
 
     const syncTasks: Promise<void>[] = [];
     let syncedUpdates: Record<string, any> = {};
@@ -1164,6 +1215,18 @@ export function createApiApp(): express.Express {
               webhookSyncError: wRes.error,
             };
           }
+        })
+      );
+    }
+
+    if (telegramCreds.connected && telegramCreds.autoSync) {
+      syncTasks.push(
+        pushOrderToTelegramInternal(record, 4500).then((tRes) => {
+          syncedUpdates = {
+            ...syncedUpdates,
+            telegramSyncedAt: tRes.ok ? new Date().toISOString() : undefined,
+            telegramSyncError: tRes.ok ? undefined : tRes.error,
+          };
         })
       );
     }
@@ -1291,7 +1354,7 @@ export function createApiApp(): express.Express {
       if (!ALLOWED_CONNECTORS.includes(provider)) return res.status(400).json({ error: 'Cổng kết nối không hợp lệ.' });
 
       await hydrateConnectorsConfig();
-      const { token, shopId, warehouseId, webhookUrl, autoSync } = req.body || {};
+      const { token, shopId, warehouseId, webhookUrl, chatId, autoSync } = req.body || {};
       const allCfg = loadConnectorsConfig();
       const prevCfg = allCfg[provider] || {};
 
@@ -1313,6 +1376,10 @@ export function createApiApp(): express.Express {
           provider === 'webhook' && typeof webhookUrl === 'string'
             ? webhookUrl.trim().slice(0, 300)
             : prevCfg.webhookUrl,
+        chatId:
+          provider === 'telegram' && typeof chatId === 'string'
+            ? chatId.trim().slice(0, 120)
+            : prevCfg.chatId,
         maskedToken: cleanToken ? maskSecretToken(cleanToken) : prevCfg.maskedToken,
         encryptedToken: cleanToken ? encryptConnectorToken(cleanToken) : prevCfg.encryptedToken,
       };
@@ -1424,6 +1491,12 @@ export function createApiApp(): express.Express {
         });
         ok = resp.ok;
         message = ok ? `Ping Webhook thành công (HTTP ${resp.status}).` : `Webhook trả về HTTP ${resp.status}.`;
+      } else if (provider === 'telegram') {
+        if (!creds.token || !creds.chatId) return res.status(400).json({ error: 'Vui lòng nhập Telegram Bot Token và Chat ID trước khi kiểm tra.' });
+        const resp = await fetch(`https://api.telegram.org/bot${encodeURIComponent(creds.token)}/getMe`, { signal: AbortSignal.timeout(8000) });
+        const data: any = await resp.json().catch(() => ({}));
+        ok = resp.ok && data?.ok === true;
+        message = ok ? `Telegram kết nối thành công · Bot: @${data?.result?.username || data?.result?.first_name || 'đã xác thực'}.` : (data?.description || `Telegram trả về HTTP ${resp.status}.`);
       }
 
       const allCfg = loadConnectorsConfig();
