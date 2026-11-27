@@ -13,7 +13,6 @@ import {
 import type { Product } from '../types';
 import { useCart } from '../utils/CartContext';
 import { formatPrice } from '../utils/catalog';
-import { AVAILABLE_COUPONS } from '../utils/cartStore';
 import { getProductDetailData } from '../data/productVariants';
 import { CartUpdateNotice } from './CartUpdateNotice';
 
@@ -28,6 +27,7 @@ export const CartPage: React.FC<CartPageProps> = ({ products, onNavigate }) => {
     totalQuantity,
     couponCode,
     couponResult,
+    availableCoupons,
     totals,
     updateQuantity,
     removeItem,
@@ -231,7 +231,7 @@ export const CartPage: React.FC<CartPageProps> = ({ products, onNavigate }) => {
                 </button>
               </div>
               <div className="flex flex-wrap gap-1.5 text-[11px]">
-                {AVAILABLE_COUPONS.map((c) => (
+                {availableCoupons.map((c) => (
                   <button
                     key={c.code}
                     type="button"
