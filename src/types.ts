@@ -107,7 +107,7 @@ export interface OrderCustomerInfo {
 
 export type OrderStatus = 'pending' | 'confirmed' | 'packing' | 'shipping' | 'delivered' | 'cancelled';
 export type ShippingCarrierId = 'ghn' | 'ghtk' | 'viettelpost' | 'manual';
-export type ConnectorProviderId = 'pancake' | 'ghn' | 'ghtk' | 'viettelpost' | 'webhook';
+export type ConnectorProviderId = 'pancake' | 'ghn' | 'ghtk' | 'viettelpost' | 'webhook' | 'telegram';
 
 export interface ConnectorSummary {
   provider: ConnectorProviderId;
@@ -118,6 +118,7 @@ export interface ConnectorSummary {
   shopId?: string;
   warehouseId?: string;
   webhookUrl?: string;
+  chatId?: string;
   maskedToken?: string;
   lastTestedAt?: string;
   lastTestOk?: boolean;
@@ -147,6 +148,8 @@ export interface OrderRecord {
   pancakeSyncError?: string;
   webhookSyncedAt?: string;
   webhookSyncError?: string;
+  telegramSyncedAt?: string;
+  telegramSyncError?: string;
   channel?: 'web' | 'b2a-agent';
   agentName?: string;
   updatedAt?: string;
