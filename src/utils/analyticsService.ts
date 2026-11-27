@@ -102,6 +102,13 @@ export const trackAffiliateClick = (
     destination_type: context.destinationType || 'product',
     page_location: typeof window !== 'undefined' ? window.location.href : '',
   });
+  if (typeof window !== 'undefined' && ['docaulkhoa.vn', 'www.docaulkhoa.vn'].includes(window.location.hostname)) {
+    const payload = JSON.stringify({ eventName: 'affiliate_click', item: { item_id: productId || platform, item_name: productName || platform, quantity: 1 } });
+    try {
+      if (navigator.sendBeacon) navigator.sendBeacon('/api/analytics/commerce', new Blob([payload], { type: 'application/json' }));
+      else void fetch('/api/analytics/commerce', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: payload, keepalive: true });
+    } catch { /* analytics must never block marketplace navigation */ }
+  }
 };
 
 // User interactions are recorded in GA4, not a simulated traffic counter.
