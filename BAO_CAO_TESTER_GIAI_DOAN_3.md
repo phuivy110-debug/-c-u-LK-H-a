@@ -45,6 +45,12 @@ Website đang vận hành ổn định, chưa phát hiện lỗi P0 làm sập w
 - Bổ sung test cho mã hết hạn, tồn kho 0, biến thể hết hàng, ngưỡng freeship và timeout Neon/API.
 - Chạy end-to-end order trong staging, sau đó mới test một đơn production có kiểm soát.
 
+## Bổ sung sau vòng sửa lỗi
+
+- B2A quote đã được sửa để dùng cùng danh sách mã giảm giá quản trị như checkout, tránh báo sai tổng tiền khi CMS có chiến dịch mới.
+- Tách thêm chunk icons, motion, markdown và React runtime; không còn chunk vendor vượt 500 KB.
+- Các script schema, voucher và affiliate đã chuyển sang cách chạy ổn định bằng `node --import tsx`; toàn bộ đều PASS trong môi trường kiểm thử.
+
 ## Khuyến nghị thứ tự tiếp theo
 
 1. Hoàn thành test đơn COD staging/end-to-end.
