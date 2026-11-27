@@ -2243,7 +2243,7 @@ export function createApiApp(): express.Express {
     }
   });
 
-  app.post('/api/agent/quote', (req, res) => {
+  app.post('/api/agent/quote', async (req, res) => {
     try {
       const { items, couponCode = '', province = 'Nghệ An' } = req.body || {};
       if (!Array.isArray(items) || items.length === 0) {
@@ -2254,7 +2254,10 @@ export function createApiApp(): express.Express {
         return res.status(400).json({ error: resolved.error });
       }
       const cleanCoupon = String(couponCode || '').trim().toUpperCase();
-      const totals = calculateCheckoutTotals(resolved.items, cleanCoupon);
+      // Quote must use the same managed coupon set as checkout. Otherwise an
+      // admin-created campaign can appear on the homepage but be ignored by
+      // B2A agents when they ask for a pre-checkout total.
+      const totals = calculateCheckoutTotals(resolved.items, cleanCoupon, await loadManagedCoupons());
       return res.json({
         success: true,
         currency: 'VND',
