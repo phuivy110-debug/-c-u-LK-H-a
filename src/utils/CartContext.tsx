@@ -22,6 +22,7 @@ interface CartContextValue {
   totalQuantity: number;
   couponCode: string;
   couponResult: CouponValidationResult;
+  availableCoupons: ManagedCoupon[];
   totals: CheckoutTotals;
   isDrawerOpen: boolean;
   cartNotice: string;
@@ -241,6 +242,7 @@ export const CartProvider: React.FC<{
       totalQuantity,
       couponCode,
       couponResult,
+      availableCoupons: managedCoupons,
       totals,
       isDrawerOpen,
       cartNotice,
@@ -260,6 +262,7 @@ export const CartProvider: React.FC<{
       totalQuantity,
       couponCode,
       couponResult,
+      managedCoupons,
       totals,
       isDrawerOpen,
       cartNotice,
@@ -289,6 +292,7 @@ export function useCart(): CartContextValue {
       totalQuantity: 0,
       couponCode: '',
       couponResult: evaluateCoupon('', 0),
+      availableCoupons: DEFAULT_COUPONS,
       totals: emptyTotals,
       isDrawerOpen: false,
       cartNotice: '',
