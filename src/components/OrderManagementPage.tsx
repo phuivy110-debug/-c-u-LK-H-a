@@ -39,6 +39,7 @@ const DEFAULT_CONNECTOR_SUMMARIES: ConnectorSummary[] = [
   { provider: 'ghtk', name: 'Giao Hàng Tiết Kiệm (GHTK)', connected: false, source: 'none', autoSync: false },
   { provider: 'viettelpost', name: 'Viettel Post (VTP)', connected: false, source: 'none', autoSync: false },
   { provider: 'webhook', name: 'Webhook POS Mở Rộng (Sapo / KiotViet / n8n)', connected: false, source: 'none', autoSync: true },
+  { provider: 'telegram', name: 'Telegram báo đơn mới', connected: false, source: 'none', autoSync: true },
 ];
 
 interface OrderManagementPageProps {
@@ -77,6 +78,7 @@ const CONNECTOR_META: Record<
     needsShopId?: boolean;
     needsWarehouseId?: boolean;
     needsWebhookUrl?: boolean;
+    needsChatId?: boolean;
     supportsAutoSync?: boolean;
     tokenLabel: string;
     tokenPlaceholder: string;
@@ -128,6 +130,16 @@ const CONNECTOR_META: Record<
     tokenLabel: 'Header X-Webhook-Secret (tùy chọn)',
     tokenPlaceholder: 'Nhập mã bí mật xác thực chữ ký (nếu có)...',
   },
+  telegram: {
+    badge: 'Thông báo thời gian thực',
+    subtitle: 'Nhận thông báo ngay trong Telegram mỗi khi website có đơn hàng mới.',
+    guide: 'Tạo bot bằng @BotFather, lấy Bot Token. Sau đó nhắn /start cho bot và nhập Chat ID của tài khoản hoặc nhóm nhận thông báo.',
+    envHint: 'TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID',
+    needsChatId: true,
+    supportsAutoSync: true,
+    tokenLabel: 'Telegram Bot Token',
+    tokenPlaceholder: '123456789:AA... (lấy từ @BotFather)',
+  },
 };
 
 export const OrderManagementPage: React.FC<OrderManagementPageProps> = ({ onNavigate }) => {
@@ -164,6 +176,7 @@ export const OrderManagementPage: React.FC<OrderManagementPageProps> = ({ onNavi
   const [editingConnector, setEditingConnector] = useState<ConnectorProviderId | null>(null);
   const [cfgToken, setCfgToken] = useState('');
   const [cfgShopId, setCfgShopId] = useState('');
+  const [cfgChatId, setCfgChatId] = useState('');
   const [cfgWarehouseId, setCfgWarehouseId] = useState('');
   const [cfgWebhookUrl, setCfgWebhookUrl] = useState('');
   const [cfgAutoSync, setCfgAutoSync] = useState(true);
@@ -522,6 +535,7 @@ export const OrderManagementPage: React.FC<OrderManagementPageProps> = ({ onNavi
     setEditingConnector(conn.provider);
     setCfgToken('');
     setCfgShopId(conn.shopId || '');
+    setCfgChatId(conn.chatId || '');
     setCfgWarehouseId(conn.warehouseId || '');
     setCfgWebhookUrl(conn.webhookUrl || '');
     setCfgAutoSync(conn.autoSync ?? true);
@@ -543,6 +557,7 @@ export const OrderManagementPage: React.FC<OrderManagementPageProps> = ({ onNavi
           token: cfgToken.trim() || undefined,
           shopId: cfgShopId.trim(),
           warehouseId: cfgWarehouseId.trim(),
+          chatId: cfgChatId.trim(),
           webhookUrl: cfgWebhookUrl.trim(),
           autoSync: cfgAutoSync,
         }),
@@ -1385,6 +1400,20 @@ export const OrderManagementPage: React.FC<OrderManagementPageProps> = ({ onNavi
                     value={cfgShopId}
                     onChange={(e) => setCfgShopId(e.target.value)}
                     placeholder="Ví dụ: 123456"
+                    className="w-full h-11 px-3 rounded-xl bg-[#0F172A] border border-slate-700 text-xs text-white font-mono-tabular focus:border-[#FACC15] focus:outline-none"
+                  />
+                </div>
+              )}
+
+              {editingMeta.needsChatId && (
+                <div>
+                  <label className="block font-bold text-slate-300 mb-1.5">Telegram Chat ID</label>
+                  <input
+                    type="text"
+                    required
+                    value={cfgChatId}
+                    onChange={(e) => setCfgChatId(e.target.value)}
+                    placeholder="Ví dụ: 123456789 hoặc -100... cho group"
                     className="w-full h-11 px-3 rounded-xl bg-[#0F172A] border border-slate-700 text-xs text-white font-mono-tabular focus:border-[#FACC15] focus:outline-none"
                   />
                 </div>
