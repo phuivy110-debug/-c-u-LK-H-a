@@ -222,6 +222,10 @@ export function generateGoogleMerchantXml(products: Product[]): string {
       && product.variants.every((variant) => typeof variant.stock === 'number')
       ? 'out of stock'
       : 'in stock';
+    const qualifiesForFreeShipping = detailPrice >= 300000
+      || product.category.toLocaleLowerCase('vi').includes('cần')
+      || /\bcần\b/i.test(product.name);
+    const shippingPrice = qualifiesForFreeShipping ? 0 : 30000;
     return [
       '    <item>',
       `      <g:id>${escapeXml(product.sku || product.id)}</g:id>`,
@@ -241,7 +245,7 @@ export function generateGoogleMerchantXml(products: Product[]): string {
       '      <g:brand>LK Hòa</g:brand>',
       `      <g:product_type>${escapeXml(product.category)}</g:product_type>`,
       '      <g:identifier_exists>no</g:identifier_exists>',
-      '      <g:shipping><g:country>VN</g:country><g:service>Toàn quốc</g:service><g:price>30000 VND</g:price></g:shipping>',
+      `      <g:shipping><g:country>VN</g:country><g:service>Toàn quốc</g:service><g:price>${shippingPrice} VND</g:price></g:shipping>`,
       '    </item>',
     ].filter(Boolean).join('\n');
   }).filter(Boolean).join('\n');
