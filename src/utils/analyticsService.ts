@@ -45,6 +45,18 @@ const sendToGoogleAnalytics = (
 export const trackPageView = (path: string) => {
   if (typeof window === 'undefined') return;
 
+  const clientIdKey = 'lkhoa_analytics_client_id';
+  let clientId = window.localStorage?.getItem(clientIdKey);
+  if (!clientId) {
+    clientId = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+    window.localStorage?.setItem(clientIdKey, clientId);
+  }
+  const payload = JSON.stringify({ clientId, isNewView: true, isMobile: window.matchMedia?.('(max-width: 768px)').matches, path });
+  try {
+    if (navigator.sendBeacon) navigator.sendBeacon('/api/analytics/ping', new Blob([payload], { type: 'application/json' }));
+    else void fetch('/api/analytics/ping', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: payload, keepalive: true });
+  } catch { /* analytics must never block navigation */ }
+
   sendToGoogleAnalytics('event', 'page_view', {
     send_to: GA_MEASUREMENT_ID,
     page_title: document.title,
@@ -62,6 +74,14 @@ export const trackCommerceEvent = (
     currency: 'VND',
     ...parameters,
   });
+  if (typeof window !== 'undefined' && ['docaulkhoa.vn', 'www.docaulkhoa.vn'].includes(window.location.hostname)) {
+    const item = Array.isArray(parameters.items) ? parameters.items[0] : undefined;
+    const payload = JSON.stringify({ eventName, item });
+    try {
+      if (navigator.sendBeacon) navigator.sendBeacon('/api/analytics/commerce', new Blob([payload], { type: 'application/json' }));
+      else void fetch('/api/analytics/commerce', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: payload, keepalive: true });
+    } catch { /* analytics must never block checkout */ }
+  }
 };
 
 export const trackAffiliateClick = (
