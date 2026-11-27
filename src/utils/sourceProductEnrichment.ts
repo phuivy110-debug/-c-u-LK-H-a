@@ -96,6 +96,7 @@ export function applySourceProductEnrichment(product: Product): Product {
   }));
   return {
     ...product,
+    sku: product.sku || variants[0]?.sku,
     description: normalizeSourceDescription(source.description),
     specs: source.specs.length ? source.specs : product.specs,
     variants: variants.length ? variants : product.variants,
@@ -140,6 +141,7 @@ function applyShopeeVariantFallback(product: Product): Product {
 
   return {
     ...product,
+    sku: product.sku || variants[0]?.sku,
     variants,
     variantGroups: snapshot.v.map((group) => ({
       name: group.n || 'Phân loại',
