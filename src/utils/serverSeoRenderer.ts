@@ -198,6 +198,63 @@ export function generateSitemapXml(products: Product[]): string {
   return xml;
 }
 
+// Google Merchant Center product feed (RSS 2.0 + Google namespace).
+// Only emits active products with a valid positive price and image.
+export function generateGoogleMerchantXml(products: Product[]): string {
+  const activeProducts = (products && products.length > 0 ? products : FALLBACK_PRODUCTS)
+    .filter((product) => product.status === 'active');
+  const escapeXml = (value: unknown) => String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+  const money = (value: number) => `${Math.round(value)} VND`;
+  const items = activeProducts.map((product) => {
+    const detailPrice = product.salePrice || product.referencePrice || product.originalPrice;
+    if (!detailPrice || detailPrice <= 0 || !product.imageUrl) return '';
+    const regularPrice = product.originalPrice && product.originalPrice > detailPrice
+      ? product.originalPrice
+      : detailPrice;
+    const description = getProductDescription(product).slice(0, 5000);
+    const availability = product.variants?.some((variant) => variant.stock === 0)
+      && product.variants.every((variant) => typeof variant.stock === 'number')
+      ? 'out of stock'
+      : 'in stock';
+    return [
+      '    <item>',
+      `      <g:id>${escapeXml(product.sku || product.id)}</g:id>`,
+      `      <g:title>${escapeXml(productDisplayName(product))}</g:title>`,
+      `      <g:description>${escapeXml(description)}</g:description>`,
+      `      <g:link>${DOMAIN}/san-pham/${encodeURIComponent(product.slug)}</g:link>`,
+      `      <g:image_link>${escapeXml(product.imageUrl)}</g:image_link>`,
+      `      <g:availability>${availability}</g:availability>`,
+      `      <g:price>${money(regularPrice)}</g:price>`,
+      product.originalPrice && product.originalPrice > detailPrice
+        ? `      <g:sale_price>${money(detailPrice)}</g:sale_price>`
+        : '',
+      '      <g:condition>new</g:condition>',
+      '      <g:brand>LK Hòa</g:brand>',
+      `      <g:product_type>${escapeXml(product.category)}</g:product_type>`,
+      '      <g:identifier_exists>no</g:identifier_exists>',
+      '      <g:shipping><g:country>VN</g:country><g:service>Toàn quốc</g:service><g:price>30000 VND</g:price></g:shipping>',
+      '    </item>',
+    ].filter(Boolean).join('\n');
+  }).filter(Boolean).join('\n');
+
+  return [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<rss version="2.0" xmlns:g="http://base.google.com/ns/1.0">',
+    '  <channel>',
+    '    <title>Đồ Câu LK Hòa - Google Merchant Feed</title>',
+    `    <link>${DOMAIN}</link>`,
+    '    <description>Sản phẩm đồ câu LK Hòa chính hãng</description>',
+    items,
+    '  </channel>',
+    '</rss>',
+  ].join('\n');
+}
+
 // Generate Dynamic RSS 2.0 Feed
 export function generateRssXml(products: Product[]): string {
   const activeProducts = (products && products.length > 0 ? products : FALLBACK_PRODUCTS).filter(p => p.status === 'active');
