@@ -14,8 +14,8 @@
     "test:ux": "node scripts/verify-ui-ux.mjs",
     "test:vouchers": "node --import tsx scripts/verify-shopee-vouchers.ts",
     "test:affiliate": "node --import tsx scripts/verify-mecuabin-links.ts",
-    "test:merchant": "npm run build >/dev/null && node scripts/verify-merchant-readiness.mjs"
-    ,"audit:images": "npm run build >/dev/null && node scripts/audit-product-images.mjs"
+    "test:merchant": "npm run build >/dev/null && node scripts/verify-merchant-readiness.mjs",
+    "audit:images": "npm run build >/dev/null && node scripts/audit-product-images.mjs"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
