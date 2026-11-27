@@ -17,14 +17,16 @@ Cập nhật: 2026-11-27 (Asia/Ho_Chi_Minh)
 - `npm run lint`: PASS
 - `npm run build`: PASS; 140 trang prerender, sitemap và bundle Vercel tạo sạch.
 - Merchant feed local: 75 items, required fields complete.
+- `npm run test:ux`: PASS; all article TOCs and affiliate tracking checks pass.
+- Image audit: 75/75 ảnh phản hồi hợp lệ và đạt kiểm tra kích thước tối thiểu 500×500.
+- P2 bundle optimization: entry chunk giảm từ khoảng 1.3MB xuống khoảng 415KB; tách vendor, charts, catalog-source và guides-data.
 - Sau khi deploy phải kiểm tra lại `https://docaulkhoa.vn/merchant-feed.xml` và mục Needs attention trong GMC.
 
-## Việc tiếp theo
+## Đóng Giai đoạn 3
 
-1. Kiểm tra kích thước/khả năng crawl của toàn bộ ảnh, thay ảnh phản hồi chậm bằng CDN ổn định.
-2. Hoàn tất nhóm landing page nội dung theo ý định mua còn thiếu.
-3. Xác minh/claim domain và cấu hình shipping/returns trong Google Merchant Center; chưa upload feed nếu chưa hoàn thành checklist tài khoản.
-4. Sau khi GMC xử lý 24–72 giờ, đọc Needs attention và sửa theo từng mã lỗi.
+- Code/SEO/feed/performance P0–P2 đã hoàn tất và sẵn sàng nghiệm thu.
+- Việc còn ngoài code là thao tác tài khoản: xác minh/claim domain, cấu hình shipping/returns và upload feed trong GMC.
+- Sau khi GMC xử lý 24–72 giờ, đọc Needs attention và sửa theo từng mã lỗi.
 
 ## Quy tắc tiếp tục
 
