@@ -9,7 +9,7 @@ import { sanitizeGuideMarkdown } from './guideContent';
 import { getProductDescription } from './productDescription';
 import { getMecuabinShopeeUrl } from './shopeeAffiliateLinks';
 import { mergeWithLocalAdditions } from './mergeLocalProducts';
-import { productDisplayName } from './catalog';
+import { productDisplayName, productPrice } from './catalog';
 
 import { DOMAIN } from './site';
 export { DOMAIN } from './site';
@@ -211,7 +211,8 @@ export function generateGoogleMerchantXml(products: Product[]): string {
     .replace(/'/g, '&apos;');
   const money = (value: number) => `${Math.round(value)} VND`;
   const items = activeProducts.map((product) => {
-    const detailPrice = product.salePrice || product.referencePrice || product.originalPrice;
+    // Keep the feed price identical to the price rendered on product pages.
+    const detailPrice = productPrice(product) || product.originalPrice;
     if (!detailPrice || detailPrice <= 0 || !product.imageUrl) return '';
     const regularPrice = product.originalPrice && product.originalPrice > detailPrice
       ? product.originalPrice
@@ -228,6 +229,9 @@ export function generateGoogleMerchantXml(products: Product[]): string {
       `      <g:description>${escapeXml(description)}</g:description>`,
       `      <g:link>${DOMAIN}/san-pham/${encodeURIComponent(product.slug)}</g:link>`,
       `      <g:image_link>${escapeXml(product.imageUrl)}</g:image_link>`,
+      ...(product.gallery || []).filter((image) => image && image !== product.imageUrl).slice(0, 10)
+        .map((image) => `      <g:additional_image_link>${escapeXml(image)}</g:additional_image_link>`),
+      product.youtubeUrl ? `      <g:video_link>${escapeXml(product.youtubeUrl)}</g:video_link>` : '',
       `      <g:availability>${availability}</g:availability>`,
       `      <g:price>${money(regularPrice)}</g:price>`,
       product.originalPrice && product.originalPrice > detailPrice
