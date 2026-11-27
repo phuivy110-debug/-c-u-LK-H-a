@@ -265,7 +265,7 @@ export function createApiApp(): express.Express {
   app.post('/api/analytics/commerce', (req, res) => {
     try {
       const eventName = String(req.body?.eventName || '').trim().toLowerCase();
-      const allowedEvents = new Set(['view_item', 'select_item', 'add_to_cart', 'begin_checkout', 'purchase', 'search']);
+      const allowedEvents = new Set(['view_item', 'select_item', 'add_to_cart', 'begin_checkout', 'purchase', 'search', 'affiliate_click']);
       if (!allowedEvents.has(eventName)) return res.status(400).json({ error: 'Sự kiện thương mại không hợp lệ.' });
       const dateKey = getTodayStr();
       analyticsData.dailyEvents[dateKey] = analyticsData.dailyEvents[dateKey] || {};
@@ -1041,6 +1041,7 @@ export function createApiApp(): express.Express {
       `🛍️ Xem sản phẩm: <b>${events.view_item || 0}</b>`,
       `➕ Thêm vào giỏ: <b>${events.add_to_cart || 0}</b>`,
       `💳 Bắt đầu thanh toán: <b>${events.begin_checkout || 0}</b>`,
+      `🔗 Click affiliate: <b>${events.affiliate_click || 0}</b>`,
       `🧾 Đơn hàng: <b>${validOrders.length}</b>`,
       `💰 Doanh thu ghi nhận: <b>${revenue.toLocaleString('vi-VN')}đ</b>`,
       '',
