@@ -187,6 +187,10 @@
       "destination": "/api/index"
     },
     {
+      "source": "/api/cron/daily-report",
+      "destination": "/api/index"
+    },
+    {
       "source": "/api/cron/:path*",
       "destination": "/api/index"
     },
