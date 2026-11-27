@@ -30,6 +30,7 @@ import { validateAffiliateUrl } from './AffiliateButtons';
 import { SHARED_TIKTOK_URL } from '../utils/googleSheetSync';
 import { trackAffiliateClick, trackCommerceEvent } from '../utils/analyticsService';
 import { loadVerifiedShopeeGallery } from '../utils/shopeeGallery';
+import { GUIDE_ARTICLES } from '../data/guides';
 import {
   categoryPath,
   getComplementaryCategories,
@@ -177,6 +178,15 @@ export function ProductDetailPage({
   const complementaryCategories = getComplementaryCategories(product);
   const selectionCriteria = getVariantSelectionCriteria(product);
   const descriptionLayout = getProductDescriptionLayout(product);
+  const relatedGuides = GUIDE_ARTICLES
+    .filter((guide) => guide.relatedCategorySlug && (
+      (product.category.includes('Cần') && guide.relatedCategorySlug === 'can-cau')
+      || (product.category.includes('Mồi') && guide.relatedCategorySlug === 'moi-cau')
+      || (product.category.includes('Dây') && guide.relatedCategorySlug === 'day-cau')
+      || (product.category.includes('Phụ') && guide.relatedCategorySlug === 'phu-kien')
+      || ((product.category.includes('Phao') || product.category.includes('Lưỡi')) && guide.relatedCategorySlug === 'phao-luoi')
+    ))
+    .slice(0, 3);
 
   const allReviews = [...customReviews, ...detail.reviews];
   const hasDetailedSpecs = Boolean(product.specs?.length);
@@ -806,6 +816,24 @@ export function ProductDetailPage({
                   ))}
                 </div>
               </aside>
+
+              {relatedGuides.length > 0 && (
+                <aside className="rounded-xl border border-slate-800 bg-[#0F172A]/70 p-4">
+                  <h3 className="mb-3 text-sm font-black text-white">Hướng dẫn chọn và sử dụng</h3>
+                  <div className="grid gap-2 sm:grid-cols-3">
+                    {relatedGuides.map((guide) => (
+                      <InternalLink
+                        key={guide.slug}
+                        href={`/cam-nang/${guide.slug}`}
+                        onNavigate={() => onNavigate(`/cam-nang/${guide.slug}`)}
+                        className="rounded-lg border border-slate-700 px-3 py-2 text-xs font-bold leading-5 text-slate-300 hover:border-[#FACC15] hover:text-[#FACC15]"
+                      >
+                        {guide.title}
+                      </InternalLink>
+                    ))}
+                  </div>
+                </aside>
+              )}
             </article>
           )}
 
