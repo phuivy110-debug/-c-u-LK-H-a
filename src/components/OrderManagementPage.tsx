@@ -34,12 +34,12 @@ import { OrderSummaryDashboard } from './OrderSummaryDashboard';
 const LOCAL_BROWSER_MODE_TOKEN = '__local_browser_mode__';
 
 const DEFAULT_CONNECTOR_SUMMARIES: ConnectorSummary[] = [
+  { provider: 'telegram', name: 'Telegram báo đơn mới', connected: false, source: 'none', autoSync: true },
   { provider: 'pancake', name: 'Pancake POS', connected: false, source: 'none', autoSync: true },
   { provider: 'ghn', name: 'Giao Hàng Nhanh (GHN)', connected: false, source: 'none', autoSync: false },
   { provider: 'ghtk', name: 'Giao Hàng Tiết Kiệm (GHTK)', connected: false, source: 'none', autoSync: false },
   { provider: 'viettelpost', name: 'Viettel Post (VTP)', connected: false, source: 'none', autoSync: false },
   { provider: 'webhook', name: 'Webhook POS Mở Rộng (Sapo / KiotViet / n8n)', connected: false, source: 'none', autoSync: true },
-  { provider: 'telegram', name: 'Telegram báo đơn mới', connected: false, source: 'none', autoSync: true },
 ];
 
 interface OrderManagementPageProps {
@@ -911,6 +911,24 @@ export const OrderManagementPage: React.FC<OrderManagementPageProps> = ({ onNavi
           </button>
         </div>
       )}
+
+      {/* Telegram quick setup: keep the most important alert channel visible without hunting through tabs. */}
+      <div className="rounded-2xl border border-sky-700/60 bg-sky-950/25 px-4 py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-start gap-3">
+          <Send className="w-5 h-5 text-sky-300 shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-black text-white">Telegram báo đơn mới</p>
+            <p className="text-xs text-sky-100/80 mt-0.5">Nhận thông báo ngay khi khách đặt đơn. Bấm cấu hình để nhập Bot Token và Chat ID.</p>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={() => setActiveTab('shipping')}
+          className="min-h-10 px-4 py-2 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs font-black whitespace-nowrap cursor-pointer"
+        >
+          Mở cấu hình Telegram
+        </button>
+      </div>
 
       {/* Summary Dashboard with Recharts */}
       <OrderSummaryDashboard
