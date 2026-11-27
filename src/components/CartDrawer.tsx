@@ -13,7 +13,6 @@ import {
 import type { Product } from '../types';
 import { useCart } from '../utils/CartContext';
 import { formatPrice } from '../utils/catalog';
-import { AVAILABLE_COUPONS } from '../utils/cartStore';
 import { getProductDetailData } from '../data/productVariants';
 import { CartUpdateNotice } from './CartUpdateNotice';
 
@@ -28,6 +27,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ products, onNavigate }) 
     totalQuantity,
     couponCode,
     couponResult,
+    availableCoupons,
     totals,
     isDrawerOpen,
     closeDrawer,
@@ -298,7 +298,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ products, onNavigate }) 
               </div>
               <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
                 <span className="text-slate-400">Mã gợi ý:</span>
-                {AVAILABLE_COUPONS.map((c) => (
+                {availableCoupons.map((c) => (
                   <button
                     key={c.code}
                     type="button"
