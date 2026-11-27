@@ -11,6 +11,9 @@
     },
     "api/rss.ts": {
       "includeFiles": "api/_published_sheet_fallback.csv"
+    },
+    "api/merchant-feed.ts": {
+      "includeFiles": "api/_published_sheet_fallback.csv"
     }
   },
   "redirects": [
@@ -142,10 +145,6 @@
       "destination": "/api/chat"
     },
     {
-      "source": "/api/coupons/active",
-      "destination": "/api/index"
-    },
-    {
       "source": "/api/admin/:path*",
       "destination": "/api/index"
     },
@@ -218,6 +217,10 @@
       "destination": "/seo/rss.xml"
     },
     {
+      "source": "/merchant-feed.xml",
+      "destination": "/api/merchant-feed"
+    },
+    {
       "source": "/gio-hang",
       "destination": "/index.html"
     },
@@ -238,35 +241,17 @@
     {
       "source": "/llms.txt",
       "headers": [
-        {
-          "key": "Content-Type",
-          "value": "text/plain; charset=utf-8"
-        },
-        {
-          "key": "Access-Control-Allow-Origin",
-          "value": "*"
-        },
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=3600"
-        }
+        { "key": "Content-Type", "value": "text/plain; charset=utf-8" },
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Cache-Control", "value": "public, max-age=3600" }
       ]
     },
     {
       "source": "/.well-known/agent.json",
       "headers": [
-        {
-          "key": "Content-Type",
-          "value": "application/json; charset=utf-8"
-        },
-        {
-          "key": "Access-Control-Allow-Origin",
-          "value": "*"
-        },
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=3600"
-        }
+        { "key": "Content-Type", "value": "application/json; charset=utf-8" },
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Cache-Control", "value": "public, max-age=3600" }
       ]
     },
     {
